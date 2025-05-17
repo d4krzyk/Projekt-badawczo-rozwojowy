@@ -1,0 +1,7 @@
+# Kuba Maliszewski
+scraper
+
+# All
+__pycache__
+postgres_data
+venv
