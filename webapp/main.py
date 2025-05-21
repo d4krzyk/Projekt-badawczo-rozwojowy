@@ -22,9 +22,11 @@ app.add_middleware(JWTAuthMiddleware)
 # Routers
 from database.router import router as database_router
 from authorization.router import router as auth_router
+from wikipedia_dumps.router import router as dumps_router
 
 app.include_router(database_router)
 app.include_router(auth_router)
+app.include_router(dumps_router)
 
 # Default
 @app.get("/api/data")
