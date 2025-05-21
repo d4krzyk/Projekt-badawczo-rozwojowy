@@ -5,3 +5,4 @@ scraper
 __pycache__
 postgres_data
 venv
+.idea
