@@ -5,3 +5,18 @@ scraper
 __pycache__
 postgres_data
 venv
+
+# Unity
+/StaticRoomGenerator/[Ll]ibrary/
+/StaticRoomGenerator/[Tt]emp/
+/StaticRoomGenerator/[Oo]bj/
+/StaticRoomGenerator/[Bb]uild/
+/StaticRoomGenerator/[Bb]uilds/
+/StaticRoomGenerator/[Ll]ogs/
+/StaticRoomGenerator/[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+*.vscode
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
