@@ -3,10 +3,8 @@ from .get_data import get_or_create_title_to_id
 from .utils import load_from_file
 
 
-def get_main_category_by_id(category_id) -> str:
+def get_main_category_by_id(category_id, category_child_to_parent: dict, id_to_title: dict) -> str:
     """Return main category based on the given category id."""
-    category_child_to_parent = get_or_create_reversed_categories()
-    id_to_title = load_from_file('wikipedia_dumps/data//id_to_title_min.json')
 
     # Skip categories starting with these phrases
     # Disabling it can speed up the process,
@@ -40,9 +38,8 @@ def get_main_category_by_id(category_id) -> str:
         ])
 
 
-def get_main_category_by_name(category: str) -> str:
+def get_main_category_by_name(category: str, title_to_id: dict, category_child_to_parent: dict, id_to_title: dict) -> str:
     """Return main category based on the given category name."""
     category_name = category.replace(' ', '_').lower()
-    title_to_id = get_or_create_title_to_id()
     category_id = title_to_id.get(category_name)
-    return get_main_category_by_id(category_id)
+    return get_main_category_by_id(category_id, category_child_to_parent, id_to_title)
