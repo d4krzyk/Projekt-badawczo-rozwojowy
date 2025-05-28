@@ -12,6 +12,7 @@ from database.router import router as database_router
 from authorization.router import router as auth_router
 from wikipedia_dumps.router import router as dumps_router
 from webscraping.router import router as scraping_router
+from wikipediaapi.router import router as wikiapi_router
 
 
 # Lifespan
@@ -26,7 +27,6 @@ async def lifespan(app: FastAPI):
 
 # app = FastAPI(lifespan=lifespan)
 app = FastAPI()
-
 # OpenAPI - auth
 # app.openapi = build_custom_openapi(app)
 # app.add_middleware(JWTAuthMiddleware)
@@ -38,6 +38,7 @@ app.add_middleware(DatabaseHealthMiddleware)
 # Routers
 app.include_router(database_router)
 app.include_router(auth_router)
+app.include_router(wikiapi_router)
 app.include_router(dumps_router)
 app.include_router(scraping_router)
 

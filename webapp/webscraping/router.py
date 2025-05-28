@@ -10,7 +10,7 @@ router = APIRouter(prefix="/scraping", tags=["Web Scraping"])
 
 import pprint
 
-@router.post("/extract",response_model=List[dict[str,str]])
+@router.post("/extract")
 def extract_endpoint(
     req: Request, article_name: str = Query(..., description="Nazwa artykułu np. Pope")
 ):
