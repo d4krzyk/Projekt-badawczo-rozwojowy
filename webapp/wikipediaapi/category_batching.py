@@ -29,9 +29,9 @@ def main_category(page_name: str) -> str:
     global categories_shortcut
 
     if len(stop_list) == 0:
-        with open('shortcuts.json', 'r') as f:
+        with open(PWD+'/shortcuts.json', 'r') as f:
             categories_shortcut = json.load(f)
-        with open('stop.json', 'r') as f:
+        with open(PWD+'/stop.json', 'r') as f:
             stop_list = json.load(f)
 
     queue = [page_name]
