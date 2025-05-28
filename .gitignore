@@ -1,7 +1,13 @@
 # Kuba Maliszewski
 scraper
 
+# Mateusz Petkiewicz
+# These will be generated
+webapp/wikipedia_dumps/data/category_links_reversed_min.json
+webapp/wikipedia_dumps/data/title_to_id_min.json
+
 # All
 __pycache__
 postgres_data
 venv
+.idea
