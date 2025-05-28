@@ -27,7 +27,6 @@ async def lifespan(app: FastAPI):
 
 # app = FastAPI(lifespan=lifespan)
 app = FastAPI()
-
 # OpenAPI - auth
 # app.openapi = build_custom_openapi(app)
 # app.add_middleware(JWTAuthMiddleware)
@@ -37,7 +36,6 @@ app.add_middleware(DatabaseHealthMiddleware)
 
 
 # Routers
-
 app.include_router(database_router)
 app.include_router(auth_router)
 app.include_router(wikiapi_router)
