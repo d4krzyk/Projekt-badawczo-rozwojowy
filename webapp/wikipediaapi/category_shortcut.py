@@ -3,13 +3,12 @@ import json
 import os
 
 query_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&cllimit=100&format=json&titles='
-images_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=images&format=json&imlimit=100&formatversion=2&titles='
-pageimages_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&formatversion=2&format=json&pithumbsize=100000&titles='
 
 categories_shortcut = dict()
 stop_list = []
 
 PWD = os.path.dirname(os.path.abspath(__file__))
+
 
 def extract_categories(page_name: str):
     json_content = requests.get(query_url + page_name).content
@@ -18,21 +17,6 @@ def extract_categories(page_name: str):
         return list(reversed([category['title']for category in filter(lambda x: 'hidden' not in x, val['categories'])]))
     else:
         return []
-
-
-def images(page_name: str) -> [str]:
-    json_content = requests.get(images_url + page_name).content
-    val = [image['title'] for image in list(
-        json.loads(json_content)['query']['pages'][0]['images'])]
-
-    images = []
-
-    for image in val:
-        content = requests.get(pageimages_url + image).content
-        images.append(json.loads(content)[
-                      'query']['pages'][0]['thumbnail']['source'])
-
-    return images
 
 
 def main_category(page_name: str) -> str:

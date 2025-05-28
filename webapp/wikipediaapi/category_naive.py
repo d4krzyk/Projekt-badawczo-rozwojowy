@@ -13,7 +13,7 @@ def extract_categories(page_name: str):
         return []
 
 
-def top_category(page_name: str) -> str:
+def main_category(page_name: str) -> str:
     visited = []
 
     exit_condition = "Category:Main topic classifications"
