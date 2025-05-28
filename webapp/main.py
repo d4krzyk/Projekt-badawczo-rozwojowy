@@ -7,7 +7,7 @@ from wikipedia_dumps.get_data import get_or_create_title_to_id
 from wikipedia_dumps.get_data import get_or_create_reversed_categories
 from authorization.openapi import build_custom_openapi
 from database.middleware import DatabaseHealthMiddleware
-from authorization.middleware import JWTAuthMiddleware
+# from authorization.middleware import JWTAuthMiddleware
 from database.router import router as database_router
 from authorization.router import router as auth_router
 from wikipedia_dumps.router import router as dumps_router
@@ -30,7 +30,7 @@ app.openapi = build_custom_openapi(app)
 
 # Middleware
 app.add_middleware(DatabaseHealthMiddleware)
-app.add_middleware(JWTAuthMiddleware)
+# app.add_middleware(JWTAuthMiddleware)
 
 
 # Routers
