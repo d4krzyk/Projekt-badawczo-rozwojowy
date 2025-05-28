@@ -25,8 +25,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
-# app = FastAPI(lifespan=lifespan)
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
+# app = FastAPI()
 # OpenAPI - auth
 # app.openapi = build_custom_openapi(app)
 # app.add_middleware(JWTAuthMiddleware)
