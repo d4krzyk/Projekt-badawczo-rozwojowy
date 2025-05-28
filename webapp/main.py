@@ -12,6 +12,7 @@ from database.router import router as database_router
 from authorization.router import router as auth_router
 from wikipedia_dumps.router import router as dumps_router
 from webscraping.router import router as scraping_router
+from wikipediaapi.router import router as wikiapi_router
 
 
 # Lifespan
@@ -36,9 +37,6 @@ app.add_middleware(DatabaseHealthMiddleware)
 
 
 # Routers
-from database.router import router as database_router
-from authorization.router import router as auth_router
-from wikipediaapi.router import router as wikiapi_router
 
 app.include_router(database_router)
 app.include_router(auth_router)
