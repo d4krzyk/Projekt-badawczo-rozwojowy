@@ -11,6 +11,7 @@ from database.middleware import DatabaseHealthMiddleware
 from database.router import router as database_router
 from authorization.router import router as auth_router
 from wikipedia_dumps.router import router as dumps_router
+from webscraping.router import router as scraping_router
 
 
 # Lifespan
@@ -23,20 +24,22 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 # OpenAPI - auth
-app.openapi = build_custom_openapi(app)
+# app.openapi = build_custom_openapi(app)
+# app.add_middleware(JWTAuthMiddleware)
 
 # Middleware
 app.add_middleware(DatabaseHealthMiddleware)
-# app.add_middleware(JWTAuthMiddleware)
 
 
 # Routers
 app.include_router(database_router)
 app.include_router(auth_router)
 app.include_router(dumps_router)
+app.include_router(scraping_router)
 
 
 # Default
