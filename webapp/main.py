@@ -1,24 +1,28 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
+# Standard Library
 from contextlib import asynccontextmanager
-from wikipedia_dumps.utils import load_from_file
-from wikipedia_dumps.get_data import get_or_create_title_to_id
-from wikipedia_dumps.get_data import get_or_create_reversed_categories
-from authorization.openapi import build_custom_openapi
-from database.middleware import DatabaseHealthMiddleware
-# from authorization.middleware import JWTAuthMiddleware
-from database.router import router as database_router
+
+# 3rd-Party
+from fastapi import FastAPI
+from fastapi import Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+# Project
 from authorization.router import router as auth_router
-from wikipedia_dumps.router import router as dumps_router
+from database.middleware import DatabaseHealthMiddleware
+from database.router import router as database_router
 from webscraping.router import router as scraping_router
+from wikipedia_dumps.get_data import get_or_create_reversed_categories
+from wikipedia_dumps.get_data import get_or_create_title_to_id
+from wikipedia_dumps.router import router as dumps_router
+from wikipedia_dumps.utils import load_from_file
 from wikipediaapi.router import router as wikiapi_router
 
 
 # Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ładowanie danych tylko raz przy starcie
+    """Ładowanie danych tylko raz przy starcie."""
     app.state.category_child_to_parent = get_or_create_reversed_categories()
     app.state.title_to_id = get_or_create_title_to_id()
     app.state.id_to_title = load_from_file('wikipedia_dumps/data/id_to_title_min.json')

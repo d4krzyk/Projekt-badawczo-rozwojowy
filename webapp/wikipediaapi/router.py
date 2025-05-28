@@ -1,7 +1,14 @@
+# Standard Library
 import time
-from fastapi import APIRouter, Query, HTTPException
-from typing import Optional
-from wikipediaapi import category_batching, category_naive, category_shortcut
+
+# 3rd-Party
+from fastapi import APIRouter
+from fastapi import Query
+
+# Local
+from . import category_batching
+from . import category_naive
+from . import category_shortcut
 
 router = APIRouter(prefix="/category-extract", tags=["Wikipedia"])
 
@@ -9,7 +16,7 @@ router = APIRouter(prefix="/category-extract", tags=["Wikipedia"])
 
 
 @router.get("/naive")
-def get_top_category(page_name: str = Query(..., description="Nazwa strony Wikipedia")):
+def get_top_category_naive(page_name: str = Query(..., description="Nazwa strony Wikipedia")):
     time_start = time.time()
     result = category_naive.main_category(page_name)
     time_end = time.time()
@@ -17,7 +24,7 @@ def get_top_category(page_name: str = Query(..., description="Nazwa strony Wikip
 
 
 @router.get("/shortcut")
-def get_top_category(page_name: str = Query(..., description="Nazwa strony Wikipedia")):
+def get_top_category_shortcut(page_name: str = Query(..., description="Nazwa strony Wikipedia")):
     time_start = time.time()
     result = category_shortcut.main_category(page_name)
     time_end = time.time()
@@ -25,7 +32,7 @@ def get_top_category(page_name: str = Query(..., description="Nazwa strony Wikip
 
 
 @router.get("/batching")
-def get_top_category(page_name: str = Query(..., description="Nazwa strony Wikipedia")):
+def get_top_category_batching(page_name: str = Query(..., description="Nazwa strony Wikipedia")):
     time_start = time.time()
     result = category_batching.main_category(page_name)
     time_end = time.time()

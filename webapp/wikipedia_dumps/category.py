@@ -1,8 +1,3 @@
-from .get_data import get_or_create_reversed_categories
-from .get_data import get_or_create_title_to_id
-from .utils import load_from_file
-
-
 def get_main_category_by_id(category_id, category_child_to_parent: dict, id_to_title: dict) -> str:
     """Return main category based on the given category id."""
 
@@ -38,7 +33,12 @@ def get_main_category_by_id(category_id, category_child_to_parent: dict, id_to_t
         ])
 
 
-def get_main_category_by_name(category: str, title_to_id: dict, category_child_to_parent: dict, id_to_title: dict) -> str:
+def get_main_category_by_name(
+        category: str,
+        title_to_id: dict,
+        category_child_to_parent: dict,
+        id_to_title: dict
+) -> str:
     """Return main category based on the given category name."""
     category_name = category.replace(' ', '_').lower()
     category_id = title_to_id.get(category_name)

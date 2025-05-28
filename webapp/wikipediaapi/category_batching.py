@@ -1,8 +1,11 @@
-import requests
+# Standard Library
 import json
 import os
 
-query_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&formatversion=2&cllimit=100&format=json&titles='
+# 3rd-Party
+import requests
+
+query_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&formatversion=2&cllimit=100&format=json&titles='  # noqa :E501
 
 categories_shortcut = dict()
 stop_list = []
@@ -16,8 +19,9 @@ def extract_categories(page_name: str):
     categories = []
     for page in pages:
         if 'categories' in page:
-            categories.extend([category['title']
-                               for category in reversed(page['categories'])])
+            categories.extend([
+                category['title'] for category in reversed(page['categories'])
+            ])
 
     return categories
 
@@ -29,9 +33,9 @@ def main_category(page_name: str) -> str:
     global categories_shortcut
 
     if len(stop_list) == 0:
-        with open(PWD+'/shortcuts.json', 'r') as f:
+        with open(PWD + '/shortcuts.json', 'r') as f:
             categories_shortcut = json.load(f)
-        with open(PWD+'/stop.json', 'r') as f:
+        with open(PWD + '/stop.json', 'r') as f:
             stop_list = json.load(f)
 
     queue = [page_name]

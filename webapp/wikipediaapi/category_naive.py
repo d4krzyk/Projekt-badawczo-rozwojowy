@@ -1,14 +1,24 @@
-import requests
+# Standard Library
 import json
 
-base_url = "https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&cllimit=100&format=json&titles="
+# 3rd-Party
+import requests
+
+base_url = "https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&cllimit=100&format=json&titles="  # noqa :E501
 
 
 def extract_categories(page_name: str):
     json_content = requests.get(base_url + page_name).content
     val = list(json.loads(json_content)['query']['pages'].values())[0]
     if 'categories' in val:
-        return list(reversed([category['title']for category in filter(lambda x: 'hidden' not in x, val['categories'])]))
+        return list(
+            reversed(
+                [
+                    category['title'] for category
+                    in filter(lambda x: 'hidden' not in x, val['categories'])
+                ]
+            )
+        )
     else:
         return []
 

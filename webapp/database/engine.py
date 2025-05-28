@@ -1,6 +1,12 @@
+# Standard Library
 import os
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, declarative_base
+from contextlib import contextmanager
+
+# 3rd-Party
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker
+
 
 def get_env_var(key: str) -> str:
     value = os.getenv(key)
@@ -8,11 +14,12 @@ def get_env_var(key: str) -> str:
         raise RuntimeError(f"Brak wymaganej zmiennej środowiskowej: {key}")
     return value
 
+
 DATABASE_URL = (
-    # f"postgresql://essa:"      # Uwaga: bez "+asyncpg"
-    f"postgresql://{get_env_var('ADMIN_USER')}:"      # Uwaga: bez "+asyncpg"
+    # f"postgresql://essa:"  # Uwaga: bez "+asyncpg"
+    f"postgresql://{get_env_var('ADMIN_USER')}:"  # Uwaga: bez "+asyncpg"
     f"{get_env_var('ADMIN_PASSWORD')}@"
-    f"{get_env_var('POSTGRES_HOST')}:" 
+    f"{get_env_var('POSTGRES_HOST')}:"
     f"{get_env_var('POSTGRES_PORT')}/"
     f"{get_env_var('POSTGRES_DB')}"
 )
@@ -27,6 +34,7 @@ SessionLocal = sessionmaker(
 )
 Base = declarative_base()
 
+
 # Dependency do FastAPI
 def get_db():
     db = SessionLocal()
@@ -35,9 +43,8 @@ def get_db():
     finally:
         db.close()
 
-# Context manager do użycia poza FastAPI (np. w middleware)
-from contextlib import contextmanager
 
+# Context manager do użycia poza FastAPI (np. w middleware)
 @contextmanager
 def db_session():
     db = SessionLocal()
