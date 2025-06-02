@@ -1,12 +1,12 @@
 import lora_diffusion
-from diffusers import StableDiffusionPipeline, EulerAncestralDiscreteScheduler
-from diffusers import StableDiffusionXLPipeline
+from diffusers import StableDiffusionPipeline, EulerAncestralDiscreteScheduler, StableDiffusionXLPipeline
 import torch
 from lora_diffusion import patch_pipe
 import torch.nn.functional as F
 from torch.nn.modules.utils import _pair
 from torch.nn import Conv2d
 from types import MethodType
+import random
 import json
 import multiprocessing
 from PIL import Image
@@ -45,15 +45,22 @@ class TextureModel:
                 device = torch.device("cpu")
                 dtype = torch.float32
 
-            # self.pipe = StableDiffusionPipeline.from_pretrained(
-            #     "convertedV15",
-            #     torch_dtype=dtype
-            # )
-            self.pipe = StableDiffusionPipeline.from_single_file(
-                "models/Stable-diffusion/v15PrunedEmaonly_v15PrunedEmaonly.safetensors",
-                torch_dtype=dtype,
+            self.alt_model_id = "runwayml/stable-diffusion-v1-5"
+            self.pipe = StableDiffusionPipeline.from_pretrained(
+                self.alt_model_id,
                 safety_checker=None,
+                torch_dtype=dtype,
+                scheduler=EulerAncestralDiscreteScheduler.from_pretrained(self.model_id, subfolder="scheduler")
             )
+
+            # self.model_id = "models/Stable-diffusion/v15PrunedEmaonly_v15PrunedEmaonly.safetensors"
+            # self.pipe = StableDiffusionPipeline.from_single_file(
+            #     self.model_id,
+            #     torch_dtype=dtype,
+            #     safety_checker=None,
+            #     scheduler = EulerAncestralDiscreteScheduler.from_pretrained(self.model_id, subfolder="scheduler")
+            #
+            # )
             self.pipe.to(device)
             self.pipe.text_encoder.to(device)
             self.pipe.unet.to(device)
@@ -68,7 +75,7 @@ class TextureModel:
         try:
             #self.pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(self.pipe.scheduler.config)
             lora_path = "models/Lora/Quake_Lora.safetensors"
-            #self.pipe.load_lora_weights(lora_path, adapter_name="quake")
+            self.pipe.load_lora_weights(lora_path, adapter_name="quake")
             self.pipe.to(self.device)
             #self.patch_conv2d_asymmetric_tiling(self.pipe.unet, tileX=True, tileY=False)
             print("Model załadowany z LoRA i tilingiem.")
@@ -107,7 +114,7 @@ class TextureModel:
         # Obsługa seeda
         seed = data_texture.get("seed", -1)
         if seed == -1:
-            seed = torch.randint(0, 2 ** 32, (1,)).item()
+            seed = random.randint(0, 2 ** 32 - 1)
 
         generator = torch.Generator(device=self.device).manual_seed(seed)
 
@@ -121,25 +128,20 @@ class TextureModel:
         steps = min(int(data_texture["steps"]), len(self.pipe.scheduler.timesteps))
         guidance_scale = float(data_texture["cfg_scale"])
 
-        guidance_scale = 5
         # temp size
-        width = 512
-        height = 512
+        # width = 64
+        # height = 64
 
         if self.device == torch.device("cuda"):
 
-            #def progress_call(self, step, timestep, latents):
-
-                #print(f"step: {step}, timestep: {timestep}, latents: {latents}")
-                # queue.put({
-                #     "status": "progress",
-                #     "step": step + 1,
-                #     "max_steps": timestep,
-                #     "type": type_texture
-                # })
             image_out = self.pipe(
-                prompt,
-                num_inference_steps=steps
+                prompt=prompt,
+                negative_prompt=negative_prompt,
+                num_inference_steps=steps,
+                guidance_scale=guidance_scale,
+                generator=generator,
+                height=height,
+                width=width
             ).images[0]
 
 
