@@ -23,7 +23,12 @@ WORKDIR /app
 # Instalacja pycairo i PyGObject osobno, ¿eby unikn¹æ problemów z binarkami
 RUN pip install --upgrade pip && \
     pip install pycairo && \
-    pip install PyGObject==3.42.2
+    pip install PyGObject==3.44.1
+
+
+# Instaluj torch i torchvision z CUDA 12.1 z oficjalnego repozytorium PyTorch
+RUN pip install --no-cache-dir torch==2.1.0+cu121 torchvision==0.16.0+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
+
 
 # Kopiuj i instaluj zale¿noœci z pliku requirements.txt
 COPY requirements.txt .

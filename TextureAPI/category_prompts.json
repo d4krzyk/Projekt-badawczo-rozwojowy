@@ -7,7 +7,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "<lora:Quake_Lora:0.9> tiled classroom floor, dusty, vintage university floor, muted color, seamless, old linoleum or stone pattern",
@@ -16,7 +17,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "<lora:Quake_Lora:0.9> wooden academic bookshelf, filled with old books, scholarly atmosphere, vintage university library, seamless texture",
@@ -25,18 +27,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Business": {
-        "wall": {
+    "wall": {
       "prompt": "<lora:Quake_Lora:0.9> sleek office paneling, modern corporate look, tile, seamless, minimal texture, glass and brushed metal feel",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "<lora:Quake_Lora:0.9> carpeted office floor, modern business interior, seamless texture, soft loop pattern, subdued tones",
@@ -45,27 +49,30 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
-      "prompt":  "<lora:Quake_Lora:0.9> contemporary bookshelf, clean lines, business books, minimalistic, tileable shelf texture",
+      "prompt": "<lora:Quake_Lora:0.9> contemporary bookshelf, clean lines, business books, minimalistic, tileable shelf texture",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Communication": {
-        "wall": {
+    "wall": {
       "prompt": "<lora:Quake_Lora:0.9> server room panels, wires, broadcast wall, old radio station, tile, seamless, subtle tech texture",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "<lora:Quake_Lora:0.9> newsroom floor, modular panels, techy look, seamless office grid floor, subtle electronic tone",
@@ -74,7 +81,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "<lora:Quake_Lora:0.9> media archive shelf, tapes and books, old broadcasting material, chaotic but structured",
@@ -83,7 +91,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Concepts": {
@@ -94,7 +103,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "height": "512",
+      "width": "512"
     },
     "floor": {
       "prompt": "",
@@ -103,7 +113,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "height": "512",
+      "width": "512"
     },
     "bookcase": {
       "prompt": "",
@@ -112,18 +123,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "height": "512",
+      "width": "512"
     }
   },
   "Culture": {
-        "wall": {
+    "wall": {
       "prompt": "<lora:Quake_Lora:0.9> cultural tapestry wall, ethnic patterns, tile, seamless, warm tones, handcrafted vibe",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "height": "512",
+      "width": "512"
     },
     "floor": {
       "prompt": "<lora:Quake_Lora:0.9> traditional ceramic tiles, cultural motifs, ancient style, handmade patterns, tileable",
@@ -132,7 +145,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "height": "512",
+      "width": "512"
     },
     "bookcase": {
       "prompt": "<lora:Quake_Lora:0.9> eclectic bookshelf, cultural artifacts, travel and history books, colorful, ornate",
@@ -141,7 +155,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "height": "512",
+      "width": "512"
     }
   },
   "Economy": {
@@ -152,7 +167,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -161,7 +177,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -170,18 +187,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Education": {
-        "wall": {
+    "wall": {
       "prompt": "<lora:Quake_Lora:0.9> school hallway wall, old posters, chalk writing traces, worn plaster, tile, seamless",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "<lora:Quake_Lora:0.9> school floor, speckled linoleum, vintage classroom, seamless texture, muted colors",
@@ -190,7 +209,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "<lora:Quake_Lora:0.9> school bookshelf, worn textbooks, open shelves, casual arrangement, tileable",
@@ -199,7 +219,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Energy": {
@@ -210,7 +231,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -219,7 +241,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -228,7 +251,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Engineering": {
@@ -239,7 +263,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -248,7 +273,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -257,7 +283,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Entertainment": {
@@ -268,7 +295,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -277,7 +305,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -286,7 +315,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Entities": {
@@ -297,7 +327,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -306,7 +337,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -315,7 +347,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Food and drink": {
@@ -326,7 +359,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -335,7 +369,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -344,7 +379,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Geography": {
@@ -355,7 +391,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -364,7 +401,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -373,7 +411,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Government": {
@@ -384,7 +423,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -393,7 +433,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -402,7 +443,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Health": {
@@ -413,7 +455,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -422,7 +465,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -431,7 +475,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "History": {
@@ -442,7 +487,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -451,7 +497,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -460,7 +507,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Human behavior": {
@@ -471,7 +519,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -480,7 +529,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -489,18 +539,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Humanities": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -509,7 +561,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -518,18 +571,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Information": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -538,7 +593,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -547,18 +603,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Internet": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -567,7 +625,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -576,18 +635,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Knowledge": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -596,7 +657,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -605,18 +667,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Language": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -625,7 +689,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -634,18 +699,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Law": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -654,7 +721,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -663,18 +731,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Life": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -683,7 +753,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -692,18 +763,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Lists": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -712,7 +785,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -721,18 +795,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Mass media": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -741,7 +817,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -750,18 +827,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Mathematics": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -770,7 +849,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -779,18 +859,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Military": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -799,7 +881,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -808,18 +891,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Nature": {
-          "wall": {
-        "prompt": "<lora:Quake_Lora:0.9> mossy stone wall, natural erosion, forest overgrowth texture, seamless, tile",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+    "wall": {
+      "prompt": "<lora:Quake_Lora:0.9> mossy stone wall, natural erosion, forest overgrowth texture, seamless, tile",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "<lora:Quake_Lora:0.9> forest floor texture, leaves, dirt, twigs, seamless, organic pattern, low resolution",
@@ -828,7 +913,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "<lora:Quake_Lora:0.9> wooden shelf overgrown with moss, books with nature motifs, rustic",
@@ -837,18 +923,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "People": {
-      "wall": {
-        "prompt": "",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+    "wall": {
+      "prompt": "",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -857,7 +945,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -866,18 +955,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Philosophy": {
-      "wall": {
-        "prompt": "",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+    "wall": {
+      "prompt": "",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -886,7 +977,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -895,18 +987,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Politics": {
-      "wall": {
-        "prompt": "",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+    "wall": {
+      "prompt": "",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -915,7 +1009,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -924,18 +1019,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Religion": {
-      "wall": {
-        "prompt": "",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+    "wall": {
+      "prompt": "",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -944,7 +1041,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -953,47 +1051,52 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Science": {
-      "wall": {
-        "prompt": "",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+    "wall": {
+      "prompt": "",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     },
     "floor": {
-        "prompt": "",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+      "prompt": "",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
-        "prompt": "",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+      "prompt": "",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     }
   },
   "Society": {
-      "wall": {
-        "prompt": "",
-        "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
-        "steps": 20,
-        "sampler": "Euler a",
-        "cfg_scale": 11,
-        "seed": -1,
-        "size": "512x512"
+    "wall": {
+      "prompt": "",
+      "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
+      "steps": 20,
+      "sampler": "Euler a",
+      "cfg_scale": 11,
+      "seed": -1,
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -1002,7 +1105,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -1011,18 +1115,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Sports": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -1031,7 +1137,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -1040,18 +1147,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Technology": {
-          "wall": {
+    "wall": {
       "prompt": "<lora:Quake_Lora:0.9> circuit panel texture, tech wall, retro sci-fi computer vibe, tile, seamless, glowing etchings",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "<lora:Quake_Lora:0.9> tech floor, steel mesh panels, modular, futuristic, tileable, grid-like layout",
@@ -1060,7 +1169,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "<lora:Quake_Lora:0.9> tech manuals shelf, schematic books, small digital devices, organized",
@@ -1069,18 +1179,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Time": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -1089,7 +1201,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -1098,18 +1211,20 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   },
   "Universe": {
-      "wall": {
+    "wall": {
       "prompt": "",
       "negative_prompt": "FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows, ambient occlusion, glossy, high contrast, photorealistic, camera, blurred, depth of field, watermark, text\n",
       "steps": 20,
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "floor": {
       "prompt": "",
@@ -1118,7 +1233,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     },
     "bookcase": {
       "prompt": "",
@@ -1127,7 +1243,8 @@
       "sampler": "Euler a",
       "cfg_scale": 11,
       "seed": -1,
-      "size": "512x512"
+      "width": 512,
+      "height": 512
     }
   }
 }
