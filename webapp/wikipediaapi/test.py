@@ -1,4 +1,5 @@
-from api_wrapper import main_category, images
+# 3rd-Party
+from api_wrapper import main_category
 
 
 def main():

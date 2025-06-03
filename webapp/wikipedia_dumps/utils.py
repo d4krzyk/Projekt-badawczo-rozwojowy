@@ -1,5 +1,8 @@
-import orjson
+# Standard Library
 import os
+
+# 3rd-Party
+import orjson
 
 
 def load_from_file(file_name):

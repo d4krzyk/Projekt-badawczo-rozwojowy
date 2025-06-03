@@ -1,8 +1,11 @@
+# Standard Library
+import re
+from urllib.parse import unquote
+from urllib.parse import urlparse
+
+# 3rd-Party
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse, unquote
-import re
-import json
 
 WIKI_BASE = "https://en.wikipedia.org"
 

@@ -1,7 +1,10 @@
-import requests
+# Standard Library
 import json
 
-subcategories_url = 'https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtype=subcat&cmlimit=100&format=json&cmtitle='
+# 3rd-Party
+import requests
+
+subcategories_url = 'https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtype=subcat&cmlimit=100&format=json&cmtitle='  # noqa :E501
 
 
 def get_subcategories(page_name: str) -> [str]:

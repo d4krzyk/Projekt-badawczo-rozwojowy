@@ -1,14 +1,15 @@
-import json
-from fastapi import APIRouter, HTTPException, Request, Query
-from pydantic import BaseModel
-from typing import List
+# 3rd-Party
+from fastapi import APIRouter
+from fastapi import Query
+from fastapi import Request
 
+# Local
 # import core extraction logic from content.py
-from .content import normalize_wikipedia_url, extract_sections_as_list
+from .content import extract_sections_as_list
+from .content import normalize_wikipedia_url
 
 router = APIRouter(prefix="/scraping", tags=["Web Scraping"])
 
-import pprint
 
 @router.post("/extract")
 def extract_endpoint(

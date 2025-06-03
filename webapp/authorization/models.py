@@ -1,5 +1,12 @@
-from sqlalchemy import Column, Integer, String, Boolean
+# 3rd-Party
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import Integer
+from sqlalchemy import String
+
+# Project
 from database.engine import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -7,6 +14,7 @@ class User(Base):
     username: str = Column(String, unique=True, nullable=True)
     email: str = Column(String, unique=True, nullable=True)
     hashed_password: str = Column(String, nullable=False)
+
 
 class APIKey(Base):
     __tablename__ = "api_keys"
