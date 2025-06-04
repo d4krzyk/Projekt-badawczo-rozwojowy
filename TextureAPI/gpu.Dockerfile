@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 # Ustaw zmienn¹ œrodowiskow¹ do X11
-ENV DISPLAY=host.docker.internal:0.0
+ARG DISPLAY_HOST=host.docker.internal:0.0
+ENV DISPLAY=$DISPLAY_HOST
 
 WORKDIR /app
 

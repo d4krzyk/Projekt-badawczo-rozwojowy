@@ -22,18 +22,19 @@ TEXTURE_TYPES = ["wall", "floor", "bookcase"]
 class PixelArtApp(Gtk.Window):
     def __init__(self, mode="cpu"):
         Gtk.Window.__init__(self, title="Pixel Art Stylizer")
+        self.gen_mode = mode
         self.generated_types = set()
         self.gen_image_bookcase = None
         self.gen_image_wall = None
         self.gen_image_floor = None
         self.progress_pulse_timeout = None
+
         self.set_border_width(10)
         self.set_default_size(500, 600)
 
         print("Starting Pixel Art App GUI Version")
 
-        self.gen_mode = mode
-        # MODEL GENEROWANIA OBRAZU
+        # PROCES MODELU GENEROWANIA OBRAZU
         self.gen_queue = Queue()
         self.control_queue = Queue()
         self.gen_process = Process(

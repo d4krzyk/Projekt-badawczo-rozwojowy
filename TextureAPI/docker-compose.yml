@@ -1,11 +1,9 @@
-version: "3.9"  # musi być 3.8+ żeby GPU działało
-
 services:
   pixelartapp:
     image: gtk-python:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: gpu.Dockerfile
     deploy:
       resources:
         reservations:
@@ -13,13 +11,14 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    runtime: nvidia  # albo environment zmienna NVIDIA_VISIBLE_DEVICES=all
-    env_file:
-      - env.txt           # tu podajesz swój plik z env
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
-      - DISPLAY=host.docker.internal:0.0  # jeśli GUI potrzebne
+      - DISPLAY=${DISPLAY:-host.docker.internal:0.0}
+    env_file:
+      - env.txt
     volumes:
-      - .:/app  # montujesz kod (opcjonalnie)
+      - .:/app:cached
+    stdin_open: true
+    tty: true
     command: python3 main.py
