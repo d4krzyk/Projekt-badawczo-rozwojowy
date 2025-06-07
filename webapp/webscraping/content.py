@@ -1,5 +1,6 @@
 # Standard Library
 import re
+from collections import deque
 from urllib.parse import unquote
 from urllib.parse import urlparse
 
@@ -11,23 +12,125 @@ WIKI_BASE = "https://en.wikipedia.org"
 
 
 def normalize_wikipedia_url(input_str):
-    if input_str.startswith("http"):
+    if input_str.startswith('http'):
         parsed = urlparse(unquote(input_str))
         path = parsed.path
-        if parsed.netloc in ["en.m.wikipedia.org", "simple.wikipedia.org", "en.wikipedia.org"]:
-            return f"{WIKI_BASE}{path}"
+        if parsed.netloc in ['en.m.wikipedia.org', 'simple.wikipedia.org', 'en.wikipedia.org']:
+            return f'{WIKI_BASE}{path}'
         else:
-            raise ValueError("Unsupported Wikipedia domain.")
+            raise ValueError('Unsupported Wikipedia domain.')
     else:
-        title = input_str.strip().replace(" ", "_")
-        return f"{WIKI_BASE}/wiki/{title}"
+        title = input_str.strip().replace(' ', '_')
+        return f'{WIKI_BASE}/wiki/{title}'
 
 
 def get_soup(url):
     response = requests.get(url)
     if response.status_code != 200:
-        raise Exception(f"Failed to load {url}")
+        raise Exception(f'Failed to load {url}')
     return BeautifulSoup(response.text, 'html.parser')
+
+
+def extract_sections_as_nested_list(article_url):
+    soup = get_soup(article_url)
+    content_div = soup.select_one('div#mw-content-text')
+    if not content_div:
+        raise Exception('Could not find article content.')
+
+    for infobox in content_div.find_all('table', class_='infobox'):
+        infobox.decompose()
+
+    for tag in content_div.find_all(['i', 'em']):
+        tag.unwrap()
+
+    skip_tags = {'table', 'style', 'script', 'noscript', 'math', 'img'}
+    skip_sections = {'See also', 'Further reading', 'External links', 'Notes', 'References'}
+
+    stack = deque()
+    root = {'level': 0, 'name': '__ROOT__', 'subsections': []}
+    stack.append(root)
+
+    intro_content = ''
+
+    def clean_text(tag):
+        for sup in tag.find_all('sup', class_='reference'):
+            sup.decompose()
+        return re.sub(r'\s{2,}', ' ', tag.get_text(separator=' ', strip=True)).strip()
+
+    started_main_content = False
+
+    for tag in content_div.descendants:
+        if not started_main_content:
+            if tag.name == 'h2':
+                started_main_content = True
+            elif tag.name == 'p':
+                text = clean_text(tag)
+                if text and len(text.split()) > 10:
+                    started_main_content = True
+                    intro_content += text + '\n\n'
+                else:
+                    continue
+            else:
+                continue
+
+        if not hasattr(tag, 'name'):
+            continue
+
+        if tag.name in ['h2', 'h3', 'h4']:
+            level = int(tag.name[1])
+            headline = tag.find('span', class_='mw-headline')
+            title = headline.text.strip() if headline else tag.get_text(strip=True)
+
+            if title in skip_sections:
+                continue
+
+            while stack and stack[-1]['level'] >= level:
+                stack.pop()
+
+            new_section = {
+                'level': level,
+                'name': title,
+                'content': '',
+                'subsections': []
+            }
+            stack[-1].setdefault('subsections', []).append(new_section)
+            stack.append(new_section)
+            continue
+
+        if tag.name in skip_tags:
+            continue
+
+        if tag.name in ['p', 'ul', 'ol'] and not tag.find_parent(
+            ['table', 'div'],
+            class_=[
+                'hatnote', 'metadata', 'ambox', 'mbox', 'tmbox', 'messagebox', 'notice',
+                'navbox', 'vertical-navbox', 'infobox', 'toc', 'mw-stack'
+            ]
+        ):
+            text = clean_text(tag)
+            if text:
+                if len(stack) == 1:
+                    intro_content += text + '\n\n'
+                else:
+                    stack[-1]['content'] += text + '\n\n'
+
+    if intro_content.strip():
+        root['subsections'].insert(0, {
+            'name': 'Introduction',
+            'content': intro_content.strip()
+        })
+
+    def strip_levels(section):
+        return {
+            'name': section['name'],
+            **({'content': section['content'].strip()}
+               if section.get('content', '').strip() else {}),
+            **({'subsections': [strip_levels(s) for s in section.get('subsections', [])]}
+               if section.get('subsections') else {})
+        }
+
+    result = [strip_levels(s) for s in root['subsections']]
+    return result
 
 
 def extract_sections_as_list(article_url):
