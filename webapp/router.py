@@ -52,9 +52,9 @@ def get_article_data(
         case "dumps":
             with request.app.state.cache as scraper:
                 first_category, link = scraper.get_first_category(article_name)
-                category = wikipedia_dumps.category.get_main_category_by_name(
-                    first_category.split("Category:")[-1], request
-                )
+            category = wikipedia_dumps.category.get_main_category_by_name(
+                first_category.split("Category:")[-1], request
+            )
         case "webscraping":
             category = None  # do zaimplementowania
         case _:
