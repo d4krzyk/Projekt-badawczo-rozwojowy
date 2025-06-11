@@ -16,8 +16,8 @@ from wikipedia_dumps.get_data import get_or_create_reversed_categories
 from wikipedia_dumps.get_data import get_or_create_title_to_id
 from wikipedia_dumps.router import router as dumps_router
 from wikipedia_dumps.utils import load_from_file
-from wikipediaapi.router import router as wikiapi_router
-
+from wikipediaapi.router import router_categories as wikiapi_categories_router
+from wikipediaapi.router import router_images as wikiapi_images_router
 
 # Lifespan
 @asynccontextmanager
@@ -42,7 +42,8 @@ app.add_middleware(DatabaseHealthMiddleware)
 # Routers
 app.include_router(database_router)
 app.include_router(auth_router)
-app.include_router(wikiapi_router)
+app.include_router(wikiapi_categories_router)
+app.include_router(wikiapi_images_router)
 app.include_router(dumps_router)
 app.include_router(scraping_router)
 
