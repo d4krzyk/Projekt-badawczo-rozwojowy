@@ -50,7 +50,8 @@ def main_category(page_name: str) -> str:
             if current in stop_list:
                 while current != categories_shortcut[current]:
                     current = categories_shortcut[current]
-                return current
+                return current.split('Category:')[-1]
+
             popped.append(current)
 
             i += 1
