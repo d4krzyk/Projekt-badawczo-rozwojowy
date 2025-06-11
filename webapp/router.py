@@ -10,15 +10,15 @@ from fastapi import Request
 from fastapi.exceptions import HTTPException
 
 # Project
-import webscraping
-import wikipediaapi
+import wikipedia_webscraping
+import wikipedia_api
 import wikipedia_dumps
 
 router = APIRouter(prefix="", tags=["Main"])
 
 # STRATEGIES = ["api", "dumps", "webscraping"]
-# STRATEGIES = ["api", "dumps"]
-STRATEGIES = ["api"]
+STRATEGIES = ["api", "dumps"]
+# STRATEGIES = ["api"]
 
 
 @router.get("/article")
@@ -34,28 +34,34 @@ def get_article_data(
     if not article:
         raise HTTPException(status_code=404, detail="Podałeś puste article")
 
-    is_name = True if not webscraping.utils.article_name_by_url(article) else False
+    is_name = (
+        True if not wikipedia_webscraping.utils.article_name_by_url(article) else False
+    )
 
     if is_name:
-        article_name = article
-        article_url = webscraping.utils.article_url_by_name(article_name)
+        article_name = article.strip()
+        article_url = wikipedia_webscraping.utils.article_url_by_name(article_name)
     else:
-        article_name = webscraping.utils.article_name_by_url(article)
+        article_name = wikipedia_webscraping.utils.article_name_by_url(article)
         article_url = article
 
     # wybór strategii
     match category_strategy:
         case "api":
-            raw = wikipediaapi.category_batching.main_category(article_name)
-        case "dumps" | "webscraping":
-            raw = None  # do zaimplementowania
+            category = wikipedia_api.category_batching.main_category(article_name)
+        case "dumps":
+            with request.app.state.cache as scraper:
+                first_category, link = scraper.get_first_category(article_name)
+                category = wikipedia_dumps.category.get_main_category_by_name(
+                    first_category.split("Category:")[-1], request
+                )
+        case "webscraping":
+            category = None  # do zaimplementowania
         case _:
             raise HTTPException(status_code=404, detail="Strategy not found")
 
-    category = raw.split("Category:")[-1] if raw else None
-
     # pobranie treści
-    content = webscraping.content.extract_sections_as_nested_list(article_url)
+    content = wikipedia_webscraping.content.extract_sections_as_nested_list(article_url)
     if not content:
         raise HTTPException(status_code=404, detail="Article not found")
 
