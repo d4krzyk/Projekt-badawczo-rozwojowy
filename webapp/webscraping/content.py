@@ -1,27 +1,10 @@
 # Standard Library
 import re
 from collections import deque
-from urllib.parse import unquote
-from urllib.parse import urlparse
 
 # 3rd-Party
 import requests
 from bs4 import BeautifulSoup
-
-WIKI_BASE = "https://en.wikipedia.org"
-
-
-def normalize_wikipedia_url(input_str):
-    if input_str.startswith('http'):
-        parsed = urlparse(unquote(input_str))
-        path = parsed.path
-        if parsed.netloc in ['en.m.wikipedia.org', 'simple.wikipedia.org', 'en.wikipedia.org']:
-            return f'{WIKI_BASE}{path}'
-        else:
-            raise ValueError('Unsupported Wikipedia domain.')
-    else:
-        title = input_str.strip().replace(' ', '_')
-        return f'{WIKI_BASE}/wiki/{title}'
 
 
 def get_soup(url):
@@ -32,7 +15,11 @@ def get_soup(url):
 
 
 def extract_sections_as_nested_list(article_url):
-    soup = get_soup(article_url)
+    try:
+        soup = get_soup(article_url)
+    except Exception:
+        return
+
     content_div = soup.select_one('div#mw-content-text')
     if not content_div:
         raise Exception('Could not find article content.')

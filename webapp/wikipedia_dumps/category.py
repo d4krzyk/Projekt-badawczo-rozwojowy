@@ -35,11 +35,13 @@ def get_main_category_by_id(category_id, category_child_to_parent: dict, id_to_t
 
 def get_main_category_by_name(
         category: str,
-        title_to_id: dict,
-        category_child_to_parent: dict,
-        id_to_title: dict
+        request,
 ) -> str:
     """Return main category based on the given category name."""
+    title_to_id = request.app.state.title_to_id
+    category_child_to_parent = request.app.state.category_child_to_parent
+    id_to_title = request.app.state.id_to_title
+
     category_name = category.replace(' ', '_').lower()
     category_id = title_to_id.get(category_name)
     return get_main_category_by_id(category_id, category_child_to_parent, id_to_title)

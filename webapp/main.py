@@ -18,14 +18,21 @@ from wikipedia_dumps.router import router as dumps_router
 from wikipedia_dumps.utils import load_from_file
 from wikipediaapi.router import router as wikiapi_router
 
+# Local
+from router import router as main_router
+
+
+ENABLE_DUMPS = False
+
 
 # Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Ładowanie danych tylko raz przy starcie."""
-    app.state.category_child_to_parent = get_or_create_reversed_categories()
-    app.state.title_to_id = get_or_create_title_to_id()
-    app.state.id_to_title = load_from_file('wikipedia_dumps/data/id_to_title_min.json')
+    if ENABLE_DUMPS:
+        app.state.category_child_to_parent = get_or_create_reversed_categories()
+        app.state.title_to_id = get_or_create_title_to_id()
+        app.state.id_to_title = load_from_file('wikipedia_dumps/data/id_to_title_min.json')
     yield
 
 
@@ -45,6 +52,7 @@ app.include_router(auth_router)
 app.include_router(wikiapi_router)
 app.include_router(dumps_router)
 app.include_router(scraping_router)
+app.include_router(main_router)
 
 
 # Default
