@@ -6,13 +6,19 @@ public class BookshelfController : MonoBehaviour
 {
     public GameObject Book;
     public GameObject Sign;
-    public void AddBook(string content)
+
+    Vector3 lastPosition = new Vector3(-0.00671065785f, 0.00317066023f, -0.000581036031f);
+
+    public void AddBook(string name, string content)
     {
         Book = Instantiate(Book, transform);
-        Book.transform.localPosition = new Vector3(-0.00671065785f, 0.00317066023f, -0.000581036031f);
+        Book.transform.localPosition = lastPosition;
         Book.transform.localRotation = new Quaternion(-0.500000715f, 0.499999225f, -0.499999315f, 0.500000834f);
         Book.transform.localScale = new Vector3(-0.0644469038f, -0.0108729266f, -0.00513079017f);
-        Book.GetComponent<BookInteraction>().content = content;
+        if(name != null)
+            Book.GetComponent<BookInteraction>().content = "# " + name + "\n";
+        Book.GetComponent<BookInteraction>().content += content;
+        lastPosition += new Vector3(0.001f, 0f, 0f);
     }
 
     public void AddSign(string name)

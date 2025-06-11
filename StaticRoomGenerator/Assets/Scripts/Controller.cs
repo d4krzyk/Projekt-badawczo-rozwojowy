@@ -1,3 +1,5 @@
+using LogicUI.FancyTextRendering;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Controller : MonoBehaviour
@@ -6,8 +8,12 @@ public class Controller : MonoBehaviour
     public float mouseSensitivity = 2f;
     public float interactDistance = 3f;
     public Transform cameraTransform;
+    public GameObject BookUI;
+    public MarkdownRenderer markdownRenderer;
 
     float xRotation = 0f;
+    bool isReading = false;
+    BookInteraction currentBook;
 
     void Start()
     {
@@ -51,6 +57,14 @@ public class Controller : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
+            if (isReading)
+            {
+                isReading = false;
+                BookUI.SetActive(false);
+                currentBook.OnInteraction();
+                return;
+            }
+
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
             {
@@ -58,8 +72,16 @@ public class Controller : MonoBehaviour
                 if (interactable != null)
                 {
                     interactable.OnInteraction();
+                    if (interactable.GetType() == typeof(BookInteraction))
+                    {
+                        currentBook = (BookInteraction) interactable;
+                        markdownRenderer.Source = currentBook.content;
+                        BookUI.SetActive(true);
+                        isReading = true;
+                    }
                 }
             }
+
         }
 
     }

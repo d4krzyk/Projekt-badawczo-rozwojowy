@@ -3,12 +3,14 @@ public class ArticleStructure
 {
     public string name;
     public string category;
-    public Paragraph[] paragraphs;
+    public string url;
+    public Sections[] sections;
 }
 
 [System.Serializable]
-public class Paragraph
+public class Sections
 {
     public string name;
     public string content;
+    public Sections[] subsections;
 }

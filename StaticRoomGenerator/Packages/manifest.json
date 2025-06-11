@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm",
     "com.unity.collab-proxy": "2.8.2",
     "com.unity.feature.development": "1.0.1",
     "com.unity.probuilder": "5.2.4",
@@ -37,7 +38,6 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0",
-    "net.gree.unity-webview": "https://github.com/gree/unity-webview.git?path=/dist/package"
+    "com.unity.modules.xr": "1.0.0"
   }
 }

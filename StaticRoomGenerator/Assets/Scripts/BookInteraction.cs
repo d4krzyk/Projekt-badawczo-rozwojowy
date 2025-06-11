@@ -6,9 +6,9 @@ public class BookInteraction : MonoBehaviour, IInteractable
 {
     public string content;
 
+
     public void OnInteraction()
     {
-        Debug.Log(content);
-        Destroy(gameObject);
+        gameObject.GetComponent<MeshRenderer>().enabled = !gameObject.GetComponent<MeshRenderer>().enabled;
     }
 }

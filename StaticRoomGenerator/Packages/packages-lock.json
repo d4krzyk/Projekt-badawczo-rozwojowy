@@ -1,5 +1,18 @@
 {
   "dependencies": {
+    "com.dbrizov.naughtyattributes": {
+      "version": "https://github.com/dbrizov/NaughtyAttributes.git#upm",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "8a8fa5a9659a6d63f196391c71e06c4286c8acd7"
+    },
+    "com.jimmycushnie.jimmysunityutilities": {
+      "version": "file:com.jimmycushnie.jimmysunityutilities",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.collab-proxy": {
       "version": "2.8.2",
       "depth": 0,
@@ -145,13 +158,6 @@
         "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.com"
-    },
-    "net.gree.unity-webview": {
-      "version": "https://github.com/gree/unity-webview.git?path=/dist/package",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "a12e2e6a53538ebe1a9a9781f7103a53dd987a55"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",
