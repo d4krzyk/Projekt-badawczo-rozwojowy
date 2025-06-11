@@ -22,7 +22,7 @@ from wikipediaapi.router import router as wikiapi_router
 from router import router as main_router
 
 
-ENABLE_DUMPS = False
+ENABLE_DUMPS = True
 
 
 # Lifespan
