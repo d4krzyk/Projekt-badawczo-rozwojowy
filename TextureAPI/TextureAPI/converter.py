@@ -8,7 +8,7 @@ def make_power_of_two(x):
         power *= 2
     return power
 
-def convert_to_pixel_art(image, type, status):
+def convert_to_pixel_art(image, type, status=None):
 
     folder = "assets/canceled" if status == "cancelled" else "assets"
     os.makedirs(folder, exist_ok=True)  # tworzy folder, jeśli nie ma
@@ -51,5 +51,6 @@ def convert_to_pixel_art(image, type, status):
     # Zapisz wynikowy obraz
     result = image.copy()
     result.save(f"{folder}/{type}.png")
+    return result
 
 

@@ -378,6 +378,8 @@ def choose_processing_mode():
 
 if __name__ == "__main__":
     # np. z jakiegoś wyboru albo argumentu
+    
+
     chosen_mode = choose_processing_mode()
     multiprocessing.set_start_method('spawn', force=True)
     app = PixelArtApp(mode=chosen_mode)

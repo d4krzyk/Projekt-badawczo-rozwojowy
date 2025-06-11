@@ -113,7 +113,7 @@ class TextureModel:
 
 
     # Generowanie obrazu jako proces
-    def generate_process(self, queue, category, type_texture , control_queue):
+    def generate_process(self, queue=None, category=None, type_texture=None, control_queue=None):
 
 
         # wybór prompta z pliku category_prompts.json na podstawie nazwy kategorii
@@ -346,4 +346,149 @@ class TextureModel:
 
         except Exception as e:
             queue.put(("error", str(e)))
+
+
+    def generate_api(self, category=None, type_texture=None):
+
+        # wybór prompta z pliku category_prompts.json na podstawie nazwy kategorii
+        data = self.prompt_data[category]
+        data_texture = data[type_texture]
+        print(data_texture)
+
+        # Obsługa seeda
+        seed = data_texture.get("seed", -1)
+        if seed == -1:
+            seed = random.randint(0, 2 ** 32 - 1)
+
+
+        # tworzenie generatora na podstawie seeda
+        generator = torch.Generator(device=self.device).manual_seed(seed)
+        print("Seed:", seed)
+        print("Generator device:", generator.device)
+
+
+        # Parametry wejściowe do prompta
+        prompt = data_texture["prompt"]
+        negative_prompt = data_texture["negative_prompt"]
+        height = int(data_texture["height"])
+        width = int(data_texture["width"])
+        steps = min(int(data_texture["steps"]), len(self.pipe.scheduler.timesteps)) # zabezpieczenie w razie wyjścia poza ilość kroków
+        guidance_scale = float(data_texture["cfg_scale"])
+
+        # temp size
+        # width = 64
+        # height = 64
+
+        # Tokenizacja promptów
+        with torch.no_grad():
+            text_input = self.pipe.tokenizer(
+                [prompt],
+                padding="max_length",
+                max_length=self.pipe.tokenizer.model_max_length,
+                truncation=True,
+                return_tensors="pt"
+            )
+            uncond_input = self.pipe.tokenizer(
+                [negative_prompt],
+                padding="max_length",
+                max_length=self.pipe.tokenizer.model_max_length,
+                truncation=True,
+                return_tensors="pt"
+            )
+
+            input_ids = text_input["input_ids"].to(self.device)
+            attention_mask = text_input.get("attention_mask", None)
+            if attention_mask is not None:
+                attention_mask = attention_mask.to(self.device)
+
+            uncond_ids = uncond_input["input_ids"].to(self.device)
+            uncond_mask = uncond_input.get("attention_mask", None)
+            if uncond_mask is not None:
+                uncond_mask = uncond_mask.to(self.device)
+
+            cond_embeddings = self.pipe.text_encoder(input_ids, attention_mask=attention_mask)[0]
+            uncond_embeddings = self.pipe.text_encoder(uncond_ids, attention_mask=uncond_mask)[0]
+            cond_embeddings = cond_embeddings.to(self.device).to(torch.float32)
+            uncond_embeddings = uncond_embeddings.to(self.device).to(torch.float32)
+            # Przygotowanie latentów
+            latents = self.pipe.prepare_latents(
+                batch_size=1,
+                num_channels_latents=self.pipe.unet.in_channels,
+                height=height,
+                width=width,
+                dtype=self.pipe.unet.dtype,
+                device=self.device,
+                generator=generator
+            )
+            self.pipe.unet.eval()
+            # Pętla kroków generowania z możliwością anulowania
+            for step in range(steps):
+
+                self.pipe.scheduler.set_timesteps(steps, device=self.device)
+                current_timestep = self.pipe.scheduler.timesteps[step]
+                print(f"Generowanie obrazu dla {type_texture}: {step}/{steps}")
+                latents_input = self.pipe.scheduler.scale_model_input(latents, timestep=current_timestep)
+
+                model_output_uncond = self.pipe.unet(
+                    latents_input,
+                    current_timestep,
+                    encoder_hidden_states=uncond_embeddings
+                ).sample
+
+                model_output_cond = self.pipe.unet(
+                    latents_input,
+                    current_timestep,
+                    encoder_hidden_states=cond_embeddings
+                ).sample
+
+                print("Latents mean/std", latents.mean().item(), latents.std().item())
+                # Check na NaNy – bo jak będą, to decode_latents rozwali się od razu
+                if torch.isnan(latents).any():
+                    print("Uwaga! Latents zawiera NaNy!")
+                    latents = latents.clamp(min=-10.0, max=10.0)
+
+                if not torch.isfinite(latents).all():
+                    print("Nieprawidłowe wartości w latentach, clampuję...")
+                    latents = torch.nan_to_num(latents, nan=0.0, posinf=1.0, neginf=0.0)
+                    latents = latents.clamp(-4.0, 4.0)
+
+                model_output = model_output_uncond + guidance_scale * (model_output_cond - model_output_uncond)
+
+                latents = self.pipe.scheduler.step(
+                    model_output,
+                    current_timestep,
+                    latents,
+                    generator=generator
+                ).prev_sample
+
+
+
+            latents = latents.detach().to(self.device).to(self.pipe.unet.dtype)
+
+
+            try:
+                image_np = self.pipe.decode_latents(latents)
+                #print("Użyto decode_latents(), shape:", image_np.shape)
+            except Exception as e:
+                print("decode_latents() failed:", e)
+                raise RuntimeError("Nie udało się zdekodować latentów")
+
+            print("check obrazu")
+            if isinstance(image_np, torch.Tensor):
+                image_np = image_np.detach().cpu().numpy()
+                print("Zmieniono tensor na numpy")
+
+
+            if image_np.ndim == 4:
+                if image_np.shape[1] in [3, 4]:  # CHW
+                    image_np = image_np[0].transpose(1, 2, 0)
+                else:  # NHWC
+                    image_np = image_np[0]
+
+
+            image_out = Image.fromarray((image_np * 255).astype("uint8")).convert("RGB")
+            # Przekaż obraz jako bajty do głównego procesu
+            buf = io.BytesIO()
+            print(">> Saving image...", flush=True)
+            return image_out
 
