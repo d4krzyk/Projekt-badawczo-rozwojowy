@@ -22,7 +22,8 @@ from wikipediaapi.router import router as wikiapi_router
 from router import router as main_router
 
 
-ENABLE_DUMPS = True
+# ENABLE_DUMPS = True
+ENABLE_DUMPS = False
 
 
 # Lifespan
@@ -32,7 +33,9 @@ async def lifespan(app: FastAPI):
     if ENABLE_DUMPS:
         app.state.category_child_to_parent = get_or_create_reversed_categories()
         app.state.title_to_id = get_or_create_title_to_id()
-        app.state.id_to_title = load_from_file('wikipedia_dumps/data/id_to_title_min.json')
+        app.state.id_to_title = load_from_file(
+            "wikipedia_dumps/data/id_to_title_min.json"
+        )
     yield
 
 
@@ -62,10 +65,9 @@ def secure(request: Request):
 
 
 @app.exception_handler(RequestValidationError)
-async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
+async def custom_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
     return JSONResponse(
-        status_code=422,
-        content={
-            "errors": [e['msg'] for e in exc.errors()]
-        }
+        status_code=422, content={"errors": [e["msg"] for e in exc.errors()]}
     )

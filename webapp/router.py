@@ -1,4 +1,5 @@
 """Main router file."""
+
 # Standard Library
 from typing import Optional
 
@@ -9,54 +10,58 @@ from fastapi import Request
 from fastapi.exceptions import HTTPException
 
 # Project
-from webscraping.content import extract_sections_as_nested_list
-from webscraping.utils import get_wikipedia_url
-from wikipediaapi.category_batching import main_category
-from wikipedia_dumps.category import get_main_category_by_name
+import webscraping
+import wikipediaapi
+import wikipedia_dumps
 
-router = APIRouter(prefix='', tags=['Main'])
+router = APIRouter(prefix="", tags=["Main"])
+
+# STRATEGIES = ["api", "dumps", "webscraping"]
+# STRATEGIES = ["api", "dumps"]
+STRATEGIES = ["api"]
 
 
-@router.get('/article')
+@router.get("/article")
 def get_article_data(
     request: Request,
-    name: Optional[str] = Query(None, description='Nazwa artykułu'),
-    url: Optional[str] = Query(None, description='URL artykułu'),
-    use_dumps: Optional[bool] = Query(True, description='Używaj wikipedia dumps'),
+    article: str | None = Query(None, description="Nazwa artykułu lub url"),
+    category_strategy: str = Query(
+        "api", enum=STRATEGIES, description="Strategia pozyskania kategorii"
+    ),
 ):
-    if name:
-        article_name = name
-        article_url = get_wikipedia_url(name)
-    elif url:
-        article_name = ''  # TODO: wyciągnąć nazwę artykułu z urla, np. przez api - lepiej tak niż przerabiać url stringa
-        article_url = get_wikipedia_url(url)
+    article = article.strip() if article and article.strip() else None
+
+    if not article:
+        raise HTTPException(status_code=404, detail="Podałeś puste article")
+
+    is_name = True if not webscraping.utils.article_name_by_url(article) else False
+
+    if is_name:
+        article_name = article
+        article_url = webscraping.utils.article_url_by_name(article_name)
     else:
-        raise HTTPException(
-            status_code=404,
-            detail='Musisz podać albo article_name, albo article_url'
-        )
+        article_name = webscraping.utils.article_name_by_url(article)
+        article_url = article
 
-    category = ''
-    if use_dumps:
-        # Pobieranie kategorii z dumpów, na podstawie pierwszej wyciągniętej kategorii z api.
-        first_category = ''  # TODO: wyciągnąć pierwszą kategorię artykułu, z api.
-        if first_category:
-            category = get_main_category_by_name(first_category, request)
+    # wybór strategii
+    match category_strategy:
+        case "api":
+            raw = wikipediaapi.category_batching.main_category(article_name)
+        case "dumps" | "webscraping":
+            raw = None  # do zaimplementowania
+        case _:
+            raise HTTPException(status_code=404, detail="Strategy not found")
 
-    if not category:
-        # Pobieranie z api, gdyby z dumpów nie było.
-        category = main_category(article_name)
-        if category:
-            category = category.split('Category:')[-1]  # usunięcie 'Category:'
-    content = extract_sections_as_nested_list(article_url)
-    if content:
-        return {
-            'name': article_name,
-            'url': article_url,
-            'category': category,
-            'content': content,
-        }
-    raise HTTPException(
-        status_code=404,
-        detail='Article not found'
-    )
+    category = raw.split("Category:")[-1] if raw else None
+
+    # pobranie treści
+    content = webscraping.content.extract_sections_as_nested_list(article_url)
+    if not content:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    return {
+        "name": article_name,
+        "url": article_url,
+        "category": category,
+        "content": content,
+    }

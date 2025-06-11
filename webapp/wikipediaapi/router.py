@@ -10,7 +10,7 @@ from . import category_batching
 from . import category_naive
 from . import category_shortcut
 
-router = APIRouter(prefix="/category-extract", tags=["Wikipedia"])
+router = APIRouter(prefix="/category-extract", tags=["Wikipedia API"])
 
 # Zakładam, że extract_categories i top_category są zaimportowane/podane wyżej
 
