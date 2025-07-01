@@ -1,10 +1,16 @@
+# Standard Library
+from typing import List
+from typing import Optional
+
+# 3rd-Party
+from sqlalchemy.exc import OperationalError
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from typing import Optional, List
-from database.engine import db_session
+
+# Project
 from authorization.service import validate_token_against_db
-from sqlalchemy.exc import OperationalError
+from database.engine import db_session
 
 EXEMPT_PATHS: List[str] = [
     "/auth/login",
@@ -18,6 +24,7 @@ EXEMPT_PATHS: List[str] = [
 EXEMPT_PREFIXES: List[str] = [
     "/database",
 ]
+
 
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):

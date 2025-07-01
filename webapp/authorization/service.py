@@ -1,9 +1,15 @@
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from passlib.hash import bcrypt
+# Standard Library
 from typing import Optional
+
+# 3rd-Party
+from passlib.hash import bcrypt
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+# Local
 from . import repository
-from .jwt_utils import create_token, validate_token
+from .jwt_utils import create_token
+
 
 def register_user(
     username: Optional[str],
@@ -25,6 +31,7 @@ def register_user(
     repository.create_api_key(db, str(user.id), token)
     return token
 
+
 def login_user(
     identifier: str,
     password: str,
@@ -39,11 +46,13 @@ def login_user(
     repository.create_api_key(db, str(user.id), token)
     return token
 
+
 def logout_user(
     user_id: str,
     db: Session
 ) -> bool:
     return repository.deactivate_api_key(db, user_id)
+
 
 def validate_token_against_db(
     token: str,

@@ -1,8 +1,11 @@
+# Standard Library
+from typing import List
+
+# 3rd-Party
+from sqlalchemy.exc import OperationalError
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from sqlalchemy.exc import OperationalError
-from typing import List
 
 EXEMPT_PATHS: List[str] = [
     "/docs",
@@ -14,6 +17,7 @@ EXEMPT_PATHS: List[str] = [
 EXEMPT_PREFIXES: List[str] = [
     "/static",
 ]
+
 
 class DatabaseHealthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -32,7 +36,6 @@ class DatabaseHealthMiddleware(BaseHTTPMiddleware):
                 status_code=500,
                 content={"detail": f"Błąd serwera: {str(e)}"}
             )
-
 
     @classmethod
     def is_exempt(cls, path: str) -> bool:

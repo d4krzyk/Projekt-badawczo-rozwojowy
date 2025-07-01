@@ -1,4 +1,6 @@
+# 3rd-Party
 from fastapi.openapi.utils import get_openapi
+
 
 def build_custom_openapi(app):
     def custom_openapi():

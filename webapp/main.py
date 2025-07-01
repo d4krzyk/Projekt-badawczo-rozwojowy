@@ -1,43 +1,42 @@
-from fastapi import FastAPI, Request
+# Standard Library
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+# 3rd-Party
+from fastapi import FastAPI
 
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
+# Project
+import wikipedia_api
+import wikipedia_webscraping
+from wikipedia_webscraping.category import CategoryScraper
+import wikipedia_dumps
 
+# Local
+from router import router as main_router
 
+# ENABLE_DUMPS = True
+ENABLE_DUMPS = True
+ENABLE_CACHE = True
 
-#OpenAPI - auth
-from authorization.openapi import build_custom_openapi
-app.openapi = build_custom_openapi(app)
+# Lifespan
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Ładowanie danych tylko raz przy starcie."""
+    if ENABLE_DUMPS:
+        app.state.category_child_to_parent = (
+            wikipedia_dumps.get_data.get_or_create_reversed_categories()
+        )
+        app.state.title_to_id = wikipedia_dumps.get_data.get_or_create_title_to_id()
+        app.state.id_to_title = wikipedia_dumps.utils.load_from_file(
+            "wikipedia_dumps/data/id_to_title_min.json"
+        )
+    if ENABLE_CACHE:
+        cache: CategoryScraper = CategoryScraper()
+        app.state.cache = cache
+    yield
 
-# Middleware
-from database.middleware import DatabaseHealthMiddleware
-from authorization.middleware import JWTAuthMiddleware
+app = FastAPI(lifespan=lifespan)
 
-app.add_middleware(DatabaseHealthMiddleware)
-app.add_middleware(JWTAuthMiddleware)
-
-
-# Routers
-from database.router import router as database_router
-from authorization.router import router as auth_router
-
-app.include_router(database_router)
-app.include_router(auth_router)
-
-# Default
-@app.get("/api/data")
-def secure(request: Request):
-    return {"msg": f"Dostęp przyznany dla użytkownika {request.state.user_id}"}
-
-
-
-@app.exception_handler(RequestValidationError)
-async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        status_code=422,
-        content={
-            "errors": [e['msg'] for e in exc.errors()]
-        }
-    )
+app.include_router(wikipedia_api.router.router)
+app.include_router(wikipedia_dumps.router.router)
+app.include_router(wikipedia_webscraping.router.router)
+app.include_router(main_router)

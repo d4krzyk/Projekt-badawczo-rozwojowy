@@ -1,10 +1,17 @@
 # Kuba Maliszewski
 scraper
+webapp/wikipedia_webscraping/html_cache/*.html
+
+# Mateusz Petkiewicz
+# These will be generated
+webapp/wikipedia_dumps/data/category_links_reversed_min.json
+webapp/wikipedia_dumps/data/title_to_id_min.json
 
 # All
 __pycache__
 postgres_data
 venv
+.idea
 
 # Unity
 /StaticRoomGenerator/[Ll]ibrary/
