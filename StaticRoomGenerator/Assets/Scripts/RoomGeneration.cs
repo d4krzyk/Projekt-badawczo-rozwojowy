@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.IO;
-using System;
+using UnityEngine.Networking;
+using System.Threading.Tasks;
 
 public class RoomGeneration : MonoBehaviour
 {
@@ -11,13 +12,44 @@ public class RoomGeneration : MonoBehaviour
     public float initialBookshelfOffset;
     public Transform initialBookshelfPosition;
 
-    public void Start()
+    async void Start()
     {
-        string path = Path.Combine(Application.streamingAssetsPath, "article2.json");
-        string json = File.ReadAllText(path);
+        string json = await GetArticleAsync("pope");
+        if (string.IsNullOrEmpty(json))
+        {
+            Debug.LogError("Failed to retrieve article data.");
+            return;
+        }
+
         ArticleStructure articleData = JsonUtility.FromJson<ArticleStructure>(json);
         GenerateRoom(articleData.sections.Length, articleData);
         Debug.Log($"Length: {articleData.sections.Length}, Category: {articleData.category}");
+    }
+
+    public async Task<string> GetArticleAsync(string article)
+    {
+        string encodedArticle = UnityWebRequest.EscapeURL(article);
+        string url = $"http://localhost/article?article={encodedArticle}&category_strategy=api";
+
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.SetRequestHeader("accept", "application/json");
+
+            var operation = request.SendWebRequest();
+
+            while (!operation.isDone)
+                await Task.Yield(); // Wait asynchronously without blocking main thread
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                return request.downloadHandler.text;
+            }
+            else
+            {
+                Debug.LogError("Request error: " + request.error);
+                return null;
+            }
+        }
     }
 
     void AddBooksFromSubsection(BookshelfController bookshelf, Sections[] sections)
@@ -83,4 +115,4 @@ public class RoomGeneration : MonoBehaviour
         offset = new Vector3(ClosingAttachment.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
         Instantiate(ClosingAttachment, lastAttachmentPoint - offset, Quaternion.identity);
     }
-} 
+}
