@@ -2,9 +2,9 @@
 public class ArticleStructure
 {
     public string name;
-    public string category;
     public string url;
-    public Sections[] sections;
+    public string category;
+    public Sections[] content;
 }
 
 [System.Serializable]

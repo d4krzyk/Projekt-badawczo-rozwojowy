@@ -22,8 +22,8 @@ public class RoomGeneration : MonoBehaviour
         }
 
         ArticleStructure articleData = JsonUtility.FromJson<ArticleStructure>(json);
-        GenerateRoom(articleData.sections.Length, articleData);
-        Debug.Log($"Length: {articleData.sections.Length}, Category: {articleData.category}");
+        GenerateRoom(articleData.content.Length, articleData);
+        Debug.Log($"Length: {articleData.content.Length}, Category: {articleData.category}");
     }
 
     public async Task<string> GetArticleAsync(string article)
@@ -81,14 +81,14 @@ public class RoomGeneration : MonoBehaviour
             BookshelfController currentBookshelfController = b.GetComponent<BookshelfController>();
             if (i < roomSize)
             {
-                currentBookshelfController.AddSign(articleData.sections[i].name);
-                if (articleData.sections[i].content != null)
+                currentBookshelfController.AddSign(articleData.content[i].name);
+                if (articleData.content[i].content != null)
                 {
-                    currentBookshelfController.AddBook(articleData.sections[i].name, articleData.sections[i].content);
+                    currentBookshelfController.AddBook(articleData.content[i].name, articleData.content[i].content);
                 }
-                if (articleData.sections[i].subsections != null)
+                if (articleData.content[i].subsections != null)
                 {
-                    AddBooksFromSubsection(currentBookshelfController, articleData.sections[i].subsections);
+                    AddBooksFromSubsection(currentBookshelfController, articleData.content[i].subsections);
                 }
             }
         }
@@ -100,14 +100,14 @@ public class RoomGeneration : MonoBehaviour
             BookshelfController currentBookshelfController = b.GetComponent<BookshelfController>();
             b.transform.position = new Vector3(b.transform.position.x, 9.135365f, b.transform.position.z);
 
-            currentBookshelfController.AddSign(articleData.sections[i + 4].name);
-            if (articleData.sections[i + 4].content != null)
+            currentBookshelfController.AddSign(articleData.content[i + 4].name);
+            if (articleData.content[i + 4].content != null)
             {
-                currentBookshelfController.AddBook(articleData.sections[i + 4].name, articleData.sections[i + 4].content);
+                currentBookshelfController.AddBook(articleData.content[i + 4].name, articleData.content[i + 4].content);
             }
-            if (articleData.sections[i + 4].subsections != null)
+            if (articleData.content[i + 4].subsections != null)
             {
-                AddBooksFromSubsection(currentBookshelfController, articleData.sections[i + 4].subsections);
+                AddBooksFromSubsection(currentBookshelfController, articleData.content[i + 4].subsections);
 
             }
             lastAttachmentPoint -= 2 * offset;
