@@ -143,19 +143,17 @@ def extract_sections_as_nested_list(article_url):
 
     result = [strip_levels(s) for s in root["subsections"]]
     return result
-
-
+  
 def extract_sections_as_list(article_url):
-    """
-    Pobiera treść artykułu z Wikipedia i zwraca słownik,
-    gdzie kluczem jest nazwa sekcji, a wartością połączone paragrafy.
-    """
+    # Pobiera treść artykułu z Wikipedia i zwraca słownik,
+    # gdzie kluczem jest nazwa sekcji, a wartością połączone paragrafy
+
     soup = get_soup(article_url)
     content_div = soup.select_one("div#mw-content-text")
     if not content_div:
         raise Exception("Could not find article content.")
 
-    # Usuń infoboxy i znaczniki formatowania
+    # Usun infoboxy i znaczniki formatowania
     for infobox in content_div.find_all("table", class_="infobox"):
         infobox.decompose()
     for tag_name in ["i", "em", "b", "strong"]:
@@ -177,8 +175,25 @@ def extract_sections_as_list(article_url):
     skip_current = False
     started = False
 
-    for tag in content_div.descendants:
-        if not hasattr(tag, "name"):
+    def clean_tag(tag):
+        # Usun odniesienia w indeksie górnym
+        for sup in tag.find_all("sup", class_="reference"):
+            sup.decompose()
+        # Konwertuj linki do Markdown
+        for a in tag.find_all("a"):
+            if a.has_attr("href"):
+                href = a["href"]
+                if href.startswith("/wiki/"):
+                    href = "https://en.wikipedia.org" + href
+                text = a.get_text(strip=True)
+                a.replace_with(f"[{text}]({href})")
+        # Wyodrebnij oczyszczony tekst
+        return re.sub(r"\s{2,}", " ", tag.get_text(separator=" ", strip=True)).strip()
+
+    # Przejrzyj wszystkie istotne tagi w kolejności dokumentu wewnątrz  zawartości diva
+    for tag in content_div.find_all(["h2", "p", "ul", "ol"], recursive=True):
+        # Pomijaj niechciane tagi i sekcje referencyjne
+        if tag.name in skip_tags:
             continue
 
         # Nagłówki h2 oznaczają nowe sekcje
@@ -190,28 +205,34 @@ def extract_sections_as_list(article_url):
             current_section = title
             skip_current = title in skip_sections
             paragraphs = []
+            started = False
             continue
 
-        # Pomijaj niechciane tagi i sekcje referencyjne
-        if skip_current or tag.name in skip_tags:
+        if skip_current:
             continue
 
         # Zbieraj paragrafy oraz listy
-        if tag.name in ["p", "ul", "ol"]:
-            text = tag.get_text(separator=" ", strip=True)
-            if not started:
-                if tag.name != "p" or not text:
-                    continue
-                started = True
+        if not started:
+            if tag.name != "p" or not tag.get_text(strip=True):
+                continue
+            started = True
 
-            # Usuń odnośniki dolne
-            for sup in tag.find_all("sup", class_="reference"):
-                sup.decompose()
-            # Oczyść tekst
-            text = re.sub(r"\[.*?\]", "", text)
-            text = re.sub(r"\s{2,}", " ", text).strip()
+        if tag.name == "p":
+            text = clean_tag(tag)
             if text:
                 paragraphs.append(text)
+
+        elif tag.name == "ul":
+            for li in tag.find_all("li", recursive=False):
+                text = clean_tag(li)
+                if text:
+                    paragraphs.append(f"- {text}")
+
+        elif tag.name == "ol":
+            for i, li in enumerate(tag.find_all("li", recursive=False), start=1):
+                text = clean_tag(li)
+                if text:
+                    paragraphs.append(f"{i}. {text}")
 
     # Dodaj ostatnią sekcję
     if paragraphs and not skip_current:
@@ -220,12 +241,11 @@ def extract_sections_as_list(article_url):
     # Spłaszcz listę sekcji do słownika
     result = {}
     for sec, paras in sections:
-        combined = " ".join(paras)
+        combined = "\n\n".join(paras)
         result[sec] = combined
 
     return result
 
-
-# Przykład użycia:
+# Przyklad uzycia:
 # data = extract_sections_as_list("https://en.wikipedia.org/wiki/Python_(programming_language)")
 # print(json.dumps(data, ensure_ascii=False, indent=2))
