@@ -11,10 +11,11 @@ public class RoomGeneration : MonoBehaviour
     public GameObject Bookshelf;
     public float initialBookshelfOffset;
     public Transform initialBookshelfPosition;
+    public string articleName;
 
     async void Start()
     {
-        string json = await GetArticleAsync("pope");
+        string json = await GetArticleAsync(articleName);
         if (string.IsNullOrEmpty(json))
         {
             Debug.LogError("Failed to retrieve article data.");

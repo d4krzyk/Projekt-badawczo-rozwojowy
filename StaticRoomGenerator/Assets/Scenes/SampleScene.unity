@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 14453668}
   - component: {fileID: 14453666}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Left Page
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -148,17 +148,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 14453664}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1721457231}
+  m_Father: {fileID: 1312706473}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.000030517578, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.16073701, y: 0.14189497}
+  m_AnchorMax: {x: 0.5, y: 0.8636849}
+  m_AnchoredPosition: {x: -1.9440002, y: 0.9476013}
+  m_SizeDelta: {x: -0.5834961, y: -0.34640503}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &14453666
 MonoBehaviour:
@@ -180,10 +180,46 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: "<u><b><size=2em>FastAPI + Alembic + Docker Compose \u2013\_Quick Start</size></b></u>\n<size=0.45em>\u200B</size>\r\n<u><b><size=1,7em>Przydatne
+    linki</size></b></u>\n<size=0.3em>\u200B</size>\r\n<size=0.76em>\u200B</size>\n<line-height=0%><width=100><align=right>\u2022</width></align>\n</line-height><indent=120><color=#1D7CEAFF><link=\"http://localhost/docs\">OpenAPI</link></color></indent>\r\n<line-height=0%><width=100><align=right>\u2022</width></align>\n</line-height><indent=120><color=#1D7CEAFF><link=\"http://localhost/redoc\">Redoc</link></color></indent>\r\n<line-height=0%><width=100><align=right>\u2022</width></align>\n</line-height><indent=120><color=#1D7CEAFF><link=\"http://localhost:5050\">pgAdmin</link></color></indent>\n<size=0.76em>\u200B</size>\r\n<u><b><size=1,7em>Najwa\u017Cniejsze
+    informacje</size></b></u>\n<size=0.3em>\u200B</size>\r\n<size=0.76em>\u200B</size>\n<line-height=0%><width=100><align=right>1.</width></align>\n</line-height><indent=120>Gdy
+    zmieniasz modele \u2013 pami\u0119taj o </indent>\n<size=0.76em>\u200B</size>\r\n```bash\r\nalembic
+    revision --autogenerate\r\nalembic upgrade head\r\n```\r\n<size=0.76em>\u200B</size>\n<line-height=0%><width=100><align=right>2.</width></align>\n</line-height><indent=120>Gdy
+    aplikacja Ci si\u0119 nie uruchamia, spr\xF3buj:</indent>\n<size=0.76em>\u200B</size>\r\n```bash\r\ndocker
+    images\r\n```\r\n```bash\r\nREPOSITORY                       TAG       IMAGE
+    ID       CREATED         SIZE\r\nprojekt-badawczo-rozwojowy-api   latest    [...]           
+    2 minutes ago   265MB\r\n```\r\n```bash\r\ndocker image rm [...]\r\ndocker compose
+    up -d\r\ndocker ps\r\n```\r\n```bash\r\nCONTAINER ID   IMAGE                           
+    COMMAND                  CREATED         STATUS         PORTS                          
+    NAMES\r\n[...]            projekt-badawczo-rozwojowy-api   \"uvicorn main:app
+    --\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:80->80/tcp              fastapi_backend\r\n1e8672e25a7f  
+    dpage/pgadmin4                   \"/entrypoint.sh\"         5 minutes ago   Up
+    5 minutes   443/tcp, 0.0.0.0:5050->80/tcp   pgadmin\r\nc3ffe92bdac8   postgres:15                     
+    \"docker-entrypoint.s\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:5432->5432/tcp         
+    postgres_db\r\n```\r\n```bash\r\ndocker exec -it [...] bash\r\nalembic upgrade
+    head\r\nexit\r\n```\r\n<size=0.76em>\u200B</size>\n<line-height=0%><width=100><align=right>3.</width></align>\n</line-height><indent=120>jak
+    chcesz zobaczy\u0107 dlaczego nie dzia\u0142a Ci aplikacja to:</indent>\n<size=0.76em>\u200B</size>\r\n```bash\r\ndocker
+    ps\r\n```\r\n```bash\r\nCONTAINER ID   IMAGE                            COMMAND                 
+    CREATED         STATUS         PORTS                           NAMES\r\n[...]           
+    projekt-badawczo-rozwojowy-api   \"uvicorn main:app --\u2026\"   5 minutes ago  
+    Up 5 minutes   0.0.0.0:80->80/tcp              fastapi_backend\r\n1e8672e25a7f  
+    dpage/pgadmin4                   \"/entrypoint.sh\"         5 minutes ago   Up
+    5 minutes   443/tcp, 0.0.0.0:5050->80/tcp   pgadmin\r\nc3ffe92bdac8   postgres:15                     
+    \"docker-entrypoint.s\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:5432->5432/tcp         
+    postgres_db\r\n```\r\n```bash\r\ndocker logs -f [...]\r\n<u><b><size=1,7em>```</size></b></u>\n<size=0.3em>\u200B</size>\r\n<u><b><size=1,7em>1.
+    Uruchomienie \u015Brodowiska</size></b></u>\n<size=0.3em>\u200B</size>\r\n```bash\r\ndocker
+    compose up -d\r\n```\r\n> Uruchomi aplikacj\u0119 (FastAPI) i baz\u0119 danych
+    (PostgreSQL) w trybie detached.\r\n\r\n```bash\r\ndocker compose down\r\n```\r\n>
+    Wy\u0142\u0105czy kontenery\r\n\r\n<u><b><size=1,7em>2. Tworzenie migracji (Alembic)</size></b></u>\n<size=0.3em>\u200B</size>\r\n<b>Dodaj
+    nowe migracje automatycznie na podstawie zmian w modelach:</b>\r\n```bash\r\nalembic
+    revision --autogenerate -m \"Opis migracji\"\r\n```\r\n\r\n<u><b><size=1,7em>3.
+    Wykonywanie migracji (upgrade)</size></b></u>\n<size=0.3em>\u200B</size>\r\n<b>Zaktualizuj
+    baz\u0119 do najnowszego schematu:</b>\r\n```bash\r\nalembic upgrade head\r\n```\r\n\r\n<u><b><size=1,7em>4.
+    Przywracanie do poprzedniej migracji (downgrade)</size></b></u>\n<size=0.3em>\u200B</size>\r\n<b>Przywr\xF3\u0107
+    baz\u0119 do poprzedniej wersji:</b>\r\n```bash\r\nalembic downgrade -1\r\n```\r\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
+  m_sharedMaterial: {fileID: 1708306230045072050, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -207,11 +243,11 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25
-  m_fontSizeBase: 25
+  m_fontSize: 16
+  m_fontSizeBase: 16
   m_fontWeight: 400
   m_enableAutoSizing: 0
-  m_fontSizeMin: 18
+  m_fontSizeMin: 12
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 8
@@ -225,7 +261,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
+  m_overflowMode: 5
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
@@ -269,7 +305,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcb87846e43a704469d9be7ef4faa09a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Source: 
+  _Source: "# FastAPI + Alembic + Docker Compose \u2013\_Quick Start\r\n\r\n\r\n##
+    Przydatne linki\r\n\r\n- [OpenAPI](http://localhost/docs)\r\n- [Redoc](http://localhost/redoc)\r\n-
+    [pgAdmin](http://localhost:5050)\r\n\r\n## Najwa\u017Cniejsze informacje\r\n1.
+    Gdy zmieniasz modele \u2013 pami\u0119taj o \r\n```bash\r\nalembic revision --autogenerate\r\nalembic
+    upgrade head\r\n```\r\n\r\n2. Gdy aplikacja Ci si\u0119 nie uruchamia, spr\xF3buj:\r\n```bash\r\ndocker
+    images\r\n```\r\n```bash\r\nREPOSITORY                       TAG       IMAGE
+    ID       CREATED         SIZE\r\nprojekt-badawczo-rozwojowy-api   latest    [...]           
+    2 minutes ago   265MB\r\n```\r\n```bash\r\ndocker image rm [...]\r\ndocker compose
+    up -d\r\ndocker ps\r\n```\r\n```bash\r\nCONTAINER ID   IMAGE                           
+    COMMAND                  CREATED         STATUS         PORTS                          
+    NAMES\r\n[...]            projekt-badawczo-rozwojowy-api   \"uvicorn main:app
+    --\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:80->80/tcp              fastapi_backend\r\n1e8672e25a7f  
+    dpage/pgadmin4                   \"/entrypoint.sh\"         5 minutes ago   Up
+    5 minutes   443/tcp, 0.0.0.0:5050->80/tcp   pgadmin\r\nc3ffe92bdac8   postgres:15                     
+    \"docker-entrypoint.s\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:5432->5432/tcp         
+    postgres_db\r\n```\r\n```bash\r\ndocker exec -it [...] bash\r\nalembic upgrade
+    head\r\nexit\r\n```\r\n3. jak chcesz zobaczy\u0107 dlaczego nie dzia\u0142a Ci
+    aplikacja to:\r\n```bash\r\ndocker ps\r\n```\r\n```bash\r\nCONTAINER ID   IMAGE                           
+    COMMAND                  CREATED         STATUS         PORTS                          
+    NAMES\r\n[...]            projekt-badawczo-rozwojowy-api   \"uvicorn main:app
+    --\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:80->80/tcp              fastapi_backend\r\n1e8672e25a7f  
+    dpage/pgadmin4                   \"/entrypoint.sh\"         5 minutes ago   Up
+    5 minutes   443/tcp, 0.0.0.0:5050->80/tcp   pgadmin\r\nc3ffe92bdac8   postgres:15                     
+    \"docker-entrypoint.s\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:5432->5432/tcp         
+    postgres_db\r\n```\r\n```bash\r\ndocker logs -f [...]\r\n```\r\n---\r\n\r\n##
+    1. Uruchomienie \u015Brodowiska\r\n\r\n```bash\r\ndocker compose up -d\r\n```\r\n>
+    Uruchomi aplikacj\u0119 (FastAPI) i baz\u0119 danych (PostgreSQL) w trybie detached.\r\n\r\n```bash\r\ndocker
+    compose down\r\n```\r\n> Wy\u0142\u0105czy kontenery\r\n\r\n## 2. Tworzenie migracji
+    (Alembic)\r\n\r\n**Dodaj nowe migracje automatycznie na podstawie zmian w modelach:**\r\n```bash\r\nalembic
+    revision --autogenerate -m \"Opis migracji\"\r\n```\r\n\r\n## 3. Wykonywanie
+    migracji (upgrade)\r\n\r\n**Zaktualizuj baz\u0119 do najnowszego schematu:**\r\n```bash\r\nalembic
+    upgrade head\r\n```\r\n\r\n## 4. Przywracanie do poprzedniej migracji (downgrade)\r\n\r\n**Przywr\xF3\u0107
+    baz\u0119 do poprzedniej wersji:**\r\n```bash\r\nalembic downgrade -1\r\n```"
   RenderSettings:
     Bold:
       RenderBold: 1
@@ -2259,6 +2327,7 @@ MonoBehaviour:
   Bookshelf: {fileID: 1537219924020533126, guid: f4460a1fbbdd0e84eade35fec06ece12, type: 3}
   initialBookshelfOffset: -3
   initialBookshelfPosition: {fileID: 135389620}
+  articleName: pope
 --- !u!4 &120344752
 Transform:
   m_ObjectHideFlags: 0
@@ -2773,7 +2842,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1899608623}
-  - {fileID: 1721457231}
+  - {fileID: 1312706473}
+  - {fileID: 1033771091}
+  - {fileID: 1827720264}
   m_Father: {fileID: 1370015334}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3426,7 +3497,9 @@ MonoBehaviour:
   interactDistance: 3
   cameraTransform: {fileID: 963194228}
   BookUI: {fileID: 509049445}
-  markdownRenderer: {fileID: 14453668}
+  leftPage: {fileID: 14453668}
+  rightPage: {fileID: 974258906}
+  bookController: {fileID: 1312706476}
 --- !u!54 &621679089
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4216,6 +4289,384 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &974258903
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 974258904}
+  - component: {fileID: 974258907}
+  - component: {fileID: 974258906}
+  - component: {fileID: 974258905}
+  m_Layer: 5
+  m_Name: Right Page
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &974258904
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 974258903}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1312706473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.537263, y: 0.14189497}
+  m_AnchorMax: {x: 0.87969726, y: 0.8636849}
+  m_AnchoredPosition: {x: 0.5, y: 0.9476013}
+  m_SizeDelta: {x: -2.583496, y: -0.34640503}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &974258905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 974258903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: "<u><b><size=2em>FastAPI + Alembic + Docker Compose \u2013\_Quick Start</size></b></u>\n<size=0.45em>\u200B</size>\r\n<u><b><size=1,7em>Przydatne
+    linki</size></b></u>\n<size=0.3em>\u200B</size>\r\n<size=0.76em>\u200B</size>\n<line-height=0%><width=100><align=right>\u2022</width></align>\n</line-height><indent=120><color=#1D7CEAFF><link=\"http://localhost/docs\">OpenAPI</link></color></indent>\r\n<line-height=0%><width=100><align=right>\u2022</width></align>\n</line-height><indent=120><color=#1D7CEAFF><link=\"http://localhost/redoc\">Redoc</link></color></indent>\r\n<line-height=0%><width=100><align=right>\u2022</width></align>\n</line-height><indent=120><color=#1D7CEAFF><link=\"http://localhost:5050\">pgAdmin</link></color></indent>\n<size=0.76em>\u200B</size>\r\n<u><b><size=1,7em>Najwa\u017Cniejsze
+    informacje</size></b></u>\n<size=0.3em>\u200B</size>\r\n<size=0.76em>\u200B</size>\n<line-height=0%><width=100><align=right>1.</width></align>\n</line-height><indent=120>Gdy
+    zmieniasz modele \u2013 pami\u0119taj o </indent>\n<size=0.76em>\u200B</size>\r\n```bash\r\nalembic
+    revision --autogenerate\r\nalembic upgrade head\r\n```\r\n<size=0.76em>\u200B</size>\n<line-height=0%><width=100><align=right>2.</width></align>\n</line-height><indent=120>Gdy
+    aplikacja Ci si\u0119 nie uruchamia, spr\xF3buj:</indent>\n<size=0.76em>\u200B</size>\r\n```bash\r\ndocker
+    images\r\n```\r\n```bash\r\nREPOSITORY                       TAG       IMAGE
+    ID       CREATED         SIZE\r\nprojekt-badawczo-rozwojowy-api   latest    [...]           
+    2 minutes ago   265MB\r\n```\r\n```bash\r\ndocker image rm [...]\r\ndocker compose
+    up -d\r\ndocker ps\r\n```\r\n```bash\r\nCONTAINER ID   IMAGE                           
+    COMMAND                  CREATED         STATUS         PORTS                          
+    NAMES\r\n[...]            projekt-badawczo-rozwojowy-api   \"uvicorn main:app
+    --\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:80->80/tcp              fastapi_backend\r\n1e8672e25a7f  
+    dpage/pgadmin4                   \"/entrypoint.sh\"         5 minutes ago   Up
+    5 minutes   443/tcp, 0.0.0.0:5050->80/tcp   pgadmin\r\nc3ffe92bdac8   postgres:15                     
+    \"docker-entrypoint.s\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:5432->5432/tcp         
+    postgres_db\r\n```\r\n```bash\r\ndocker exec -it [...] bash\r\nalembic upgrade
+    head\r\nexit\r\n```\r\n<size=0.76em>\u200B</size>\n<line-height=0%><width=100><align=right>3.</width></align>\n</line-height><indent=120>jak
+    chcesz zobaczy\u0107 dlaczego nie dzia\u0142a Ci aplikacja to:</indent>\n<size=0.76em>\u200B</size>\r\n```bash\r\ndocker
+    ps\r\n```\r\n```bash\r\nCONTAINER ID   IMAGE                            COMMAND                 
+    CREATED         STATUS         PORTS                           NAMES\r\n[...]           
+    projekt-badawczo-rozwojowy-api   \"uvicorn main:app --\u2026\"   5 minutes ago  
+    Up 5 minutes   0.0.0.0:80->80/tcp              fastapi_backend\r\n1e8672e25a7f  
+    dpage/pgadmin4                   \"/entrypoint.sh\"         5 minutes ago   Up
+    5 minutes   443/tcp, 0.0.0.0:5050->80/tcp   pgadmin\r\nc3ffe92bdac8   postgres:15                     
+    \"docker-entrypoint.s\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:5432->5432/tcp         
+    postgres_db\r\n```\r\n```bash\r\ndocker logs -f [...]\r\n<u><b><size=1,7em>```</size></b></u>\n<size=0.3em>\u200B</size>\r\n<u><b><size=1,7em>1.
+    Uruchomienie \u015Brodowiska</size></b></u>\n<size=0.3em>\u200B</size>\r\n```bash\r\ndocker
+    compose up -d\r\n```\r\n> Uruchomi aplikacj\u0119 (FastAPI) i baz\u0119 danych
+    (PostgreSQL) w trybie detached.\r\n\r\n```bash\r\ndocker compose down\r\n```\r\n>
+    Wy\u0142\u0105czy kontenery\r\n\r\n<u><b><size=1,7em>2. Tworzenie migracji (Alembic)</size></b></u>\n<size=0.3em>\u200B</size>\r\n<b>Dodaj
+    nowe migracje automatycznie na podstawie zmian w modelach:</b>\r\n```bash\r\nalembic
+    revision --autogenerate -m \"Opis migracji\"\r\n```\r\n\r\n<u><b><size=1,7em>3.
+    Wykonywanie migracji (upgrade)</size></b></u>\n<size=0.3em>\u200B</size>\r\n<b>Zaktualizuj
+    baz\u0119 do najnowszego schematu:</b>\r\n```bash\r\nalembic upgrade head\r\n```\r\n\r\n<u><b><size=1,7em>4.
+    Przywracanie do poprzedniej migracji (downgrade)</size></b></u>\n<size=0.3em>\u200B</size>\r\n<b>Przywr\xF3\u0107
+    baz\u0119 do poprzedniej wersji:</b>\r\n```bash\r\nalembic downgrade -1\r\n```\r\n"
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
+  m_sharedMaterial: {fileID: 1708306230045072050, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 16
+  m_fontSizeBase: 16
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 8
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 5
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 2
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &974258906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 974258903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb87846e43a704469d9be7ef4faa09a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _Source: "# FastAPI + Alembic + Docker Compose \u2013\_Quick Start\r\n\r\n\r\n##
+    Przydatne linki\r\n\r\n- [OpenAPI](http://localhost/docs)\r\n- [Redoc](http://localhost/redoc)\r\n-
+    [pgAdmin](http://localhost:5050)\r\n\r\n## Najwa\u017Cniejsze informacje\r\n1.
+    Gdy zmieniasz modele \u2013 pami\u0119taj o \r\n```bash\r\nalembic revision --autogenerate\r\nalembic
+    upgrade head\r\n```\r\n\r\n2. Gdy aplikacja Ci si\u0119 nie uruchamia, spr\xF3buj:\r\n```bash\r\ndocker
+    images\r\n```\r\n```bash\r\nREPOSITORY                       TAG       IMAGE
+    ID       CREATED         SIZE\r\nprojekt-badawczo-rozwojowy-api   latest    [...]           
+    2 minutes ago   265MB\r\n```\r\n```bash\r\ndocker image rm [...]\r\ndocker compose
+    up -d\r\ndocker ps\r\n```\r\n```bash\r\nCONTAINER ID   IMAGE                           
+    COMMAND                  CREATED         STATUS         PORTS                          
+    NAMES\r\n[...]            projekt-badawczo-rozwojowy-api   \"uvicorn main:app
+    --\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:80->80/tcp              fastapi_backend\r\n1e8672e25a7f  
+    dpage/pgadmin4                   \"/entrypoint.sh\"         5 minutes ago   Up
+    5 minutes   443/tcp, 0.0.0.0:5050->80/tcp   pgadmin\r\nc3ffe92bdac8   postgres:15                     
+    \"docker-entrypoint.s\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:5432->5432/tcp         
+    postgres_db\r\n```\r\n```bash\r\ndocker exec -it [...] bash\r\nalembic upgrade
+    head\r\nexit\r\n```\r\n3. jak chcesz zobaczy\u0107 dlaczego nie dzia\u0142a Ci
+    aplikacja to:\r\n```bash\r\ndocker ps\r\n```\r\n```bash\r\nCONTAINER ID   IMAGE                           
+    COMMAND                  CREATED         STATUS         PORTS                          
+    NAMES\r\n[...]            projekt-badawczo-rozwojowy-api   \"uvicorn main:app
+    --\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:80->80/tcp              fastapi_backend\r\n1e8672e25a7f  
+    dpage/pgadmin4                   \"/entrypoint.sh\"         5 minutes ago   Up
+    5 minutes   443/tcp, 0.0.0.0:5050->80/tcp   pgadmin\r\nc3ffe92bdac8   postgres:15                     
+    \"docker-entrypoint.s\u2026\"   5 minutes ago   Up 5 minutes   0.0.0.0:5432->5432/tcp         
+    postgres_db\r\n```\r\n```bash\r\ndocker logs -f [...]\r\n```\r\n---\r\n\r\n##
+    1. Uruchomienie \u015Brodowiska\r\n\r\n```bash\r\ndocker compose up -d\r\n```\r\n>
+    Uruchomi aplikacj\u0119 (FastAPI) i baz\u0119 danych (PostgreSQL) w trybie detached.\r\n\r\n```bash\r\ndocker
+    compose down\r\n```\r\n> Wy\u0142\u0105czy kontenery\r\n\r\n## 2. Tworzenie migracji
+    (Alembic)\r\n\r\n**Dodaj nowe migracje automatycznie na podstawie zmian w modelach:**\r\n```bash\r\nalembic
+    revision --autogenerate -m \"Opis migracji\"\r\n```\r\n\r\n## 3. Wykonywanie
+    migracji (upgrade)\r\n\r\n**Zaktualizuj baz\u0119 do najnowszego schematu:**\r\n```bash\r\nalembic
+    upgrade head\r\n```\r\n\r\n## 4. Przywracanie do poprzedniej migracji (downgrade)\r\n\r\n**Przywr\xF3\u0107
+    baz\u0119 do poprzedniej wersji:**\r\n```bash\r\nalembic downgrade -1\r\n```"
+  RenderSettings:
+    Bold:
+      RenderBold: 1
+    Italics:
+      RenderItalics: 1
+    Strikethrough:
+      RenderStrikethrough: 1
+    Monospace:
+      RenderMonospace: 1
+      UseCustomFont: 1
+      FontAssetPathRelativeToResources: Noto/Noto Mono/NotoMono-Regular
+      DrawOverlay: 1
+      OverlayColor: {r: 0, g: 0, b: 0, a: 0.23529412}
+      OverlayPaddingPixels: 25
+      ManuallySetCharacterSpacing: 0
+      CharacterSpacing: 0.69
+      AddSeparationSpacing: 1
+      SeparationSpacing: 0.3
+    Lists:
+      RenderUnorderedLists: 1
+      RenderOrderedLists: 1
+      UnorderedListBullet: "\u2022"
+      OrderedListNumberSuffix: .
+      VerticalOffset: 0.76
+      BulletOffsetPixels: 100
+      ContentSeparationPixels: 20
+    Links:
+      RenderLinks: 1
+      RenderAutoLinks: 1
+      LinkColor: {r: 0.11372549, g: 0.4862745, b: 0.91764706, a: 1}
+    Headers:
+      RenderPoundSignHeaders: 1
+      RenderLineHeaders: 1
+      Levels:
+      - Size: 2
+        Bold: 1
+        Underline: 1
+        Case: 0
+        VerticalSpacing: 0.45
+      - Size: 1.7
+        Bold: 1
+        Underline: 1
+        Case: 0
+        VerticalSpacing: 0.3
+      - Size: 1.5
+        Bold: 1
+        Underline: 0
+        Case: 0
+        VerticalSpacing: 0
+      - Size: 1.3
+        Bold: 1
+        Underline: 0
+        Case: 0
+        VerticalSpacing: 0
+    Superscript:
+      RenderSuperscript: 0
+      RenderChainSuperscript: 1
+--- !u!222 &974258907
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 974258903}
+  m_CullTransparentMesh: 1
+--- !u!1 &1033771090
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1033771091}
+  - component: {fileID: 1033771094}
+  - component: {fileID: 1033771093}
+  - component: {fileID: 1033771092}
+  m_Layer: 5
+  m_Name: Previous Page
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1033771091
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033771090}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 509049446}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.2105553, y: 0.07189521}
+  m_AnchorMax: {x: 0.5, y: 0.90700006}
+  m_AnchoredPosition: {x: -0.02368164, y: 2.1221008}
+  m_SizeDelta: {x: 0.0473938, y: -1.7970886}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1033771092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033771090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1312706476}
+          m_TargetAssemblyTypeName: BookController, Assembly-CSharp
+          m_MethodName: PreviousPage
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &1033771093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033771090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0, b: 0, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1033771094
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033771090}
+  m_CullTransparentMesh: 1
 --- !u!1 &1265772524
 GameObject:
   m_ObjectHideFlags: 0
@@ -4449,6 +4900,98 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &1312706472
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1312706473}
+  - component: {fileID: 1312706475}
+  - component: {fileID: 1312706474}
+  - component: {fileID: 1312706476}
+  m_Layer: 5
+  m_Name: Book
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1312706473
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1312706472}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 14453665}
+  - {fileID: 974258904}
+  m_Father: {fileID: 509049446}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.156, y: 0.07189521}
+  m_AnchorMax: {x: 0.846, y: 1}
+  m_AnchoredPosition: {x: -1, y: 0.22399902}
+  m_SizeDelta: {x: 0.32421875, y: 0.5510254}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1312706474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1312706472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 833e71a703b89324e8cea3b4d3d5ca44, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1312706475
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1312706472}
+  m_CullTransparentMesh: 1
+--- !u!114 &1312706476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1312706472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78388225f43989f4dbf84961448754bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftPage: {fileID: 14453666}
+  rightPage: {fileID: 974258905}
 --- !u!1 &1339236623
 GameObject:
   m_ObjectHideFlags: 0
@@ -7438,7 +7981,7 @@ Mesh:
     offset: 0
     size: 0
     path: 
---- !u!1 &1721457230
+--- !u!1 &1827720263
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7446,58 +7989,58 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1721457231}
-  - component: {fileID: 1721457233}
-  - component: {fileID: 1721457232}
+  - component: {fileID: 1827720264}
+  - component: {fileID: 1827720266}
+  - component: {fileID: 1827720265}
+  - component: {fileID: 1827720267}
   m_Layer: 5
-  m_Name: BookPaper
+  m_Name: Next Page
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &1721457231
+--- !u!224 &1827720264
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1721457230}
+  m_GameObject: {fileID: 1827720263}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 14453665}
+  m_Children: []
   m_Father: {fileID: 509049446}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.27600002, y: 0.02540107}
-  m_AnchorMax: {x: 0.72400004, y: 0.9747683}
-  m_AnchoredPosition: {x: -0.5, y: 0.5}
-  m_SizeDelta: {x: 1, y: -1}
+  m_AnchorMin: {x: 0.51077765, y: 0.07189521}
+  m_AnchorMax: {x: 0.79837066, y: 0.90700006}
+  m_AnchoredPosition: {x: -1, y: 1.6221008}
+  m_SizeDelta: {x: 2.0473938, y: -2.7970886}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1721457232
+--- !u!114 &1827720265
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1721457230}
+  m_GameObject: {fileID: 1827720263}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 0}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -7506,75 +8049,43 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1721457233
+--- !u!222 &1827720266
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1721457230}
+  m_GameObject: {fileID: 1827720263}
   m_CullTransparentMesh: 1
---- !u!1001 &1774157484
-PrefabInstance:
+--- !u!114 &1827720267
+MonoBehaviour:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 47.747894
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 31.560131
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-      propertyPath: m_Name
-      value: wiki-Rooms
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 4917691973172092808, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-    - {fileID: -5187485738028934166, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-    - {fileID: 4950656183794520379, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-    - {fileID: -7982962624467141728, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 54b2b0fb08bd70b47ac1e36645641980, type: 3}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1827720263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1312706476}
+          m_TargetAssemblyTypeName: BookController, Assembly-CSharp
+          m_MethodName: NextPage
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &1899608622
 GameObject:
   m_ObjectHideFlags: 0
@@ -7600,7 +8111,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1899608622}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -7625,14 +8136,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.33962262, g: 0.33962262, b: 0.33962262, a: 0.30588236}
+  m_Color: {r: 0.118903525, g: 0.11944088, b: 0.1509434, a: 0.72156864}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8090,7 +8601,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 705507995}
-  - {fileID: 1774157484}
   - {fileID: 828299209}
   - {fileID: 1457969522}
   - {fileID: 120344752}

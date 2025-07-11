@@ -1,5 +1,4 @@
 using LogicUI.FancyTextRendering;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Controller : MonoBehaviour
@@ -9,7 +8,9 @@ public class Controller : MonoBehaviour
     public float interactDistance = 3f;
     public Transform cameraTransform;
     public GameObject BookUI;
-    public MarkdownRenderer markdownRenderer;
+    public MarkdownRenderer leftPage;
+    public MarkdownRenderer rightPage;
+    public BookController bookController;
 
     float xRotation = 0f;
     bool isReading = false;
@@ -62,6 +63,8 @@ public class Controller : MonoBehaviour
                 isReading = false;
                 BookUI.SetActive(false);
                 currentBook.OnInteraction();
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
                 return;
             }
 
@@ -74,10 +77,14 @@ public class Controller : MonoBehaviour
                     interactable.OnInteraction();
                     if (interactable.GetType() == typeof(BookInteraction))
                     {
-                        currentBook = (BookInteraction) interactable;
-                        markdownRenderer.Source = currentBook.content;
+                        currentBook = (BookInteraction)interactable;
+                        leftPage.Source = currentBook.content;
+                        rightPage.Source = currentBook.content;
                         BookUI.SetActive(true);
+                        bookController.ResetPages();
                         isReading = true;
+                        Cursor.lockState = CursorLockMode.None;
+                        Cursor.visible = true;
                     }
                 }
             }
