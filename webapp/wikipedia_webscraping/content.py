@@ -60,7 +60,7 @@ def extract_sections_as_nested_list(article_url):
                 text = clean_text(tag)
                 if text and len(text.split()) > 10:
                     started_main_content = True
-                    intro_content += text + "\n\n"
+                    intro_content += text + "<br>"
                 else:
                     continue
             else:
@@ -113,9 +113,9 @@ def extract_sections_as_nested_list(article_url):
             text = clean_text(tag)
             if text:
                 if len(stack) == 1:
-                    intro_content += text + "\n\n"
+                    intro_content += text + "<br>"
                 else:
-                    stack[-1]["content"] += text + "\n\n"
+                    stack[-1]["content"] += text + "<br>"
 
     if intro_content.strip():
         root["subsections"].insert(
@@ -241,11 +241,12 @@ def extract_sections_as_list(article_url):
     # Spłaszcz listę sekcji do słownika
     result = {}
     for sec, paras in sections:
-        combined = "\n\n".join(paras)
+        combined = "<br>".join(paras)
         result[sec] = combined
 
     return result
 
 # Przyklad uzycia:
+# import json
 # data = extract_sections_as_list("https://en.wikipedia.org/wiki/Python_(programming_language)")
 # print(json.dumps(data, ensure_ascii=False, indent=2))
