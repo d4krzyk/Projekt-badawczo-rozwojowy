@@ -19,8 +19,8 @@ public class Controller : MonoBehaviour
     void Start()
     {
         // Lock cursor to the game window
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.visible = false;
     }
 
     void Update()

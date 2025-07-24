@@ -13,20 +13,6 @@ public class RoomGeneration : MonoBehaviour
     public Transform initialBookshelfPosition;
     public string articleName;
 
-    async void Start()
-    {
-        string json = await GetArticleAsync(articleName);
-        if (string.IsNullOrEmpty(json))
-        {
-            Debug.LogError("Failed to retrieve article data.");
-            return;
-        }
-
-        ArticleStructure articleData = JsonUtility.FromJson<ArticleStructure>(json);
-        GenerateRoom(articleData.content.Length, articleData);
-        Debug.Log($"Length: {articleData.content.Length}, Category: {articleData.category}");
-    }
-
     public async Task<string> GetArticleAsync(string article)
     {
         string encodedArticle = UnityWebRequest.EscapeURL(article);
@@ -69,16 +55,24 @@ public class RoomGeneration : MonoBehaviour
     }
 
 
-    public void GenerateRoom(int roomSize, ArticleStructure articleData)
+    public async void GenerateRoom(string articleName)
     {
-        var a = Instantiate(BookshelfAttachment);
+        string json = await GetArticleAsync(articleName);
+        if (string.IsNullOrEmpty(json))
+        {
+            Debug.LogError("Failed to retrieve article data.");
+            return;
+        }
+        ArticleStructure articleData = JsonUtility.FromJson<ArticleStructure>(json);
+        int roomSize = articleData.content.Length;
+        var a = Instantiate(BookshelfAttachment, gameObject.transform);
 
         Vector3 lastAttachmentPoint = AttachmentPoint.position;
         Vector3 offset = new Vector3(a.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
         DestroyImmediate(a, true);
         for (int i = 0; i < 4; i++)
         {
-            GameObject b = Instantiate(Bookshelf, initialBookshelfPosition.position + new Vector3(initialBookshelfOffset * i, 0, 0), Quaternion.Euler(new Vector3(-90, 0, 270)));
+            GameObject b = Instantiate(Bookshelf, initialBookshelfPosition.position + new Vector3(initialBookshelfOffset * i, 0, 0), Quaternion.Euler(new Vector3(-90, 0, 270)), transform);
             BookshelfController currentBookshelfController = b.GetComponent<BookshelfController>();
             if (i < roomSize)
             {
@@ -96,8 +90,8 @@ public class RoomGeneration : MonoBehaviour
 
         for (int i = 0; i < roomSize - 4; i++)
         {
-            Instantiate(BookshelfAttachment, lastAttachmentPoint - offset, Quaternion.identity);
-            GameObject b = Instantiate(Bookshelf, lastAttachmentPoint - offset, Quaternion.Euler(new Vector3(-90, 0, 270)));
+            Instantiate(BookshelfAttachment, lastAttachmentPoint - offset, Quaternion.identity, transform);
+            GameObject b = Instantiate(Bookshelf, lastAttachmentPoint - offset, Quaternion.Euler(new Vector3(-90, 0, 270)), transform);
             BookshelfController currentBookshelfController = b.GetComponent<BookshelfController>();
             b.transform.position = new Vector3(b.transform.position.x, 9.135365f, b.transform.position.z);
 
@@ -114,6 +108,14 @@ public class RoomGeneration : MonoBehaviour
             lastAttachmentPoint -= 2 * offset;
         }
         offset = new Vector3(ClosingAttachment.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
-        Instantiate(ClosingAttachment, lastAttachmentPoint - offset, Quaternion.identity);
+        Instantiate(ClosingAttachment, lastAttachmentPoint - offset, Quaternion.identity, transform);
+    }
+
+    public void ResetRoom()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }
