@@ -11,9 +11,10 @@ from . import category_naive
 from . import category_shortcut
 from . import images
 
-router_categories = APIRouter(prefix="/category-extract", tags=["Wikipedia"])
+router_categories = APIRouter(prefix="/category-extract", tags=["Wikipedia API"])
 router_images = APIRouter(prefix="/images", tags=["Wikipedia"])
 
+# Zakładam, że extract_categories i top_category są zaimportowane/podane wyżej
 
 @router_categories.get("/naive")
 def get_top_category_naive(page_name: str = Query(..., description="Nazwa strony Wikipedia")):

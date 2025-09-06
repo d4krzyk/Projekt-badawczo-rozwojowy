@@ -3,62 +3,41 @@ from contextlib import asynccontextmanager
 
 # 3rd-Party
 from fastapi import FastAPI
-from fastapi import Request
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 
 # Project
-from authorization.router import router as auth_router
-from database.middleware import DatabaseHealthMiddleware
-from database.router import router as database_router
-from webscraping.router import router as scraping_router
-from wikipedia_dumps.get_data import get_or_create_reversed_categories
-from wikipedia_dumps.get_data import get_or_create_title_to_id
-from wikipedia_dumps.router import router as dumps_router
-from wikipedia_dumps.utils import load_from_file
-from wikipediaapi.router import router_categories as wikiapi_categories_router
-from wikipediaapi.router import router_images as wikiapi_images_router
+import wikipedia_api
+import wikipedia_webscraping
+from wikipedia_webscraping.category import CategoryScraper
+import wikipedia_dumps
+
+# Local
+from router import router as main_router
+
+# ENABLE_DUMPS = True
+ENABLE_DUMPS = True
+ENABLE_CACHE = True
 
 # Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Ładowanie danych tylko raz przy starcie."""
-    app.state.category_child_to_parent = get_or_create_reversed_categories()
-    app.state.title_to_id = get_or_create_title_to_id()
-    app.state.id_to_title = load_from_file('wikipedia_dumps/data/id_to_title_min.json')
+    if ENABLE_DUMPS:
+        app.state.category_child_to_parent = (
+            wikipedia_dumps.get_data.get_or_create_reversed_categories()
+        )
+        app.state.title_to_id = wikipedia_dumps.get_data.get_or_create_title_to_id()
+        app.state.id_to_title = wikipedia_dumps.utils.load_from_file(
+            "wikipedia_dumps/data/id_to_title_min.json"
+        )
+    if ENABLE_CACHE:
+        cache: CategoryScraper = CategoryScraper()
+        app.state.cache = cache
     yield
 
-
 app = FastAPI(lifespan=lifespan)
-# app = FastAPI()
-# OpenAPI - auth
-# app.openapi = build_custom_openapi(app)
-# app.add_middleware(JWTAuthMiddleware)
 
-# Middleware
-app.add_middleware(DatabaseHealthMiddleware)
-
-
-# Routers
-app.include_router(database_router)
-app.include_router(auth_router)
-app.include_router(wikiapi_categories_router)
-app.include_router(wikiapi_images_router)
-app.include_router(dumps_router)
-app.include_router(scraping_router)
-
-
-# Default
-@app.get("/api/data")
-def secure(request: Request):
-    return {"msg": f"Dostęp przyznany dla użytkownika {request.state.user_id}"}
-
-
-@app.exception_handler(RequestValidationError)
-async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        status_code=422,
-        content={
-            "errors": [e['msg'] for e in exc.errors()]
-        }
-    )
+app.include_router(wikipedia_api.router.router_categories)
+app.include_router(wikipedia_api.router.router_images)
+app.include_router(wikipedia_dumps.router.router)
+app.include_router(wikipedia_webscraping.router.router)
+app.include_router(main_router)

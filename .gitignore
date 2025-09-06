@@ -1,5 +1,6 @@
 # Kuba Maliszewski
 scraper
+webapp/wikipedia_webscraping/html_cache/*.html
 
 # Mateusz Petkiewicz
 # These will be generated
