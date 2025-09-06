@@ -4,11 +4,14 @@ import json
 # 3rd-Party
 import requests
 
+# Project
+from utils import get_headers
+
 subcategories_url = 'https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtype=subcat&cmlimit=100&format=json&cmtitle='  # noqa :E501
 
 
 def get_subcategories(page_name: str) -> [str]:
-    json_content = requests.get(subcategories_url + page_name).content
+    json_content = requests.get(subcategories_url + page_name, headers=get_headers()).content
     subcategories = [category['title'] for category in list(
         json.loads(json_content)['query']['categorymembers'])]
     return subcategories
