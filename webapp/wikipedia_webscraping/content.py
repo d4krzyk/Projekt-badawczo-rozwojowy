@@ -6,9 +6,12 @@ from collections import deque
 import requests
 from bs4 import BeautifulSoup
 
+# Project
+from utils import get_headers
+
 
 def get_soup(url):
-    response = requests.get(url)
+    response = requests.get(url, headers=get_headers())
     if response.status_code != 200:
         raise Exception(f"Failed to load {url}")
     return BeautifulSoup(response.text, "html.parser")
