@@ -6,6 +6,7 @@ from fastapi import Request
 # Local
 from . import content
 from . import utils
+from . import infobox
 
 router = APIRouter(prefix="/scraping", tags=["Web Scraping"])
 
@@ -32,3 +33,11 @@ def extract_endpoint(
         "title": title,
         "url": url,
     }
+
+
+@router.get("/infobox")
+def get_infobox(page_name: str = Query(..., description="Nazwa artykułu np. Pope")):
+    time_start = time.time()
+    result = infobox.get_infobox(page_name)
+    time_end = time.time()
+    return {"page_name": page_name, "infobox": result, "time": time_end - time_start}
