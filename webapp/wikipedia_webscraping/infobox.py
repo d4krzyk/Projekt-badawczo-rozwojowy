@@ -2,6 +2,7 @@ import requests
 import bs4
 import typing
 import re
+from utils import get_headers
 
 NON_BREAKING_ELEMENTS = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'button',
                          'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe',
@@ -56,7 +57,9 @@ def extract_infobox(page_name: str) -> {}:
 
     output = {}
     html_content = requests.get(
-        html_url + page_name).content
+        html_url + page_name,
+        headers=get_headers()
+    ).content
     soup = bs4.BeautifulSoup(html_content, features='html.parser')
     table = soup.find('table', class_='infobox')
 
