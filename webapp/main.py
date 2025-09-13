@@ -14,7 +14,7 @@ import wikipedia_dumps
 from router import router as main_router
 
 # ENABLE_DUMPS = True
-ENABLE_DUMPS = True
+ENABLE_DUMPS = False
 ENABLE_CACHE = True
 
 # Lifespan
