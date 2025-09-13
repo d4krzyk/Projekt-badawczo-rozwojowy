@@ -12,7 +12,7 @@ from . import category_shortcut
 from . import images
 
 router_categories = APIRouter(prefix="/category-extract", tags=["Wikipedia API"])
-router_images = APIRouter(prefix="/images", tags=["Wikipedia"])
+router_images = APIRouter(prefix="/images", tags=["Wikipedia API Images"])
 
 # Zakładam, że extract_categories i top_category są zaimportowane/podane wyżej
 
