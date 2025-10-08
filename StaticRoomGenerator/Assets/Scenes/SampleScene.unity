@@ -538,9 +538,11 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "The pope is the bishop of Rome and the <color=#1D7CEAFF><link=\"https://en.wikipedia.org/wiki/Head_of_the_Church#Catholic_Church\">visible
-    head</link></color> of the worldwide <color=#1D7CEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_Church\">Catholic
-    Church</link></color> . He is also known as the supreme pontiff , Roman pontiff
-    , or sovereign pontiff . From the 8th century until 1870, the pope was the <color=#1D7CEAFF><link=\"https://en.wikipedia.org/wiki/Sovereign\">sovereign</link></color>
+    head</link></color> of the  <color=#1D7CEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_Church\">Catholic
+    Church</link></color> . He is also known as the   !<color=#1D7CEAFF><link=\"https://i.imgur.com/fGJ83lM.png\">xd</link></color> 
+    worldwide !<color=#1D7CEAFF><link=\"https://upload.wikimedia.org/wikipedia/commons/3/33/June_26_1970_Zodiac_letter.jpg\">zodiac</link></color>
+    supreme pontiff , Roman pontiff , or sovereign pontiff . From the 8th century
+    until 1870, the pope was the <color=#1D7CEAFF><link=\"https://en.wikipedia.org/wiki/Sovereign\">sovereign</link></color>
     or <color=#1D7CEAFF><link=\"https://en.wikipedia.org/wiki/Head_of_state\">head
     of state</link></color> of the <color=#1D7CEAFF><link=\"https://en.wikipedia.org/wiki/Papal_States\">Papal
     States</link></color> , and since 1929 of the much smaller <color=#1D7CEAFF><link=\"https://en.wikipedia.org/wiki/Vatican_City\">Vatican
@@ -692,9 +694,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _Source: "The pope is the bishop of Rome and the [visible head](https://en.wikipedia.org/wiki/Head_of_the_Church#Catholic_Church)
-    of the worldwide [Catholic Church](https://en.wikipedia.org/wiki/Catholic_Church)
-    . He is also known as the supreme pontiff , Roman pontiff , or sovereign pontiff
-    . From the 8th century until 1870, the pope was the [sovereign](https://en.wikipedia.org/wiki/Sovereign)
+    of the  [Catholic Church](https://en.wikipedia.org/wiki/Catholic_Church) . He
+    is also known as the   ![xd](https://i.imgur.com/fGJ83lM.png)  worldwide ![zodiac](https://upload.wikimedia.org/wikipedia/commons/3/33/June_26_1970_Zodiac_letter.jpg)
+    supreme pontiff , Roman pontiff , or sovereign pontiff . From the 8th century
+    until 1870, the pope was the [sovereign](https://en.wikipedia.org/wiki/Sovereign)
     or [head of state](https://en.wikipedia.org/wiki/Head_of_state) of the [Papal
     States](https://en.wikipedia.org/wiki/Papal_States) , and since 1929 of the much
     smaller [Vatican City](https://en.wikipedia.org/wiki/Vatican_City) state. From
@@ -862,7 +865,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2928b81a964cb374ebd8d4c33c96bd84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameController: {fileID: 335614232}
 --- !u!1 &149964653
 GameObject:
   m_ObjectHideFlags: 0
@@ -7082,7 +7084,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2928b81a964cb374ebd8d4c33c96bd84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameController: {fileID: 335614232}
 --- !u!1 &990031590
 GameObject:
   m_ObjectHideFlags: 0
@@ -8397,7 +8398,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 621679087}
   teleportPoint: {fileID: 149964654}
-  gameController: {fileID: 335614232}
 --- !u!1 &1158774286
 GameObject:
   m_ObjectHideFlags: 0
@@ -8447,7 +8447,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 621679087}
   teleportPoint: {fileID: 1743887595}
-  gameController: {fileID: 335614232}
 --- !u!135 &1158774289
 SphereCollider:
   m_ObjectHideFlags: 0

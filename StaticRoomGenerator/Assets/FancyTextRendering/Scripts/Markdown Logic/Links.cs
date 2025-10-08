@@ -15,15 +15,20 @@ namespace LogicUI.FancyTextRendering.MarkdownLogic
 
     class Links : SimpleMarkdownLineProcessor
     {
-        protected override void ProcessLine(MarkdownLine line, MarkdownRenderingSettings settings)
+        protected override async void ProcessLine(MarkdownLine line, MarkdownRenderingSettings settings)
         {
             StringBuilder builder = line.Builder;
+            bool isImageLink = false;
 
             int linkTextStart = line.UnescapedIndexOf('[');
 
             while (linkTextStart > -1)
             {
-                int linkTextEnd = line.UnescapedIndexOf(']');
+                if (linkTextStart > 0)
+                {
+                    isImageLink = builder[linkTextStart - 1] == '!';
+                } 
+                int linkTextEnd = line.UnescapedIndexOf(']', startIndex: linkTextStart);
                 if (linkTextEnd < 0)
                     return;
 
@@ -45,15 +50,28 @@ namespace LogicUI.FancyTextRendering.MarkdownLogic
                 string linkText = builder.Snip(linkTextStart + 1, linkTextEnd - 1);
                 string linkContent = builder.Snip(linkContentStart + 1, linkContentEnd - 1);
 
-                builder.Remove(linkTextStart, linkContentEnd - linkTextStart + 1);
-                builder.InsertChain(linkTextStart, out int insertionEndIndex, 
-                    "<color=#", ColorUtility.ToHtmlStringRGBA(settings.Links.LinkColor), ">",
-                    "<link=\"", linkContent, "\">",
-                    linkText,
-                    "</link></color>");
-
-
-                linkTextStart = builder.IndexOf('[', startIndex: insertionEndIndex);
+                if (isImageLink)
+                {
+                    await SpriteDownloader.CreateSprite(linkContent, linkText);
+                    builder.Remove(linkTextStart - 1, linkContentEnd - linkTextStart + 2);
+                    builder.InsertChain(linkTextStart, out int insertionEndIndex,
+                        "<sprite=", linkText, " name=", linkText, ">");
+                    Debug.Log(linkText);
+                    Debug.Log(linkTextStart);
+                    Debug.Log(linkContentEnd);
+                    linkTextStart = builder.IndexOf('[', startIndex: insertionEndIndex);
+                }
+                else
+                {
+                    builder.Remove(linkTextStart, linkContentEnd - linkTextStart + 1);
+                    builder.InsertChain(linkTextStart, out int insertionEndIndex,
+                        "<color=#", ColorUtility.ToHtmlStringRGBA(settings.Links.LinkColor), ">",
+                        "<link=\"", linkContent, "\">",
+                        linkText,
+                        "</link></color>");
+                    linkTextStart = builder.IndexOf('[', startIndex: insertionEndIndex);
+                }
+                isImageLink = false;
             }
         }
 
