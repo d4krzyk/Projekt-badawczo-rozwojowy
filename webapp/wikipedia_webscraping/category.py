@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import os
 import time
 from urllib.parse import urljoin
+from utils import get_headers
 
 BASE_URL = "https://en.wikipedia.org/wiki/"
 CACHE_DIR = "wikipedia_webscraping/html_cache"
@@ -16,15 +17,7 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 class CategoryScraper:
     def __init__(self):
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/124.0.0.0 Safari/537.36"
-                )
-            }
-        )
+        self.session.headers.update(get_headers())
 
     def __enter__(self):
         return self
