@@ -1,0 +1,17 @@
+__pycache__/
+.idea/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+.env
+env.txt
+models/
+assets/
+convertedV15/
+stable-diffusion-webui/
+*.ckpt
+*.safetensors
+*.pth
+*.pt
+category_prompts.json

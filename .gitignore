@@ -27,3 +27,5 @@ venv
 *.pidb.meta
 *.pdb.meta
 *.mdb.meta
+stable-diffusion-webui
+*.safetensors

@@ -1,0 +1,29 @@
+positive:
+old school,  texture, quake, wall texture, dark style,  bricks
+
+negative for all:
+FastNegativeV2, ng_deepnegative_v1_75t, realistic, 3D, anime, photorealistic, lights, reflections, shaders, soft shadows, blur, isometric, perspective, glow, depth of field, concept art, building, person, food, item, doors, windows
+
+
+<lora:Quake_Lora:0.9> emerald fantasy crystal, dark texture, low res quake game texture, old school
+Steps: 20, CFG scale: 12.5, Sampler: Euler a, Seed: 3599100797, Size: 512x512, Model: v1-5-pruned-emaonly, Model hash: 6ce0161689
+
+
+<lora:Quake_Lora:0.9> low res quake game texture, old school, wall texture, pixel art, pixel world, tileable texture, wooden plank wall, brown planks, 2D texture, game asset
+Negative prompt: FastNegativeV2, ng_deepnegative_v1_75, 3d, realistic, text, watermark, reflections, doors, windows, human, person, character, portrait, face, anatomy, lighting, isometric, 3D, realistic, depth, shadows, photo
+
+Steps: 20, Sampler: Euler a, Schedule type: Automatic, CFG scale: 12.5, Seed: 3337241856, Size: 512x256, Model hash: 0a1a9d0661, Model: aziibpixelmix_v10, Denoising strength: 0.7, Clip skip: 2, Hires upscale: 1, Hires upscaler: Latent (nearest), Lora hashes: "Quake_Lora: d9fb2ebae10d", Version: v1.10.1
+
+
+
+<lora:Quake_Lora:0.9> wood wall, dark texture, low res quake game texture, old school
+Steps: 20, CFG scale: 12.5, Sampler: Euler a, Seed: 2892859419, Size: 512x512, Model: v1-5-pruned-emaonly, Model hash: 6ce0161689
+
+
+<lora:Quake_Lora:0.9> wood wall logs, light texture, low res quake game texture, old school, tile, seamless, gaps between planks
+Negative prompt: FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows,
+Steps: 20, Sampler: Euler a, Schedule type: Automatic, CFG scale: 11, Seed: 1155302242, Size: 512x512, Model hash: 6ce0161689, Model: v15PrunedEmaonly_v15PrunedEmaonly, Clip skip: 2, Tile X: True, Tile Y: False, Start Tiling From Step: 0, Stop Tiling After Step: -1, Lora hashes: "Quake_Lora: d9fb2ebae10d", Version: v1.10.1
+
+<lora:Quake_Lora:0.9> wood horizontal wall logs, light texture, low res quake game texture, old school, tile, seamless, gaps between planks
+Negative prompt: FastNegativeV2, (bad quality, worst quality, normal quality:1.2), lights, lighting, shaders, reflections, shadows,
+Steps: 20, Sampler: Euler a, Schedule type: Automatic, CFG scale: 11, Seed: 627086430, Size: 512x512, Model hash: 6ce0161689, Model: v15PrunedEmaonly_v15PrunedEmaonly, Clip skip: 2, Tile X: True, Tile Y: False, Start Tiling From Step: 0, Stop Tiling After Step: -1, Lora hashes: "Quake_Lora: d9fb2ebae10d", Version: v1.10.1
