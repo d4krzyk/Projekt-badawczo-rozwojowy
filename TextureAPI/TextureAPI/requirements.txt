@@ -10,13 +10,6 @@ huggingface_hub~=0.32.4
 scipy~=1.15.3
 #git+https://github.com/cloneofsimo/lora.git@master#egg=lora_diffusion
 
-# GUI / GTK
-PyGObject==3.44.1
-pycairo==1.25.0
-Pillow~=11.2.1
-pillow-avif-plugin==1.4.3
-scikit-image>=0.19
-
 # API
 fastapi==0.110.0
 uvicorn[standard]==0.29.0
