@@ -7,8 +7,9 @@ from fastapi import FastAPI
 # Project
 import wikipedia_api
 import wikipedia_webscraping
-from wikipedia_webscraping.category import CategoryScraper
 import wikipedia_dumps
+import data_storage
+from wikipedia_webscraping.category import CategoryScraper
 
 # Local
 from router import router as main_router
@@ -36,6 +37,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(data_storage.router.router)
 app.include_router(wikipedia_api.router.router_categories)
 app.include_router(wikipedia_api.router.router_images)
 app.include_router(wikipedia_dumps.router.router)

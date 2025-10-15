@@ -23,7 +23,8 @@ if config.config_file_name is not None:
 from database.engine import DATABASE_URL
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
-from authorization import models
+# from authorization import models
+from data_storage import models
 from database.engine import Base
 target_metadata = Base.metadata
 
