@@ -20,4 +20,4 @@ services:
       - .:/app:cached
     stdin_open: true
     tty: true
-    command: python3 main.py
+    command: python3 main_api.py
