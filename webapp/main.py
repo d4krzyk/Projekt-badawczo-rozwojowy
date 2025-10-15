@@ -14,7 +14,7 @@ import wikipedia_dumps
 from router import router as main_router
 
 # ENABLE_DUMPS = True
-ENABLE_DUMPS = True
+ENABLE_DUMPS = False
 ENABLE_CACHE = True
 
 # Lifespan
@@ -36,7 +36,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(wikipedia_api.router.router)
+app.include_router(wikipedia_api.router.router_categories)
+app.include_router(wikipedia_api.router.router_images)
 app.include_router(wikipedia_dumps.router.router)
 app.include_router(wikipedia_webscraping.router.router)
 app.include_router(main_router)
