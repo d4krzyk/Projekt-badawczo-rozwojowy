@@ -11,8 +11,8 @@ scipy~=1.15.3
 #git+https://github.com/cloneofsimo/lora.git@master#egg=lora_diffusion
 
 # API
-fastapi==0.110.0
-uvicorn[standard]==0.29.0
+fastapi
+uvicorn[standard]
 einops~=0.8.1
 jsonmerge~=1.9.2
 numpy~=2.2.6
