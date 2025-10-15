@@ -1,11 +1,3 @@
-{
-  "name": "com.jimmycushnie.jimmysunityutilities",
-  "displayName": "Jimmy's Unity Utilities",
-  "version": "1.0.0",
-  "unity": "2018.3",
-  "description": "A collection of utilities for working in Unity.",
-  "keywords": [ "Color24", "singletons", "object pooling" ],
-  "category": "penis lmao",
-  "dependencies": {
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:fe795e4024bb7ddaf0042e9324fe967a33a12d24bfee2121812acfe0691fa0df
+size 323
