@@ -1,8 +1,7 @@
 def get_headers():
     return {
         "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/124.0.0.0 Safari/537.36"
+            "RoomPedia/1.0 (https://github.com/d4krzyk/Projekt-badawczo-rozwojowy; "
+            "email: 313008@stud.umk.pl) requests/2.32.3"
         )
     }

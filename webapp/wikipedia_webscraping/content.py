@@ -1,4 +1,4 @@
-# Standard Library
+﻿# Standard Library
 import re
 from collections import deque
 
@@ -49,8 +49,18 @@ def extract_sections_as_nested_list(article_url):
     intro_content = ""
 
     def clean_text(tag):
+        # Usun odniesienia w indeksie górnym
         for sup in tag.find_all("sup", class_="reference"):
             sup.decompose()
+        # Konwertuj linki do Markdown
+        for a in tag.find_all("a"):
+            if a.has_attr("href"):
+                href = a["href"]
+                if href.startswith("/wiki/"):
+                    href = "https://en.wikipedia.org" + href
+                text = a.get_text(strip=True)
+                a.replace_with(f"[{text}]({href})")
+        # Wyodrebnij oczyszczony tekst
         return re.sub(r"\s{2,}", " ", tag.get_text(separator=" ", strip=True)).strip()
 
     started_main_content = False
@@ -63,7 +73,7 @@ def extract_sections_as_nested_list(article_url):
                 text = clean_text(tag)
                 if text and len(text.split()) > 10:
                     started_main_content = True
-                    intro_content += text + "\n\n"
+                    intro_content += text + "<br>"
                 else:
                     continue
             else:
@@ -116,9 +126,9 @@ def extract_sections_as_nested_list(article_url):
             text = clean_text(tag)
             if text:
                 if len(stack) == 1:
-                    intro_content += text + "\n\n"
+                    intro_content += text + "<br>"
                 else:
-                    stack[-1]["content"] += text + "\n\n"
+                    stack[-1]["content"] += text + "<br>"
 
     if intro_content.strip():
         root["subsections"].insert(
@@ -244,11 +254,12 @@ def extract_sections_as_list(article_url):
     # Spłaszcz listę sekcji do słownika
     result = {}
     for sec, paras in sections:
-        combined = "\n\n".join(paras)
+        combined = "<br>".join(paras)
         result[sec] = combined
 
     return result
 
 # Przyklad uzycia:
+# import json
 # data = extract_sections_as_list("https://en.wikipedia.org/wiki/Python_(programming_language)")
 # print(json.dumps(data, ensure_ascii=False, indent=2))
