@@ -14,7 +14,7 @@ from queue import Empty, Full
 
 
 class TextureModel:
-    def __init__(self, mode="cpu"):
+    def __init__(self, mode="cuda"):
 
         self.on_first_step_callback = None
         self.first_step_done = False
@@ -30,21 +30,14 @@ class TextureModel:
 
         # Ładowanie modelu i wybór trybu generowania (cpu or gpu)
         try:
-            cc_tuple = torch.cuda.get_device_capability()
-            cc_version = cc_tuple[0] + cc_tuple[1] / 10
-            print(torch.cuda.get_device_capability())
-            if mode == "cpu":
-                self.device = torch.device("cpu")
-                dtype = torch.float32
-            elif mode == "cuda" and torch.cuda.is_available():
-                self.device = torch.device("cuda")
-                if cc_version > 8:
-                    dtype = torch.float16
-                else:
-                    dtype = torch.float32
+            if mode == "cpu" or not torch.cuda.is_available():
+              self.device = torch.device("cpu")
+              dtype = torch.float32
             else:
-                self.device = torch.device("cpu")
-                dtype = torch.float32
+              self.device = torch.device("cuda")
+              cc_tuple = torch.cuda.get_device_capability()
+              cc_version = cc_tuple[0] + cc_tuple[1] / 10
+              dtype = torch.float16 if cc_version > 8 else torch.float32
 
             # SLOWER VERSION OF MODEL LOADING
             # self.alt_model_id = "runwayml/stable-diffusion-v1-5"
@@ -64,7 +57,8 @@ class TextureModel:
                 self.model_id,
                 torch_dtype=dtype,
                 safety_checker=None,
-                scheduler = scheduler
+                scheduler = scheduler,
+                device_map="auto"  # <--- automatyczne rozdzielanie pamięci CPU/GPU
 
             )
             # ustalenie trybu dla pipeline cuda/cpu

@@ -20,4 +20,5 @@ services:
       - .:/app:cached
     stdin_open: true
     tty: true
-    command: python3 main_api.py
+    ports:
+      - "8000:8000"   # expose API outside container
