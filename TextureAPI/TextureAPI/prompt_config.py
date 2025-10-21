@@ -408,9 +408,10 @@ class TextureModel:
 
             cond_embeddings = self.pipe.text_encoder(input_ids, attention_mask=attention_mask)[0]
             uncond_embeddings = self.pipe.text_encoder(uncond_ids, attention_mask=uncond_mask)[0]
-            cond_embeddings = cond_embeddings.to(self.device).to(torch.float32)
-            uncond_embeddings = uncond_embeddings.to(self.device).to(torch.float32)
+            cond_embeddings = cond_embeddings.to(self.device, dtype=self.pipe.unet.dtype)
+            uncond_embeddings = uncond_embeddings.to(self.device, dtype=self.pipe.unet.dtype)
             # Przygotowanie latentów
+
             latents = self.pipe.prepare_latents(
                 batch_size=1,
                 num_channels_latents=self.pipe.unet.in_channels,
@@ -428,7 +429,7 @@ class TextureModel:
                 current_timestep = self.pipe.scheduler.timesteps[step]
                 print(f"Generowanie obrazu dla {type_texture}: {step}/{steps}")
                 latents_input = self.pipe.scheduler.scale_model_input(latents, timestep=current_timestep)
-
+                latents_input = latents_input.to(self.pipe.unet.dtype)
                 model_output_uncond = self.pipe.unet(
                     latents_input,
                     current_timestep,
