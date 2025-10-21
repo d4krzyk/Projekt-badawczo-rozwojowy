@@ -61,16 +61,12 @@ class TextureModel:
                 device_map="auto"  # <--- automatyczne rozdzielanie pamięci CPU/GPU
 
             )
-            # ustalenie trybu dla pipeline cuda/cpu
-            # Wymuś jednolity dtype i device po załadowaniu
+
             self.pipe.to(self.device)
-            self.pipe.unet.to(dtype=dtype)
-            self.pipe.text_encoder.to(dtype=dtype)
-            self.pipe.vae.to(dtype=dtype)
-            self.pipe.scheduler = self.pipe.scheduler.to(self.device)
-            print("UNet dtype:", self.pipe.unet.dtype)
-            print("Device:", self.device)
-            print(f"Pipeline loaded on {mode.upper()}")
+            self.pipe.unet.to(dtype=dtype, device=self.device)
+            self.pipe.text_encoder.to(dtype=dtype, device=self.device)
+            self.pipe.vae.to(dtype=dtype, device=self.device)
+
         except Exception as e:
             print(f"Błąd przy ładowaniu modelu w trybie {mode.upper()}: {e}")
             raise
@@ -81,6 +77,13 @@ class TextureModel:
             lora_path = "models/Lora/Quake_Lora.safetensors"
             self.pipe.load_lora_weights(lora_path, adapter_name="quake")
             self.pipe.to(self.device)
+            # ustalenie trybu dla pipeline cuda/cpu
+            self.pipe.unet.to(dtype=dtype)
+            self.pipe.text_encoder.to(dtype=dtype)
+            self.pipe.vae.to(dtype=dtype)
+            print("UNet dtype:", self.pipe.unet.dtype)
+            print("Device:", self.device)
+            print(f"Pipeline loaded on {mode.upper()}")
 
             # Metoda patch conv2d asymmetric tilling do zapętlenia się tekstury
             self.patch_conv2d_asymmetric_tiling(self.pipe.unet, tileX=True, tileY=False)
