@@ -62,9 +62,12 @@ class TextureModel:
 
             )
             # ustalenie trybu dla pipeline cuda/cpu
+            # Wymuś jednolity dtype i device po załadowaniu
             self.pipe.to(self.device)
-            self.pipe.text_encoder.to(self.device)
-            self.pipe.unet.to(self.device)
+            self.pipe.unet.to(dtype=dtype)
+            self.pipe.text_encoder.to(dtype=dtype)
+            self.pipe.vae.to(dtype=dtype)
+            self.pipe.scheduler = self.pipe.scheduler.to(self.device)
             print("UNet dtype:", self.pipe.unet.dtype)
             print("Device:", self.device)
             print(f"Pipeline loaded on {mode.upper()}")
