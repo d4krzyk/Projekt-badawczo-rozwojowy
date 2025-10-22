@@ -56,9 +56,6 @@ namespace LogicUI.FancyTextRendering.MarkdownLogic
                     builder.Remove(linkTextStart - 1, linkContentEnd - linkTextStart + 2);
                     builder.InsertChain(linkTextStart, out int insertionEndIndex,
                         "<sprite=", linkText, " name=", linkText, ">");
-                    Debug.Log(linkText);
-                    Debug.Log(linkTextStart);
-                    Debug.Log(linkContentEnd);
                     linkTextStart = builder.IndexOf('[', startIndex: insertionEndIndex);
                 }
                 else

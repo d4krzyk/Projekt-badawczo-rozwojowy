@@ -18,9 +18,8 @@ public class Controller : MonoBehaviour
 
     void Start()
     {
-        // Lock cursor to the game window
-        // Cursor.lockState = CursorLockMode.Locked;
-        // Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
@@ -35,7 +34,7 @@ public class Controller : MonoBehaviour
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
-        Vector3 move = transform.right * horizontal + transform.forward * vertical;
+        Vector3 move = isReading ? Vector3.zero : transform.right * horizontal + transform.forward * vertical;
         transform.position += move * moveSpeed * Time.deltaTime;
     }
 
@@ -45,13 +44,15 @@ public class Controller : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
         // Rotate the character left/right
-        transform.Rotate(Vector3.up * mouseX);
+        if(!isReading)
+            transform.Rotate(Vector3.up * mouseX);
 
         // Rotate the camera up/down
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Prevent flipping
 
-        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        if(!isReading)
+            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
     void HandleInteraction()

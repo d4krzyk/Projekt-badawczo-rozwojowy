@@ -31,8 +31,6 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         Match match = Regex.Match(link, pattern);
         if (match.Success)
         {
-            Debug.Log("Page Title: " + match.Groups[1].Value); // Head_of_the_Church
-            Debug.Log("Anchor: " + match.Groups[2].Value);     // Catholic_Church
             roomsController.secondRoom.articleName = match.Groups[1].Value.Replace('_', ' ');
             roomsController.secondRoom.ResetRoom();
             roomsController.secondRoom.GenerateRoom(roomsController.secondRoom.articleName);

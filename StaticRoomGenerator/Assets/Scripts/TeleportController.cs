@@ -20,7 +20,6 @@ public class TeleportController : MonoBehaviour
     void TeleportPlayer()
     {
         player.position = teleportPoint.position;
-        Debug.Log($"Teleported to: {teleportPoint.position}");
     }
 
     void OnTriggerEnter(Collider collider)

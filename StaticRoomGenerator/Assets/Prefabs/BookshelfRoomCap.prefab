@@ -278,14 +278,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Shape:
     rid: 2877050633338486785
-  m_Size: {x: 14, y: 4, z: 10}
-  m_Rotation: {x: 0, y: 0, z: 0, w: 1}
-  m_PivotLocation: 1
-  m_PivotPosition: {x: 0, y: 0, z: 0}
+  m_ShapeRotation: {x: 0, y: 0, z: 0, w: 1}
   m_UnmodifiedMeshVersion: 3436
-  m_ShapeBox:
-    m_Center: {x: -34.760796, y: 10.215649, z: 23.613777}
-    m_Extent: {x: 7, y: 2, z: 5}
+  m_Size: {x: 14, y: 4, z: 10}
+  m_LocalCenter: {x: 0, y: 0, z: 0}
   references:
     version: 2
     RefIds:
@@ -309,11 +305,16 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
-  - {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
+  - {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
+  - {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -331,6 +332,7 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
