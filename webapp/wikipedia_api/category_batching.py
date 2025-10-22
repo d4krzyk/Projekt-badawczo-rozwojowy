@@ -6,9 +6,11 @@ import os
 import requests
 
 # Project
-from utils import get_headers
+from utils import get_headers, get_redirect_name
 
-query_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&formatversion=2&cllimit=100&format=json&titles='  # noqa :E501
+query_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&formatversion=2&cllimit=100&format=json&titles='
+redirect_url = 'https://en.wikipedia.org/w/rest.php/v1/search/page?limit=1&q='
+
 
 categories_shortcut = dict()
 stop_list = []
@@ -17,7 +19,8 @@ PWD = os.path.dirname(os.path.abspath(__file__))
 
 
 def extract_categories(page_name: str):
-    json_content = requests.get(query_url + page_name, headers=get_headers()).content
+    json_content = requests.get(
+        query_url + page_name, headers=get_headers()).content
     pages = list(json.loads(json_content)['query']['pages'])
     categories = []
     for page in pages:
@@ -30,6 +33,7 @@ def extract_categories(page_name: str):
 
 
 def main_category(page_name: str) -> str:
+    page_name = get_redirect_name(page_name)
     visited = []
 
     global stop_list
