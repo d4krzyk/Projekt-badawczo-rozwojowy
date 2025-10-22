@@ -6,7 +6,7 @@ import os
 import requests
 
 # Project
-from utils import get_headers
+from utils import get_headers, get_redirect_name
 
 query_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&formatversion=2&cllimit=100&format=json&titles='
 redirect_url = 'https://en.wikipedia.org/w/rest.php/v1/search/page?limit=1&q='
@@ -16,14 +16,6 @@ categories_shortcut = dict()
 stop_list = []
 
 PWD = os.path.dirname(os.path.abspath(__file__))
-
-
-def get_redirected_name(page_name: str) -> str:
-    json_content = requests.get(
-        redirect_url + page_name, headers=get_headers()).content
-    json_object = json.loads(json_content)
-
-    return json_object['pages'][0]['key']
 
 
 def extract_categories(page_name: str):
@@ -41,7 +33,7 @@ def extract_categories(page_name: str):
 
 
 def main_category(page_name: str) -> str:
-    page_name = get_redirected_name(page_name)
+    page_name = get_redirect_name(page_name)
     visited = []
 
     global stop_list
