@@ -1,3 +1,4 @@
+using System;
 using LogicUI.FancyTextRendering;
 using UnityEngine;
 
@@ -15,11 +16,19 @@ public class Controller : MonoBehaviour
     float xRotation = 0f;
     bool isReading = false;
     BookInteraction currentBook;
+    Vector2Int hexPosition;
+    string path = "";
+    float timeD = 0f;
 
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        hexPosition = DataCollectionUtil.PixelToHexPos(new Vector2(transform.position.x, transform.position.z));
+        System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+        customCulture.NumberFormat.NumberDecimalSeparator = ".";
+
+        System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
     }
 
     void Update()
@@ -27,6 +36,13 @@ public class Controller : MonoBehaviour
         HandleMovement();
         HandleMouseLook();
         HandleInteraction();
+        Vector2Int newPosition = DataCollectionUtil.PixelToHexPos(new Vector2(transform.position.x, transform.position.z));
+        if (hexPosition != newPosition)
+        {
+            hexPosition = newPosition;
+            path += $"{hexPosition.x}, {hexPosition.y}, {String.Format("{0:.##}", timeD)}, ";
+        }
+        timeD += Time.deltaTime;
     }
 
     void HandleMovement()
