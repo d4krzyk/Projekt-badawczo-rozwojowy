@@ -1,20 +1,8 @@
-# 3rd-Party
 from fastapi import APIRouter
-from fastapi import Depends
-from fastapi import Request
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
 
-from sqlalchemy.orm import Session
-from .models import Room
-# Project
-from database.engine import get_db
+from .book.router import book_router
+from .session.router import session_router
 
-
-router = APIRouter(prefix="/data_storage", tags=["Data storage"])
-
-
-@router.post("/debug")
-def list_rooms(db: Session = Depends(get_db)) -> JSONResponse:
-    rooms = db.query(Room).all()
-    return JSONResponse(content=jsonable_encoder(rooms))
+data_storage_router = APIRouter()
+data_storage_router.include_router(book_router)
+data_storage_router.include_router(session_router)

@@ -16,7 +16,22 @@ class DataUser(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
     
-    rooms = relationship("Room", back_populates="data_user", cascade="all, delete-orphan")
+    user_sessions = relationship("UserSession", back_populates="data_user", cascade="all, delete-orphan")
+
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+    id = Column(Integer, primary_key=True)
+    data_user_id = Column(
+        Integer, ForeignKey("data_users.id", ondelete="CASCADE", name="fk_user_sessions_data_user_id"), nullable=False
+    )
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=True)
+
+    data_user = relationship("DataUser", back_populates="user_sessions")
+    rooms = relationship("Room", back_populates="user_session", cascade="all, delete-orphan")
+    book_session_events = relationship("BookSessionEvent", back_populates="user_session", cascade="all, delete-orphan")
+    book_links = relationship("BookLink", back_populates="user_session", cascade="all, delete-orphan")
 
 
 class Room(Base):
@@ -26,32 +41,10 @@ class Room(Base):
     enter_time = Column(DateTime, nullable=False)
     exit_time = Column(DateTime, nullable=False)
 
-    data_user_id = Column(
-        Integer, ForeignKey("data_users.id", ondelete="CASCADE"), nullable=False
+    user_session_id = Column(
+        Integer, ForeignKey("user_sessions.id", ondelete="CASCADE", name="fk_rooms_user_session_id"), nullable=False
     )
-    data_user = relationship("DataUser", back_populates="rooms")
-
-
-    previous_room_id = Column(Integer, ForeignKey("rooms.id"), nullable=True)
-    previous_room = relationship(
-        "Room",
-        remote_side=[id],
-        primaryjoin=previous_room_id == id,
-        uselist=False,
-        post_update=True,
-    )
-
-    next_room_id = Column(Integer, ForeignKey("rooms.id"), nullable=True)
-    next_room = relationship(
-        "Room",
-        remote_side=[id],
-        primaryjoin=next_room_id == id,
-        uselist=False,
-        post_update=True,
-    )
-
-    link_id = Column(Integer, nullable=True)
-    link = relationship("BookLink", back_populates="room", cascade="all, delete-orphan")
+    user_session = relationship("UserSession", back_populates="rooms")
 
     books = relationship("Book", back_populates="room", cascade="all, delete-orphan")
 
@@ -60,16 +53,33 @@ class Book(Base):
     __tablename__ = "books"
     id = Column(Integer, primary_key=True)
     room_id = Column(
-        Integer, ForeignKey("rooms.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("rooms.id", ondelete="CASCADE", name="fk_books_room_id"), nullable=False
     )
     name = Column(String, nullable=False)
-    open_time = Column(DateTime, nullable=False)
-    close_time = Column(DateTime, nullable=False)
 
     room = relationship("Room", back_populates="books")
     links = relationship(
         "BookLink", back_populates="book", cascade="all, delete-orphan"
     )
+    session_events = relationship(
+        "BookSessionEvent", back_populates="book", cascade="all, delete-orphan"
+    )
+
+
+class BookSessionEvent(Base):
+    __tablename__ = "book_session_events"
+    id = Column(Integer, primary_key=True)
+    book_id = Column(
+        Integer, ForeignKey("books.id", ondelete="CASCADE", name="fk_book_session_events_book_id"), nullable=False
+    )
+    user_session_id = Column(
+        Integer, ForeignKey("user_sessions.id", ondelete="CASCADE", name="fk_book_session_events_user_session_id"), nullable=False
+    )
+    open_time = Column(DateTime, nullable=False)
+    close_time = Column(DateTime, nullable=True)
+
+    book = relationship("Book", back_populates="session_events")
+    user_session = relationship("UserSession", back_populates="book_session_events")
 
 
 class BookLink(Base):
@@ -79,11 +89,10 @@ class BookLink(Base):
     click_time = Column(DateTime, nullable=True)
 
     book_id = Column(
-        Integer, ForeignKey("books.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("books.id", ondelete="CASCADE", name="fk_book_links_book_id"), nullable=False
+    )
+    user_session_id = Column(
+        Integer, ForeignKey("user_sessions.id", ondelete="CASCADE", name="fk_book_links_user_session_id"), nullable=False
     )
     book = relationship("Book", back_populates="links")
-
-    room_id = Column(
-        Integer, ForeignKey("rooms.id", ondelete="CASCADE"), nullable=False
-    )
-    room = relationship("Room", back_populates="link")
+    user_session = relationship("UserSession", back_populates="book_links")

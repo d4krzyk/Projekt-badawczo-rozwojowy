@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(data_storage.router.router)
+app.include_router(data_storage.router.data_storage_router)
 app.include_router(wikipedia_api.router.router_categories)
 app.include_router(wikipedia_api.router.router_images)
 app.include_router(wikipedia_dumps.router.router)
