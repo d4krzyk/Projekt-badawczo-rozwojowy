@@ -40,8 +40,8 @@ public class Controller : MonoBehaviour
         if (hexPosition != newPosition)
         {
             hexPosition = newPosition;
-            path += $"{hexPosition.x}, {hexPosition.y}, {String.Format("{0:.##}", timeD)}, ";
-        }
+            path += $"{hexPosition.x}, {hexPosition.y}, {transform.position.x}, {transform.position.y}, {String.Format("{0:.##}", timeD)}, ";
+        }   
         timeD += Time.deltaTime;
     }
 

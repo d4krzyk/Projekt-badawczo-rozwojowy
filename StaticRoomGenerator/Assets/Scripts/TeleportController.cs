@@ -15,8 +15,6 @@ public class TeleportController : MonoBehaviour
         }
     }
 
-
-
     void TeleportPlayer()
     {
         player.position = teleportPoint.position;

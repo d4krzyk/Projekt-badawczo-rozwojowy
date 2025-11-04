@@ -3,6 +3,7 @@ using UnityEngine.Networking;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 public class RoomGeneration : MonoBehaviour
 {
@@ -18,6 +19,12 @@ public class RoomGeneration : MonoBehaviour
     public float initialBookshelfOffset;
     public Transform initialBookshelfPosition;
     public string articleName;
+    public float enterTime;
+    public float exitTime;
+    public Logger logger;
+    public string previousRoom;
+
+    public ArticleStructure articleData; 
 
     public async Task<string> GetArticleAsync(string article)
     {
@@ -87,6 +94,7 @@ public class RoomGeneration : MonoBehaviour
 
     public async void GenerateRoom(string articleName)
     {
+        float enterTime = Time.time;
         Debug.Log("Loading " + articleName + "..."); 
         string json = await GetArticleAsync(articleName);
         if (string.IsNullOrEmpty(json))
@@ -94,7 +102,7 @@ public class RoomGeneration : MonoBehaviour
             Debug.LogError("Failed to retrieve article data.");
             return;
         }
-        ArticleStructure articleData = JsonUtility.FromJson<ArticleStructure>(json);
+        articleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
         Debug.Log("Waiting for " + articleData.category + " textures...");
         json = await GetTexturesJsonAsync(articleData.category);
         if (string.IsNullOrEmpty(json))
@@ -103,14 +111,15 @@ public class RoomGeneration : MonoBehaviour
             return;
         }
 
-        TexturesStructure texturesData = JsonUtility.FromJson<TexturesStructure>(json);
+        TexturesStructure texturesData = JsonConvert.DeserializeObject<TexturesStructure>(json);
         byte[] texData = Convert.FromBase64String(texturesData.images.bookcase);
         Texture2D bookshelfTex = new Texture2D(0, 0);
         bookshelfTex.LoadImage(texData);
         bookshelfTex.filterMode = FilterMode.Point;
         Bookcase.mainTexture = bookshelfTex;
-        
+
         texData = Convert.FromBase64String(texturesData.images.wall);
+        Debug.Log(texturesData.images.wall);
         Texture2D wallTex = new Texture2D(0, 0);
         wallTex.LoadImage(texData);
         bookshelfTex.filterMode = FilterMode.Point;
@@ -185,5 +194,10 @@ public class RoomGeneration : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+    }
+
+    public void LogRoom()
+    {
+        logger.LogOnRoomExit(articleData.name, enterTime, exitTime, new List<BookLog>(), new List<LinkLog>(), previousRoom);
     }
 }

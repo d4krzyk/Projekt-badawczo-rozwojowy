@@ -7609,8 +7609,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
-  - {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
+  - {fileID: 2100000, guid: ce4c2946246fec849aa4bee35bc80452, type: 2}
+  - {fileID: 2100000, guid: e25e267b28af9844cb42ae0888624c79, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8927,8 +8927,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
-  - {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
+  - {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
+  - {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10228,8 +10228,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
-  - {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
+  - {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
+  - {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10750,8 +10750,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
-  - {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
+  - {fileID: 2100000, guid: ce4c2946246fec849aa4bee35bc80452, type: 2}
+  - {fileID: 2100000, guid: e25e267b28af9844cb42ae0888624c79, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14933,6 +14933,9 @@ MonoBehaviour:
   initialBookshelfOffset: -3
   initialBookshelfPosition: {fileID: 1562632235}
   articleName: Robert Lewandowski
+  enterTime: 0
+  exitTime: 0
+  logger: {fileID: 2101044395}
 --- !u!1 &1812433999
 GameObject:
   m_ObjectHideFlags: 0
@@ -14989,6 +14992,9 @@ MonoBehaviour:
   initialBookshelfOffset: -3
   initialBookshelfPosition: {fileID: 501486391}
   articleName: Business
+  enterTime: 0
+  exitTime: 0
+  logger: {fileID: 2101044395}
 --- !u!1 &1827720263
 GameObject:
   m_ObjectHideFlags: 0
@@ -16025,6 +16031,50 @@ Transform:
   - {fileID: 1743887595}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2101044394
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2101044396}
+  - component: {fileID: 2101044395}
+  m_Layer: 0
+  m_Name: Logger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2101044395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2101044394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56923283f1a5a044a800b36d8af358d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Logger
+--- !u!4 &2101044396
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2101044394}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!850595691 &2106316201
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -16453,3 +16503,4 @@ SceneRoots:
   - {fileID: 1370015334}
   - {fileID: 1065450139}
   - {fileID: 335614233}
+  - {fileID: 2101044396}
