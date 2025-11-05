@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.IO;
+using System.Text;
 
 public class RoomGeneration : MonoBehaviour
 {
@@ -52,21 +54,60 @@ public class RoomGeneration : MonoBehaviour
         }
     }
 
-    public async Task<string> GetTexturesJsonAsync(string category)
+
+    public async Task<string> GetTexturesJsonAsync(string category, string ArticleName)
     {
+
+        string cacheDir = Path.Combine(Application.dataPath, "TextureCache");
+        if (!Directory.Exists(cacheDir))
+            Directory.CreateDirectory(cacheDir);
+
+        string fileKey = SanitizeFileName((ArticleName ?? category));
+        string cachePath = Path.Combine(cacheDir, fileKey + ".json");
+
+        if (File.Exists(cachePath))
+        {
+            try
+            {
+                string cached = File.ReadAllText(cachePath, Encoding.UTF8);
+                Debug.Log($"Loaded textures from cache: {cachePath}");
+                return cached;
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Nie udało się odczytać cache: " + e.Message);
+                // kontynuuj i odśwież cache z serwera
+            }
+        }
+
         string url = $"http://localhost:8000/gen2DTextures";
         string requestBody = "{\"category\": \"" + category + "\"}";
 
-        using (UnityWebRequest request = UnityWebRequest.Post(url, requestBody, "application/json"))
-        {
-            var operation = request.SendWebRequest();
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))  
+        {   
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(requestBody);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
 
+
+            var operation = request.SendWebRequest();
             while (!operation.isDone)
                 await Task.Yield(); // Wait asynchronously without blocking main thread
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                return request.downloadHandler.text;
+                string response = request.downloadHandler.text;
+                try
+                {
+                    File.WriteAllText(cachePath, response, Encoding.UTF8);
+                    Debug.Log($"Saved textures to cache: {cachePath}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning("Nie udało się zapisać cache: " + e.Message);
+                }
+                return response;
             }
             else
             {
@@ -75,7 +116,16 @@ public class RoomGeneration : MonoBehaviour
             }
         }
     }
-
+    
+    private static string SanitizeFileName(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "untitled";
+        var invalid = Path.GetInvalidFileNameChars();
+        var sb = new StringBuilder(name);
+        foreach (var c in invalid)
+            sb.Replace(c, '_');
+        return sb.ToString();
+    }
 
     void AddBooksFromSubsection(BookshelfController bookshelf, Sections[] sections)
     {
@@ -104,7 +154,7 @@ public class RoomGeneration : MonoBehaviour
         }
         articleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
         Debug.Log("Waiting for " + articleData.category + " textures...");
-        json = await GetTexturesJsonAsync(articleData.category);
+        json = await GetTexturesJsonAsync(articleData.category, articleName);
         if (string.IsNullOrEmpty(json))
         {
             Debug.LogError("Failed to retrieve article data.");
