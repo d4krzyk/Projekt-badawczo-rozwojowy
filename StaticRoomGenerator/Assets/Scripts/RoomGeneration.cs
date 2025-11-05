@@ -107,12 +107,30 @@ public class RoomGeneration : MonoBehaviour
                 {
                     Debug.LogWarning("Nie udało się zapisać cache: " + e.Message);
                 }
+
+
+
+
                 return response;
             }
             else
             {
-                Debug.LogError("Request error: " + request.error);
-                return null;
+                Debug.LogWarning($"Texture API niedostępne ({request.error}). Ładowanie tekstur testowych.");
+                // fallback -> wygeneruj proste testowe tekstury i zwróć jako JSON (base64)
+                string bookcaseB64 = CreateFallbackTexturesJson("bookcase");
+                string wallB64 = CreateFallbackTexturesJson("wall");
+                string floorB64 = CreateFallbackTexturesJson("floor");
+                var obj = new
+                {
+                    images = new
+                    {
+                        bookcase = bookcaseB64,
+                        wall = wallB64,
+                        floor = floorB64
+                    }
+                };
+                string fallback = JsonConvert.SerializeObject(obj);
+                return fallback;
             }
         }
     }
@@ -125,6 +143,64 @@ public class RoomGeneration : MonoBehaviour
         foreach (var c in invalid)
             sb.Replace(c, '_');
         return sb.ToString();
+    }
+    private Texture2D CreateNormalMapFromGrayscale(Texture2D source, float strength = 1.0f)
+    {
+        int w = source.width;
+        int h = source.height;
+        Texture2D normal = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        Color[] src = source.GetPixels();
+        Color[] dst = new Color[w * h];
+
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                int i = y * w + x;
+                float hl = src[y * w + Mathf.Max(x - 1, 0)].grayscale;
+                float hr = src[y * w + Mathf.Min(x + 1, w - 1)].grayscale;
+                float hd = src[Mathf.Max(y - 1, 0) * w + x].grayscale;
+                float hu = src[Mathf.Min(y + 1, h - 1) * w + x].grayscale;
+
+                float dx = (hr - hl) * 0.5f * strength;
+                float dy = (hu - hd) * 0.5f * strength;
+                Vector3 n = new Vector3(-dx, -dy, 1.0f).normalized;
+
+                dst[i] = new Color(n.x * 0.5f + 0.5f, n.y * 0.5f + 0.5f, n.z * 0.5f + 0.5f, 1f);
+            }
+        }
+
+        normal.SetPixels(dst);
+        normal.Apply();
+        normal.wrapMode = source.wrapMode;
+        normal.filterMode = source.filterMode;
+        return normal;
+    }
+
+    private string CreateFallbackTexturesJson(string textureType)
+    {
+        try
+        {
+            string texturesDir = Path.Combine(Application.dataPath, "Textures");
+            string fileName = textureType;
+            if (!fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                fileName += ".png";
+            string fullPath = Path.Combine(texturesDir, fileName);
+
+            if (!File.Exists(fullPath))
+            {
+                Debug.LogWarning($"Fallback texture not found: {fullPath}");
+                return ""; // pusty string oznacza brak obrazka
+            }
+
+            byte[] bytes = File.ReadAllBytes(fullPath);
+            return Convert.ToBase64String(bytes);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("CreateFallbackTexturesJson error: " + e.Message);
+            return "";
+        }
     }
 
     void AddBooksFromSubsection(BookshelfController bookshelf, Sections[] sections)
@@ -158,7 +234,7 @@ public class RoomGeneration : MonoBehaviour
         if (string.IsNullOrEmpty(json))
         {
             Debug.LogError("Failed to retrieve article data.");
-            return;
+            //return;
         }
 
         TexturesStructure texturesData = JsonConvert.DeserializeObject<TexturesStructure>(json);
@@ -168,6 +244,40 @@ public class RoomGeneration : MonoBehaviour
         bookshelfTex.filterMode = FilterMode.Point;
         bookshelfTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
         Bookcase.mainTexture = bookshelfTex;
+
+        Texture2D bookcaseNormalTex = null;
+        // try
+        // {
+        //     // jeśli API zwróciło normalkę
+        //     if (texturesData.images.bookcase_normal != null && texturesData.images.bookcase_normal.Length > 0)
+        //     {
+        //         byte[] ndata = Convert.FromBase64String(texturesData.images.bookcase_normal);
+        //         bookcaseNormalTex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        //         bookcaseNormalTex.LoadImage(ndata);
+        //         bookcaseNormalTex.Apply(updateMipmaps: true, makeNoLongerReadable: false);
+        //     }
+        // }
+        // catch { bookcaseNormalTex = null; }
+
+        if (bookcaseNormalTex == null)
+        {
+            // wygeneruj z kolorowej tekstury (użyje jasności jako height)
+            bookcaseNormalTex = CreateNormalMapFromGrayscale(bookshelfTex, strength: 2.0f);
+        }
+
+        if (bookcaseNormalTex != null)
+        {
+            Bookcase.SetTexture("_BumpMap", bookcaseNormalTex);
+            Bookcase.SetFloat("_BumpScale", 1.0f);
+            Bookcase.EnableKeyword("_NORMALMAP");
+        }
+
+        if (Bookcase.HasProperty("_Glossiness"))
+            Bookcase.SetFloat("_Glossiness", 0.35f);
+        if (Bookcase.HasProperty("_Metallic"))
+            Bookcase.SetFloat("_Metallic", 0.0f);
+
+
 
         texData = Convert.FromBase64String(texturesData.images.wall);
         Texture2D wallTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
