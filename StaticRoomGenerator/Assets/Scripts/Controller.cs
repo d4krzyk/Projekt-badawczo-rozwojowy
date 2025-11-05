@@ -18,8 +18,6 @@ public class Controller : MonoBehaviour
     bool isReading = false;
     BookInteraction currentBook;
     Vector2Int hexPosition;
-    string path = "";
-    float timeD = 0f;
     float openBookTime;
 
     void Start()
@@ -42,9 +40,9 @@ public class Controller : MonoBehaviour
         if (hexPosition != newPosition)
         {
             hexPosition = newPosition;
-            path += $"{hexPosition.x}, {hexPosition.y}, {transform.position.x}, {transform.position.y}, {String.Format("{0:.##}", timeD)}, ";
+            string currentMove = $"{hexPosition.x} {hexPosition.y} {transform.position.x} {transform.position.z} {String.Format("{0:.##}", Time.time)} ";
+            logger.UpdateCurrentPath(currentMove);
         }   
-        timeD += Time.deltaTime;
     }
 
     void HandleMovement()
@@ -84,7 +82,7 @@ public class Controller : MonoBehaviour
                 currentBook.OnInteraction();
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
-                logger.LogOnBookClose(currentBook.bookName, openBookTime, Time.time);
+                logger.LogOnBookClose(currentBook.bookArticleLink, openBookTime, Time.time);
                 return;
             }
 

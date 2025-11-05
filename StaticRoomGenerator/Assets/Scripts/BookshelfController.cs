@@ -7,7 +7,7 @@ public class BookshelfController : MonoBehaviour
 
     Vector3 lastPosition = new Vector3(-0.00671065785f, 0.00317066023f, -0.000581036031f);
 
-    public void AddBook(string name, string content)
+    public void AddBook(string name, string content, string articleLink)
     {
         Book = Instantiate(Book, transform);
         Book.transform.localPosition = lastPosition;
@@ -17,6 +17,7 @@ public class BookshelfController : MonoBehaviour
             Book.GetComponent<BookInteraction>().content = "# " + name + "\n";
         Book.GetComponent<BookInteraction>().bookName = name;
         Book.GetComponent<BookInteraction>().content = content;
+        Book.GetComponent<BookInteraction>().bookArticleLink = articleLink + $"#{name.Replace(" ", "_")}";
         lastPosition += new Vector3(0.001f, 0f, 0f);
     }
 

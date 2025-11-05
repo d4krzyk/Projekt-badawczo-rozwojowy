@@ -26,7 +26,8 @@ public class RoomGeneration : MonoBehaviour
     public Logger logger;
     public string previousRoom;
 
-    public ArticleStructure articleData; 
+    public ArticleStructure articleData;
+    public string articleLink;
 
     public async Task<string> GetArticleAsync(string article)
     {
@@ -209,7 +210,7 @@ public class RoomGeneration : MonoBehaviour
         {
             if (subsection.content != null)
             {
-                bookshelf.AddBook(subsection.name, subsection.content);
+                bookshelf.AddBook(subsection.name, subsection.content, articleLink);
             }
             if (subsection.subsections != null)
             {
@@ -220,6 +221,7 @@ public class RoomGeneration : MonoBehaviour
 
     public async void GenerateRoom(string articleName)
     {
+        articleLink = "https://en.wikipedia.org/wiki/" + articleName.Replace(" ", "_");
         float enterTime = Time.time;
         Debug.Log("Loading " + articleName + "..."); 
         string json = await GetArticleAsync(articleName);
@@ -315,7 +317,7 @@ public class RoomGeneration : MonoBehaviour
                 currentBookshelfController.AddSign(articleData.content[i].name);
                 if (articleData.content[i].content != null)
                 {
-                    currentBookshelfController.AddBook(articleData.content[i].name, articleData.content[i].content);
+                    currentBookshelfController.AddBook(articleData.content[i].name, articleData.content[i].content, articleLink);
                 }
                 if (articleData.content[i].subsections != null)
                 {
@@ -336,7 +338,7 @@ public class RoomGeneration : MonoBehaviour
             currentBookshelfController.AddSign(articleData.content[i + 4].name);
             if (articleData.content[i + 4].content != null)
             {
-                currentBookshelfController.AddBook(articleData.content[i + 4].name, articleData.content[i + 4].content);
+                currentBookshelfController.AddBook(articleData.content[i + 4].name, articleData.content[i + 4].content, articleLink);
             }
             if (articleData.content[i + 4].subsections != null)
             {
@@ -360,7 +362,8 @@ public class RoomGeneration : MonoBehaviour
     }
 
     public void LogRoom()
-    {
-        logger.LogOnRoomExit(articleData.name, enterTime, exitTime, previousRoom);
+    { 
+        string previousRoomUrl = "https://en.wikipedia.org/wiki/" + previousRoom.Replace(" ", "_");
+        logger.LogOnRoomExit(articleLink, enterTime, exitTime, previousRoomUrl);
     }
 }

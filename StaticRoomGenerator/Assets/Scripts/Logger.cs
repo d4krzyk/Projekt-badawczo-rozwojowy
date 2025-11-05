@@ -9,7 +9,7 @@ public class Logger : MonoBehaviour
     List<Log> logs;
     List<LinkLog> lastLinkLogs;
     List<BookLog> lastBookLogs;
-
+    string currentPath;
 
     void Start()
     {
@@ -17,6 +17,7 @@ public class Logger : MonoBehaviour
         logs = new List<Log>();
         lastLinkLogs = new List<LinkLog>();
         lastBookLogs = new List<BookLog>();
+        currentPath = "";
     }
 
     public void LogOnRoomExit(
@@ -28,25 +29,27 @@ public class Logger : MonoBehaviour
     {
         RoomLog log = new RoomLog();
         log.sessionId = sessionId;
-        log.roomName = roomName;
+        log.roomLink = roomName;
         log.enterTime = enterTime;
         log.exitTime = exitTime;
         log.bookLogs = lastBookLogs;
         log.linkLogs = lastLinkLogs;
-        log.previousRoom = previousRoom;
+        log.previousRoomLink = previousRoom;
+        log.roomPath = currentPath.Trim();
 
         logs.Add(log);
 
         lastLinkLogs = new List<LinkLog>();
         lastBookLogs = new List<BookLog>();
+        currentPath = "";
 
         Debug.Log(JsonConvert.SerializeObject(logs));
     }
 
-    public void LogOnBookClose(string bookName, float openTime, float closeTime)
+    public void LogOnBookClose(string bookLink, float openTime, float closeTime)
     {
         BookLog log = new BookLog();
-        log.bookName = bookName;
+        log.bookLink = bookLink;
         log.openTime = openTime;
         log.closeTime = closeTime;
 
@@ -60,5 +63,10 @@ public class Logger : MonoBehaviour
         log.clickTime = clickTime;
 
         lastLinkLogs.Add(log);
+    }
+
+    public void UpdateCurrentPath(string currentMove)
+    {
+        currentPath += currentMove;
     }
 }
