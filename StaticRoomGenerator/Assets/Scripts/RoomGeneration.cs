@@ -113,22 +113,25 @@ public class RoomGeneration : MonoBehaviour
 
         TexturesStructure texturesData = JsonConvert.DeserializeObject<TexturesStructure>(json);
         byte[] texData = Convert.FromBase64String(texturesData.images.bookcase);
-        Texture2D bookshelfTex = new Texture2D(0, 0);
+        Texture2D bookshelfTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         bookshelfTex.LoadImage(texData);
         bookshelfTex.filterMode = FilterMode.Point;
+        bookshelfTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
         Bookcase.mainTexture = bookshelfTex;
 
-        texData = Convert.FromBase64String(texturesData.images.wall);
-        Debug.Log(texturesData.images.wall);
-        Texture2D wallTex = new Texture2D(0, 0);
-        wallTex.LoadImage(texData);
-        bookshelfTex.filterMode = FilterMode.Point;
+        byte[] texData = Convert.FromBase64String(texturesData.images.wall);
+        Texture2D wallTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
+        wallTex.LoadImage(texData, false);
+        wallTex.filterMode = FilterMode.Point;    
+        wallTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
         Wall.mainTexture = wallTex;
 
-        texData = Convert.FromBase64String(texturesData.images.floor);
-        Texture2D floorTex = new Texture2D(0, 0);
+
+        byte[] texData = Convert.FromBase64String(texturesData.images.floor);
+        Texture2D floorTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         floorTex.LoadImage(texData);
-        bookshelfTex.filterMode = FilterMode.Point;
+        floorTex.filterMode = FilterMode.Point;
+        floorTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
         Floor.mainTexture = floorTex;
 
         FrontRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
