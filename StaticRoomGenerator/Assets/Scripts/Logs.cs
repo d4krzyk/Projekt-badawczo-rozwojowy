@@ -20,16 +20,16 @@ public class RoomLog : Log
 }
 
 [Serializable]
-public class BookLog : Log
+public class BookLog
 {
     public string bookName;
-    public int openTime;
-    public int closeTime;
+    public float openTime;
+    public float closeTime;
 }
 
 [Serializable]
-public class LinkLog : Log
+public class LinkLog
 {
     public string linkName;
-    public int clickTime;
+    public float clickTime;
 }

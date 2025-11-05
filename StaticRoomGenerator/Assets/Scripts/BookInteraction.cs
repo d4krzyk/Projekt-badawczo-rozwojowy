@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BookInteraction : MonoBehaviour, IInteractable
 {
+    public string bookName;
     public string content;
 
 

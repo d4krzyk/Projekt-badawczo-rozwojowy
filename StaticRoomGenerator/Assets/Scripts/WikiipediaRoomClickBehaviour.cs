@@ -7,12 +7,13 @@ using System.Text.RegularExpressions;
 public class WikiipediaRoomClickBehaviour : MonoBehaviour
 {
     RoomsController _roomsController;
+    Logger logger;
     public RoomsController roomsController
     {
         get
         {
             if (_roomsController == null)
-                _roomsController = FindObjectOfType<RoomsController>();
+                _roomsController = FindAnyObjectByType<RoomsController>();
             return _roomsController;
         }
     }
@@ -20,6 +21,7 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
     private void Awake()
     {
         GetComponent<TextLinkHelper>().OnLinkClicked += ClickOnLink;
+        logger = FindAnyObjectByType<Logger>();
     }
 
 
@@ -27,6 +29,7 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
     {
         string pattern = @"https:\/\/en\.wikipedia\.org\/wiki\/([^#]+)(?:#(.+))?";
 
+        logger.LogOnLinkClick(link, Time.time);
 
         Match match = Regex.Match(link, pattern);
         if (match.Success)
