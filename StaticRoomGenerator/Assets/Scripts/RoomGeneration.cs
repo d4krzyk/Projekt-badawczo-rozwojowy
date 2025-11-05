@@ -119,7 +119,7 @@ public class RoomGeneration : MonoBehaviour
         bookshelfTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
         Bookcase.mainTexture = bookshelfTex;
 
-        byte[] texData = Convert.FromBase64String(texturesData.images.wall);
+        texData = Convert.FromBase64String(texturesData.images.wall);
         Texture2D wallTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         wallTex.LoadImage(texData, false);
         wallTex.filterMode = FilterMode.Point;    
@@ -127,7 +127,7 @@ public class RoomGeneration : MonoBehaviour
         Wall.mainTexture = wallTex;
 
 
-        byte[] texData = Convert.FromBase64String(texturesData.images.floor);
+        texData = Convert.FromBase64String(texturesData.images.floor);
         Texture2D floorTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         floorTex.LoadImage(texData);
         floorTex.filterMode = FilterMode.Point;
