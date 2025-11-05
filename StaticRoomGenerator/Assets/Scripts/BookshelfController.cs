@@ -15,7 +15,8 @@ public class BookshelfController : MonoBehaviour
         Book.transform.localScale = new Vector3(-0.0644469038f, -0.0108729266f, -0.00513079017f);
         if(name != null)
             Book.GetComponent<BookInteraction>().content = "# " + name + "\n";
-        Book.GetComponent<BookInteraction>().content += content;
+        Book.GetComponent<BookInteraction>().bookName = name;
+        Book.GetComponent<BookInteraction>().content = content;
         lastPosition += new Vector3(0.001f, 0f, 0f);
     }
 

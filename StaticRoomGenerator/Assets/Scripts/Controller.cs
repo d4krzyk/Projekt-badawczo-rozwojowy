@@ -12,6 +12,7 @@ public class Controller : MonoBehaviour
     public MarkdownRenderer leftPage;
     public MarkdownRenderer rightPage;
     public BookController bookController;
+    public Logger logger;
 
     float xRotation = 0f;
     bool isReading = false;
@@ -19,6 +20,7 @@ public class Controller : MonoBehaviour
     Vector2Int hexPosition;
     string path = "";
     float timeD = 0f;
+    float openBookTime;
 
     void Start()
     {
@@ -82,6 +84,7 @@ public class Controller : MonoBehaviour
                 currentBook.OnInteraction();
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
+                logger.LogOnBookClose(currentBook.bookName, openBookTime, Time.time);
                 return;
             }
 
@@ -102,6 +105,7 @@ public class Controller : MonoBehaviour
                         isReading = true;
                         Cursor.lockState = CursorLockMode.None;
                         Cursor.visible = true;
+                        openBookTime = Time.time;
                     }
                 }
             }

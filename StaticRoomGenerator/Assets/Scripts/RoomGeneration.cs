@@ -251,6 +251,6 @@ public class RoomGeneration : MonoBehaviour
 
     public void LogRoom()
     {
-        logger.LogOnRoomExit(articleData.name, enterTime, exitTime, new List<BookLog>(), new List<LinkLog>(), previousRoom);
+        logger.LogOnRoomExit(articleData.name, enterTime, exitTime, previousRoom);
     }
 }
