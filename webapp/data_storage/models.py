@@ -47,6 +47,7 @@ class Room(Base):
     user_session = relationship("UserSession", back_populates="rooms")
 
     books = relationship("Book", back_populates="room", cascade="all, delete-orphan")
+    book_links = relationship("BookLink", back_populates="room", cascade="all, delete-orphan")
 
 
 class Book(Base):
@@ -89,10 +90,14 @@ class BookLink(Base):
     click_time = Column(DateTime, nullable=True)
 
     book_id = Column(
-        Integer, ForeignKey("books.id", ondelete="CASCADE", name="fk_book_links_book_id"), nullable=False
+        Integer, ForeignKey("books.id", ondelete="CASCADE", name="fk_book_links_book_id"), nullable=True
     )
     user_session_id = Column(
         Integer, ForeignKey("user_sessions.id", ondelete="CASCADE", name="fk_book_links_user_session_id"), nullable=False
     )
+    room_id = Column(
+        Integer, ForeignKey("rooms.id", ondelete="CASCADE", name="fk_book_links_room_id"), nullable=False
+    )
     book = relationship("Book", back_populates="links")
     user_session = relationship("UserSession", back_populates="book_links")
+    room = relationship("Room", back_populates="book_links")
