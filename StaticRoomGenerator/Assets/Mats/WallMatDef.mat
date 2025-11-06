@@ -101,6 +101,7 @@ Material:
     - _EnvironmentReflections: 1
     - _FadeEnd: 6
     - _FadeStart: 1
+    - _FlatShading: 1
     - _FloorThreshold: 0.9
     - _FloorWarpScale: 0.25
     - _GeoRes: 40

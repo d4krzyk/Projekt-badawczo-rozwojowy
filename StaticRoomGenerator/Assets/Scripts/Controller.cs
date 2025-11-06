@@ -2,9 +2,11 @@ using System;
 using LogicUI.FancyTextRendering;
 using UnityEngine;
 
+[RequireComponent(typeof(CharacterController))]
 public class Controller : MonoBehaviour
 {
-    public float moveSpeed = 5f;
+    public float moveSpeed = 3.2f;
+    public float gravity = 9.81f;
     public float mouseSensitivity = 2f;
     public float interactDistance = 3f;
     public Transform cameraTransform;
@@ -14,14 +16,36 @@ public class Controller : MonoBehaviour
     public BookController bookController;
     public Logger logger;
 
+    // --- proste parametry bob + footsteps ---
+    [Header("Camera Bob / Footsteps")]
+    public float bobAmount = 0.05f;            // ile kamera schodzi (metry)
+    public float baseStepSpeed = 1.7f;         // tempo bobbingu przy domyślnym moveSpeed
+    public AudioSource footstepSource;
+    public AudioClip footstepClip;
+    [Range(0f,1f)] public float footstepVolume = 0.35f;
+    public float groundCheckDistance = 1.1f;   // odległość sprawdzająca czy jesteśmy na ziemi
+
     float xRotation = 0f;
     bool isReading = false;
     BookInteraction currentBook;
     Vector2Int hexPosition;
     float openBookTime;
 
+    // stan bob/step
+    float defaultCamY;
+    float bobTimer = 0f;
+    bool playedThisStep = false;
+    bool wasMoving = false;
+    // character controller + vertical velocity (przeniesione z FPSCharacterWalkController)
+    private CharacterController controller;
+    private float verticalVelocity = 0f;
+
     void Start()
     {
+        // wymagamy CharacterControllera i pobieramy go
+        if (GetComponent<CharacterController>() == null) gameObject.AddComponent<CharacterController>();
+        controller = GetComponent<CharacterController>();
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         hexPosition = DataCollectionUtil.PixelToHexPos(new Vector2(transform.position.x, transform.position.z));
@@ -29,6 +53,9 @@ public class Controller : MonoBehaviour
         customCulture.NumberFormat.NumberDecimalSeparator = ".";
 
         System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
+
+        // inicjalizacja bob
+        if (cameraTransform != null) defaultCamY = cameraTransform.localPosition.y;
     }
 
     void Update()
@@ -36,13 +63,17 @@ public class Controller : MonoBehaviour
         HandleMovement();
         HandleMouseLook();
         HandleInteraction();
+
+        // obsługa prostego bob i kroków
+        HandleCameraBobAndFootsteps();
+
         Vector2Int newPosition = DataCollectionUtil.PixelToHexPos(new Vector2(transform.position.x, transform.position.z));
         if (hexPosition != newPosition)
         {
             hexPosition = newPosition;
             string currentMove = $"{hexPosition.x} {hexPosition.y} {transform.position.x} {transform.position.z} {String.Format("{0:.##}", Time.time)} ";
             //logger.UpdateCurrentPath(currentMove); // comment bo zgłasza błąd w konsoli 
-        }   
+        }
     }
 
     void HandleMovement()
@@ -50,8 +81,24 @@ public class Controller : MonoBehaviour
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
-        Vector3 move = isReading ? Vector3.zero : transform.right * horizontal + transform.forward * vertical;
-        transform.position += move * moveSpeed * Time.deltaTime;
+        // input ruchu w lokalnych osiach
+        Vector3 input = new Vector3(horizontal, 0f, vertical);
+        Vector3 desiredMove = Vector3.zero;
+        if (!isReading)
+        {
+            desiredMove = (transform.right * horizontal + transform.forward * vertical);
+            if (desiredMove.sqrMagnitude > 1f) desiredMove.Normalize();
+            desiredMove *= moveSpeed;
+        }
+
+        // gravity + CharacterController.Move (jak we FPSCharacterWalkController)
+        if (controller.isGrounded)
+            verticalVelocity = -0.5f;
+        else
+            verticalVelocity -= gravity * Time.deltaTime;
+
+        desiredMove.y = verticalVelocity;
+        controller.Move(desiredMove * Time.deltaTime);
     }
 
     void HandleMouseLook()
@@ -110,5 +157,67 @@ public class Controller : MonoBehaviour
 
         }
 
+    }
+
+    // proste przeniesione zachowanie: jeśli gracz się porusza i stoi na ziemi ->
+    // sinusoidalny bob (im szybciej moveSpeed tym szybciej) oraz pojedynczy dźwięk raz na "dół" fali
+    void HandleCameraBobAndFootsteps()
+    {
+        if (cameraTransform == null) return;
+
+        // czy gracz podaje input ruchu?
+        bool inputMove = (Input.GetAxisRaw("Horizontal") != 0f || Input.GetAxisRaw("Vertical") != 0f);
+        // CharacterController.isGrounded (stabilniejsze)
+        bool grounded = controller != null ? controller.isGrounded : Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
+        bool movingAndGrounded = inputMove && grounded && !isReading;
+
+        if (movingAndGrounded)
+        {
+            // tempo bob zależne od moveSpeed
+            float bobSpeed = baseStepSpeed * (moveSpeed / 2f);
+            bobTimer += Time.deltaTime * bobSpeed;
+
+            float yOffset = Mathf.Sin(bobTimer * Mathf.PI) * bobAmount;
+            cameraTransform.localPosition = new Vector3(
+                cameraTransform.localPosition.x,
+                defaultCamY + Mathf.Abs(yOffset),
+                cameraTransform.localPosition.z
+            );
+
+            // odtwórz dźwięk raz gdy fala osiąga "dół"
+            if (Mathf.Sin(bobTimer * Mathf.PI) < -0.9f)
+            {
+                if (!playedThisStep)
+                {
+                    PlayStep();
+                    playedThisStep = true;
+                }
+            }
+            else
+            {
+                playedThisStep = false;
+            }
+
+            wasMoving = true;
+        }
+        else
+        {
+            // resetuj i płynnie ustaw kamerę z powrotem
+            bobTimer = 0f;
+            playedThisStep = false;
+            wasMoving = false;
+            cameraTransform.localPosition = new Vector3(
+                cameraTransform.localPosition.x,
+                Mathf.Lerp(cameraTransform.localPosition.y, defaultCamY, Time.deltaTime * 8f),
+                cameraTransform.localPosition.z
+            );
+        }
+    }
+
+    void PlayStep()
+    {
+        if (footstepSource == null || footstepClip == null) return;
+        footstepSource.pitch = UnityEngine.Random.Range(0.95f, 1.05f);
+        footstepSource.PlayOneShot(footstepClip, footstepVolume);
     }
 }
