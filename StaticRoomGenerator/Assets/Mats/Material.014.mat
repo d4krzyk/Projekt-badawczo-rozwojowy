@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Material.014
-  m_Shader: {fileID: 211, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: 569928933fcf71b41b780c8433b865d0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -18,8 +18,7 @@ Material:
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
-  disabledShaderPasses:
-  - GRABPASS
+  disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -75,17 +74,30 @@ Material:
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0
+    - _Dither: 0.5
     - _DstBlend: 0
     - _EmissionEnabled: 0
+    - _EnableWarp: 1
+    - _FadeEnd: 6
+    - _FadeStart: 1
     - _FlipbookMode: 0
+    - _FloorThreshold: 0.9
+    - _FloorWarpScale: 0.25
+    - _GeoRes: 40
+    - _GlobalWarpScale: 0.15
+    - _Gloss: 0.2
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
+    - _LightSteps: 4
     - _LightingEnabled: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _PalLevels: 8
     - _Parallax: 0.02
+    - _PixelateTex: 32
+    - _ShadowSteps: 3
     - _SmoothnessTextureChannel: 0
     - _SoftParticlesEnabled: 0
     - _SoftParticlesFarFadeDistance: 1
@@ -93,6 +105,9 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _WallThreshold: 0.2
+    - _WallWarpScale: 0.6
+    - _Warp: 0.15
     - _ZWrite: 1
     m_Colors:
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}

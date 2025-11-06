@@ -9,5 +9,6 @@ public class SignController : MonoBehaviour
     {
         TextMesh textMesh = transform.GetChild(0).gameObject.GetComponent<TextMesh>();
         textMesh.text = content;
+        
     }
 }
