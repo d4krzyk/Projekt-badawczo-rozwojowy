@@ -65,7 +65,7 @@ def extract_sections_as_nested_list(article_url):
 
     started_main_content = False
 
-    for tag in content_div.descendants:
+    for  tag in content_div.find_all(recursive=True):
         if not started_main_content:
             if tag.name == "h2":
                 started_main_content = True
