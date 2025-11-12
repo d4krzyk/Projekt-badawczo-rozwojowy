@@ -1,4 +1,4 @@
-# Standard Library
+﻿# Standard Library
 import re
 from collections import deque
 
@@ -49,13 +49,23 @@ def extract_sections_as_nested_list(article_url):
     intro_content = ""
 
     def clean_text(tag):
+        # Usun odniesienia w indeksie górnym
         for sup in tag.find_all("sup", class_="reference"):
             sup.decompose()
+        # Konwertuj linki do Markdown
+        for a in tag.find_all("a"):
+            if a.has_attr("href"):
+                href = a["href"]
+                if href.startswith("/wiki/"):
+                    href = "https://en.wikipedia.org" + href
+                text = a.get_text(strip=True)
+                a.replace_with(f"[{text}]({href})")
+        # Wyodrebnij oczyszczony tekst
         return re.sub(r"\s{2,}", " ", tag.get_text(separator=" ", strip=True)).strip()
 
     started_main_content = False
 
-    for tag in content_div.descendants:
+    for tag in content_div.find_all(recursive=True):
         if not started_main_content:
             if tag.name == "h2":
                 started_main_content = True
