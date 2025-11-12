@@ -25,9 +25,15 @@ public class RoomGeneration : MonoBehaviour
     public float exitTime;
     public Logger logger;
     public string previousRoom;
-
     public ArticleStructure articleData;
     public string articleLink;
+
+    Dictionary<string, TexturesStructure> textureCache;
+
+    void Awake()
+    {
+        textureCache = new Dictionary<string, TexturesStructure>();
+    }
 
     public async Task<string> GetArticleAsync(string article)
     {
@@ -56,82 +62,22 @@ public class RoomGeneration : MonoBehaviour
     }
 
 
-    public async Task<string> GetTexturesJsonAsync(string category, string ArticleName)
+    public async Task<string> GetTexturesJsonAsync(string category)
     {
-
-        string cacheDir = Path.Combine(Application.dataPath, "TextureCache");
-        if (!Directory.Exists(cacheDir))
-            Directory.CreateDirectory(cacheDir);
-
-        string fileKey = SanitizeFileName((ArticleName ?? category));
-        string cachePath = Path.Combine(cacheDir, fileKey + ".json");
-
-        if (File.Exists(cachePath))
-        {
-            try
-            {
-                string cached = File.ReadAllText(cachePath, Encoding.UTF8);
-                Debug.Log($"Loaded textures from cache: {cachePath}");
-                return cached;
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning("Nie udało się odczytać cache: " + e.Message);
-                // kontynuuj i odśwież cache z serwera
-            }
-        }
-
         string url = $"http://localhost:8000/gen2DTextures";
         string requestBody = "{\"category\": \"" + category + "\"}";
-
-        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))  
-        {   
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(requestBody);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-
-
+        using (UnityWebRequest request = UnityWebRequest.Post(url, requestBody, "application/json"))
+        {
             var operation = request.SendWebRequest();
-            while (!operation.isDone)
-                await Task.Yield(); // Wait asynchronously without blocking main thread
-
+            while (!operation.isDone)  await Task.Yield(); // Wait asynchronously without blocking main thread
             if (request.result == UnityWebRequest.Result.Success)
             {
-                string response = request.downloadHandler.text;
-                try
-                {
-                    File.WriteAllText(cachePath, response, Encoding.UTF8);
-                    Debug.Log($"Saved textures to cache: {cachePath}");
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning("Nie udało się zapisać cache: " + e.Message);
-                }
-
-
-
-
-                return response;
+                return request.downloadHandler.text;
             }
             else
             {
-                Debug.LogWarning($"Texture API niedostępne ({request.error}). Ładowanie tekstur testowych.");
-                // fallback -> wygeneruj proste testowe tekstury i zwróć jako JSON (base64)
-                string bookcaseB64 = CreateFallbackTexturesJson("bookcase");
-                string wallB64 = CreateFallbackTexturesJson("wall");
-                string floorB64 = CreateFallbackTexturesJson("floor");
-                var obj = new
-                {
-                    images = new
-                    {
-                        bookcase = bookcaseB64,
-                        wall = wallB64,
-                        floor = floorB64
-                    }
-                };
-                string fallback = JsonConvert.SerializeObject(obj);
-                return fallback;
+                Debug.LogError("Request error: " + request.error);
+                return null;
             }
         }
     }
@@ -178,32 +124,6 @@ public class RoomGeneration : MonoBehaviour
         return normal;
     }
 
-    private string CreateFallbackTexturesJson(string textureType)
-    {
-        try
-        {
-            string texturesDir = Path.Combine(Application.dataPath, "Textures");
-            string fileName = textureType;
-            if (!fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                fileName += ".png";
-            string fullPath = Path.Combine(texturesDir, fileName);
-
-            if (!File.Exists(fullPath))
-            {
-                Debug.LogWarning($"Fallback texture not found: {fullPath}");
-                return ""; // pusty string oznacza brak obrazka
-            }
-
-            byte[] bytes = File.ReadAllBytes(fullPath);
-            return Convert.ToBase64String(bytes);
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning("CreateFallbackTexturesJson error: " + e.Message);
-            return "";
-        }
-    }
-
     void AddBooksFromSubsection(BookshelfController bookshelf, Sections[] sections)
     {
         foreach (Sections subsection in sections)
@@ -232,14 +152,18 @@ public class RoomGeneration : MonoBehaviour
         }
         articleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
         Debug.Log("Waiting for " + articleData.category + " textures...");
-        json = await GetTexturesJsonAsync(articleData.category, articleName);
+        json = await GetTexturesJsonAsync(articleData.category);
         if (string.IsNullOrEmpty(json))
         {
             Debug.LogError("Failed to retrieve article data.");
             //return;
         }
-
-        TexturesStructure texturesData = JsonConvert.DeserializeObject<TexturesStructure>(json);
+        TexturesStructure texturesData;
+        if (!textureCache.TryGetValue(articleName, out texturesData))
+        {
+            texturesData = JsonConvert.DeserializeObject<TexturesStructure>(json);
+            textureCache.Add(articleName, texturesData);
+        }
         byte[] texData = Convert.FromBase64String(texturesData.images.bookcase);
         Texture2D bookshelfTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         bookshelfTex.LoadImage(texData);
