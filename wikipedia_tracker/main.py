@@ -27,5 +27,10 @@ async def log_data(request: Request):
         return {"status": "Error", "message": str(e)}
 
 
+@app.get("/")
+def home():
+    return {"message": "Wikipedia Tracker."}
+
+
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="127.0.0.1", port=5000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=5000, reload=True)
