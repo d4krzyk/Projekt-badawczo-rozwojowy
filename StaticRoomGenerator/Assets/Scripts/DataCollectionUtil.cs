@@ -9,7 +9,7 @@ public class DataCollectionUtil : MonoBehaviour
     public const float HEX_WIDTH = SQRT3 * HEX_SIZE;
     public const float HEX_HEIGHT = 2.0f * HEX_SIZE;
 
-    Vector2Int Vector2IntRound(Vector2 pos)
+    static Vector2Int Vector2IntRound(Vector2 pos)
     {
         float xgrid = Mathf.Round(pos.x);
         float ygrid = Mathf.Round(pos.y);
@@ -35,7 +35,7 @@ public class DataCollectionUtil : MonoBehaviour
         float xx = SQRT3 / 3.0f * x - 1.0f / 3.0f * y;
         float yy = 2.0f / 3.0f * y;
 
-        return new Vector2Int(Mathf.FloorToInt(xx), Mathf.FloorToInt(yy));
+        return Vector2IntRound(new Vector2(xx, yy));
     }
 
 }

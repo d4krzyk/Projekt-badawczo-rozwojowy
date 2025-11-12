@@ -72,7 +72,7 @@ public class Controller : MonoBehaviour
         {
             hexPosition = newPosition;
             string currentMove = $"{hexPosition.x} {hexPosition.y} {transform.position.x} {transform.position.z} {String.Format("{0:.##}", Time.time)} ";
-            //logger.UpdateCurrentPath(currentMove); // comment bo zgłasza błąd w konsoli 
+            logger.UpdateCurrentPath(currentMove);
         }
     }
 

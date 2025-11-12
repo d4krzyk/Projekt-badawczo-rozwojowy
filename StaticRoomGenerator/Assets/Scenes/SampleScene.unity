@@ -4122,7 +4122,7 @@ MonoBehaviour:
   leftPage: {fileID: 14453668}
   rightPage: {fileID: 974258906}
   bookController: {fileID: 1312706476}
-  logger: {fileID: 0}
+  logger: {fileID: 2101044395}
   bobAmount: 0.05
   baseStepSpeed: 1.7
   footstepSource: {fileID: 947016147}
