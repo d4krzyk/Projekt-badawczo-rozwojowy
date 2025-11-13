@@ -226,20 +226,24 @@ public class RoomGeneration : MonoBehaviour
         // 2. Pobierz tekstury (może z cache)
         Debug.Log("Waiting for " + articleData.category + " textures...");
         string texturesJson = await GetTexturesJsonAsync(articleData.category, articleName);
+
+        TexturesStructure texturesData = null;
         if (string.IsNullOrEmpty(texturesJson))
         {
             Debug.LogWarning("Failed to retrieve textures data.");
-            // zgodnie z oryginałem - nie przerywamy tutaj dalszego działania
+            // nie przerywamy działania — spróbujemy fallbacków dalej
         }
-
-        TexturesStructure texturesData = null;
-        try
+        else
         {
-            texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning("Nie udało się zdeserializować texturesJson: " + e.Message);
+            try
+            {
+                texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Nie udało się zdeserializować texturesJson: " + e.Message);
+                texturesData = null;
+            }
         }
 
         if (texturesData == null)
