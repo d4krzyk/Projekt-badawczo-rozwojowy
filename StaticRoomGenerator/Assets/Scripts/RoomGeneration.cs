@@ -15,6 +15,7 @@ public class RoomGeneration : MonoBehaviour
     public GameObject BookshelfAttachment;
     public GameObject ClosingAttachment;
     public GameObject Bookshelf;
+
     public Material Bookcase;
     public Material Floor;
     public Material Wall;
@@ -25,6 +26,8 @@ public class RoomGeneration : MonoBehaviour
     public float exitTime;
     public Logger logger;
     public string previousRoom;
+    public int BookshelfPerRoom = 5;
+    
     public ArticleStructure articleData;
     public string articleLink;
 
@@ -62,21 +65,59 @@ public class RoomGeneration : MonoBehaviour
     }
 
 
-    public async Task<string> GetTexturesJsonAsync(string category)
+    public async Task<string> GetTexturesJsonAsync(string category, string articleName)
     {
         string url = $"http://localhost:8000/gen2DTextures";
         string requestBody = "{\"category\": \"" + category + "\"}";
-        using (UnityWebRequest request = UnityWebRequest.Post(url, requestBody, "application/json"))
+
+        // cache path per-article
+        string safeName = SanitizeFileName(articleName ?? category);
+        string cacheFileName = $"textures_{safeName}.json";
+        string cachePath = Path.Combine(Application.persistentDataPath, cacheFileName);
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(requestBody);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("accept", "application/json");
+
             var operation = request.SendWebRequest();
-            while (!operation.isDone)  await Task.Yield(); // Wait asynchronously without blocking main thread
+            while (!operation.isDone) await Task.Yield(); // Wait asynchronously without blocking main thread
+
             if (request.result == UnityWebRequest.Result.Success)
             {
-                return request.downloadHandler.text;
+                string response = request.downloadHandler.text;
+                try
+                {
+                    File.WriteAllText(cachePath, response, Encoding.UTF8);
+                    Debug.Log($"Saved textures to cache: {cachePath}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning("Nie udało się zapisać cache: " + e.Message);
+                }
+
+                return response;
             }
             else
             {
-                Debug.LogError("Request error: " + request.error);
+                Debug.LogWarning("Request error (textures): " + request.error + " — próba odczytu z cache.");
+                // spróbuj odczytać z cache
+                if (File.Exists(cachePath))
+                {
+                    try
+                    {
+                        string cached = File.ReadAllText(cachePath, Encoding.UTF8);
+                        Debug.Log($"Loaded textures from cache: {cachePath}");
+                        return cached;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning("Błąd odczytu cache: " + e.Message);
+                    }
+                }
                 return null;
             }
         }
@@ -124,26 +165,56 @@ public class RoomGeneration : MonoBehaviour
         return normal;
     }
 
-    void AddBooksFromSubsection(BookshelfController bookshelf, Sections[] sections)
+    private string CreateFallbackTexturesJson(string textureType)
+    {
+        try
+        {
+            string texturesDir = Path.Combine(Application.dataPath, "Textures");
+            string fileName = textureType;
+            if (!fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                fileName += ".png";
+            string fullPath = Path.Combine(texturesDir, fileName);
+
+            if (!File.Exists(fullPath))
+            {
+                Debug.LogWarning($"Fallback texture not found: {fullPath}");
+                return ""; // pusty string oznacza brak obrazka
+            }
+
+            byte[] bytes = File.ReadAllBytes(fullPath);
+            return Convert.ToBase64String(bytes);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("CreateFallbackTexturesJson error: " + e.Message);
+            return "";
+        }
+    }
+
+    void AddBooksFromSubsection(BookshelfController bookshelf, Sections[] sections, Transform parent, ref int bookIndex)
     {
         foreach (Sections subsection in sections)
         {
             if (subsection.content != null)
             {
-                bookshelf.AddBook(subsection.name, subsection.content, articleLink);
+                bookshelf.AddBook(subsection.name, subsection.content, articleLink, parent, bookIndex);
+                bookIndex++;
             }
             if (subsection.subsections != null)
             {
-                AddBooksFromSubsection(bookshelf, subsection.subsections);
+                AddBooksFromSubsection(bookshelf, subsection.subsections, parent, ref bookIndex);
             }
         }
     }
 
     public async void GenerateRoom(string articleName)
     {
+        // zachowano oryginalne zachowanie (m.in. lokalne shadowing zmiennej enterTime)
         articleLink = "https://en.wikipedia.org/wiki/" + articleName.Replace(" ", "_");
         float enterTime = Time.time;
         Debug.Log("Loading " + articleName + "..."); 
+
+        // 1. Pobierz artykuł
         string json = await GetArticleAsync(articleName);
         if (string.IsNullOrEmpty(json))
         {
@@ -151,19 +222,56 @@ public class RoomGeneration : MonoBehaviour
             return;
         }
         articleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
+
+        // 2. Pobierz tekstury (może z cache)
         Debug.Log("Waiting for " + articleData.category + " textures...");
-        json = await GetTexturesJsonAsync(articleData.category);
-        if (string.IsNullOrEmpty(json))
+        string texturesJson = await GetTexturesJsonAsync(articleData.category, articleName);
+        if (string.IsNullOrEmpty(texturesJson))
         {
-            Debug.LogError("Failed to retrieve article data.");
-            //return;
+            Debug.LogWarning("Failed to retrieve textures data.");
+            // zgodnie z oryginałem - nie przerywamy tutaj dalszego działania
         }
-        TexturesStructure texturesData;
-        if (!textureCache.TryGetValue(articleName, out texturesData))
+
+        TexturesStructure texturesData = null;
+        try
         {
-            texturesData = JsonConvert.DeserializeObject<TexturesStructure>(json);
-            textureCache.Add(articleName, texturesData);
+            texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
         }
+        catch (Exception e)
+        {
+            Debug.LogWarning("Nie udało się zdeserializować texturesJson: " + e.Message);
+        }
+
+        if (texturesData == null)
+        {
+            // spróbuj fallbacków (jeśli masz lokalne pliki)
+            texturesData = new TexturesStructure();
+            texturesData.images = new ImagesStructure();
+            texturesData.images.bookcase = CreateFallbackTexturesJson("bookcase");
+            texturesData.images.wall = CreateFallbackTexturesJson("wall");
+            texturesData.images.floor = CreateFallbackTexturesJson("floor");
+        }
+
+        // 3. Zastosuj tekstury i materiały
+        ApplyTexturesToMaterials(texturesData);
+
+        // 4. Przygotuj początkowe attachment point / offset
+        Vector3 lastAttachmentPoint = PrepareAttachmentPoint();
+
+        // 5. Stwórz półki początkowe
+        int roomSize = articleData.content.Length;
+        int bookIndex = 0;
+        CreateInitialBookshelves(roomSize, ref bookIndex);
+
+        // 6. Dodaj dodatkowe półki jeśli potrzeba
+        CreateAdditionalBookshelves(roomSize, ref bookIndex, ref lastAttachmentPoint);
+
+        // 7. Dodaj zamknięcie pomieszczenia
+        PlaceClosingAttachment(lastAttachmentPoint);
+    }
+
+    private void ApplyTexturesToMaterials(TexturesStructure texturesData)
+    {
         byte[] texData = Convert.FromBase64String(texturesData.images.bookcase);
         Texture2D bookshelfTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         bookshelfTex.LoadImage(texData);
@@ -172,18 +280,6 @@ public class RoomGeneration : MonoBehaviour
         Bookcase.mainTexture = bookshelfTex;
 
         Texture2D bookcaseNormalTex = null;
-        // try
-        // {
-        //     // jeśli API zwróciło normalkę
-        //     if (texturesData.images.bookcase_normal != null && texturesData.images.bookcase_normal.Length > 0)
-        //     {
-        //         byte[] ndata = Convert.FromBase64String(texturesData.images.bookcase_normal);
-        //         bookcaseNormalTex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-        //         bookcaseNormalTex.LoadImage(ndata);
-        //         bookcaseNormalTex.Apply(updateMipmaps: true, makeNoLongerReadable: false);
-        //     }
-        // }
-        // catch { bookcaseNormalTex = null; }
 
         if (bookcaseNormalTex == null)
         {
@@ -203,15 +299,12 @@ public class RoomGeneration : MonoBehaviour
         if (Bookcase.HasProperty("_Metallic"))
             Bookcase.SetFloat("_Metallic", 0.0f);
 
-
-
         texData = Convert.FromBase64String(texturesData.images.wall);
         Texture2D wallTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         wallTex.LoadImage(texData, false);
         wallTex.filterMode = FilterMode.Point;    
         wallTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
         Wall.mainTexture = wallTex;
-
 
         texData = Convert.FromBase64String(texturesData.images.floor);
         Texture2D floorTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
@@ -223,58 +316,112 @@ public class RoomGeneration : MonoBehaviour
         FrontRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
         BackRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
 
-        int roomSize = articleData.content.Length;
         var a = Instantiate(BookshelfAttachment, gameObject.transform);
         a.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
+        DestroyImmediate(a, true);
+    }
 
-
-        Vector3 lastAttachmentPoint = AttachmentPoint.position;
+    private Vector3 PrepareAttachmentPoint()
+    {
+        // utwórz tymczasowo obiekt aby odczytać bounds, potem usuń
+        var a = Instantiate(BookshelfAttachment, gameObject.transform);
         Vector3 offset = new Vector3(a.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
         DestroyImmediate(a, true);
-        for (int i = 0; i < 4; i++)
+
+        // zwróć punkt startowy skorygowany o połowę szerokości attachmentu
+        Vector3 lastAttachmentPoint = AttachmentPoint.position - offset;
+        return lastAttachmentPoint;
+    }
+
+    private void CreateInitialBookshelves(int roomSize, ref int bookIndex)
+    {
+        for (int i = 0; i < BookshelfPerRoom; i++)
         {
-            GameObject b = Instantiate(Bookshelf, initialBookshelfPosition.position + new Vector3(initialBookshelfOffset * i, 0, 0), Quaternion.Euler(new Vector3(-90, 0, 270)), transform);
+            GameObject container = new GameObject();
+            container.transform.parent = transform;
+            container.name = "BookshelfContainer_" + i;
+            container.transform.position = initialBookshelfPosition.position + new Vector3(initialBookshelfOffset * i, 0, 0);
+            
+            GameObject b = Instantiate(Bookshelf, container.transform.position, Quaternion.Euler(new Vector3(-90, 90, -90)), transform);
+            b.transform.parent = container.transform;
             b.GetComponent<MeshRenderer>().sharedMaterial = Bookcase;
             BookshelfController currentBookshelfController = b.GetComponent<BookshelfController>();
             if (i < roomSize)
             {
-                currentBookshelfController.AddSign(articleData.content[i].name);
+                currentBookshelfController.AddSign(articleData.content[i].name, container.transform);
                 if (articleData.content[i].content != null)
                 {
-                    currentBookshelfController.AddBook(articleData.content[i].name, articleData.content[i].content, articleLink);
+                    currentBookshelfController.AddBook(articleData.content[i].name, articleData.content[i].content, articleLink, container.transform, bookIndex);
+                    bookIndex++;
                 }
                 if (articleData.content[i].subsections != null)
                 {
-                    AddBooksFromSubsection(currentBookshelfController, articleData.content[i].subsections);
+                    AddBooksFromSubsection(currentBookshelfController, articleData.content[i].subsections, container.transform, ref bookIndex);
                 }
             }
         }
+    }
 
-        for (int i = 0; i < roomSize - 4; i++)
+    private void CreateAdditionalBookshelves(int roomSize, ref int bookIndex, ref Vector3 lastAttachmentPoint)
+    {
+        // jeśli nie ma dodatkowych półek do dodania, nic nie rób
+        if (roomSize <= BookshelfPerRoom)
+            return;
+
+        // zmierz realną szerokość attachmentu przez tymczasową instancję
+        var tmp = Instantiate(BookshelfAttachment, AttachmentPoint.position, Quaternion.identity, transform);
+        float fullWidth = tmp.GetComponent<Renderer>().bounds.size.x;
+        DestroyImmediate(tmp, true);
+
+        // krok będzie połową pełnej szerokości, dzięki temu łączenia są poprawne (unikamy podwójnego przesunięcia)
+        float halfStep = fullWidth / 2f;
+
+        for (int i = 0; i < roomSize - BookshelfPerRoom; i++)
         {
-            a = Instantiate(BookshelfAttachment, lastAttachmentPoint - offset, Quaternion.identity, transform);
+            // dla pierwszej dodatkowej półki użyj lastAttachmentPoint bez dodatkowego przesunięcia,
+            // dla kolejnych przesuwaj o halfStep (co w sumie daje krok = fullWidth między kolejnymi półkami)
+            Vector3 placement = (i == 0) ? lastAttachmentPoint : lastAttachmentPoint - new Vector3(halfStep, 0, 0);
+
+            GameObject container = new GameObject();
+            container.transform.parent = transform;
+            container.name = "BookshelfContainerAdd_" + i;
+            container.transform.position = placement;
+
+            var a = Instantiate(BookshelfAttachment, container.transform.position, Quaternion.identity, transform);
             a.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
-            GameObject b = Instantiate(Bookshelf, lastAttachmentPoint - offset, Quaternion.Euler(new Vector3(-90, 0, 270)), transform);
+
+            container.transform.position = new Vector3(container.transform.position.x, initialBookshelfPosition.position.y - 0.08f, container.transform.position.z);
+
+            GameObject b = Instantiate(Bookshelf, container.transform.position, Quaternion.Euler(new Vector3(-90, 90, -90)), transform);
             b.GetComponent<MeshRenderer>().sharedMaterial = Bookcase;
             BookshelfController currentBookshelfController = b.GetComponent<BookshelfController>();
-            b.transform.position = new Vector3(b.transform.position.x, 9.135365f, b.transform.position.z);
+            b.transform.position = new Vector3(b.transform.position.x, 8.87f, b.transform.position.z);
 
-            currentBookshelfController.AddSign(articleData.content[i + 4].name);
-            if (articleData.content[i + 4].content != null)
+            int contentIndex = i + BookshelfPerRoom;
+            if (contentIndex < articleData.content.Length)
             {
-                currentBookshelfController.AddBook(articleData.content[i + 4].name, articleData.content[i + 4].content, articleLink);
+                currentBookshelfController.AddSign(articleData.content[contentIndex].name, container.transform);
+                if (articleData.content[contentIndex].content != null)
+                {
+                    currentBookshelfController.AddBook(articleData.content[contentIndex].name, articleData.content[contentIndex].content, articleLink, container.transform, bookIndex);
+                    bookIndex++;
+                }
+                if (articleData.content[contentIndex].subsections != null)
+                {
+                    AddBooksFromSubsection(currentBookshelfController, articleData.content[contentIndex].subsections, container.transform, ref bookIndex);
+                }
             }
-            if (articleData.content[i + 4].subsections != null)
-            {
-                AddBooksFromSubsection(currentBookshelfController, articleData.content[i + 4].subsections);
 
-            }
-            lastAttachmentPoint -= 2 * offset;
+            // zaktualizuj lastAttachmentPoint przesuwając o halfStep (razem z powyższym daje krok pełnej szerokości)
+            lastAttachmentPoint = placement - new Vector3(halfStep, 0, 0);
         }
-        offset = new Vector3(ClosingAttachment.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
+    }
+
+    private void PlaceClosingAttachment(Vector3 lastAttachmentPoint)
+    {
+        Vector3 offset = new Vector3(ClosingAttachment.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
         var c = Instantiate(ClosingAttachment, lastAttachmentPoint - offset, Quaternion.identity, transform);
         c.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
-
     }
 
     public void ResetRoom()
@@ -291,3 +438,4 @@ public class RoomGeneration : MonoBehaviour
         logger.LogOnRoomExit(articleLink, enterTime, exitTime, previousRoomUrl);
     }
 }
+

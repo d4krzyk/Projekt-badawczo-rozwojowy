@@ -63,14 +63,14 @@ Material:
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0
-    - _Dither: 0.71
+    - _Dither: 1
     - _DstBlend: 0
     - _EmissionEnabled: 1
     - _EmissionIntensity: 98
     - _FlatShading: 1
     - _FlipbookMode: 0
-    - _GeoRes: 11
-    - _Jitter: 0.25
+    - _GeoRes: 44.16
+    - _Jitter: 10.28
     - _LightingEnabled: 0
     - _Mode: 0
     - _Parallax: 0.02
@@ -84,7 +84,7 @@ Material:
     - _SoftParticlesNearFadeDistance: 0
     - _SrcBlend: 1
     - _UseAffineUV: 0
-    - _Warp: 0.674
+    - _Warp: 0.136
     - _ZWrite: 1
     m_Colors:
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}

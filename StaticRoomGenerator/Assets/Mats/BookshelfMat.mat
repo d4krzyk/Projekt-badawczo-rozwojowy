@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BookshelfMat
-  m_Shader: {fileID: 4800000, guid: 569928933fcf71b41b780c8433b865d0, type: 3}
+  m_Shader: {fileID: 4800000, guid: fbe5c5f5ee971c0488bf48a48f435059, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -80,7 +80,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
-    - _Jitter: 0.5
+    - _Jitter: 10
     - _LightSteps: 4
     - _Metallic: 0
     - _Mode: 0
@@ -95,7 +95,7 @@ Material:
     - _UVSec: 0
     - _WallThreshold: 0.2
     - _WallWarpScale: 0.6
-    - _Warp: 0.103
+    - _Warp: 0.064
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
