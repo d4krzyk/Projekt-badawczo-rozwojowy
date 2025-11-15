@@ -25,7 +25,17 @@ def parse_time(s):
 def load_json(path):
 
     with open(path, 'r', encoding='utf-8-sig') as f:
-        return json.load(f)
+        
+        lines = f.read()
+
+    lines = lines.splitlines()
+
+    if len(lines) >= 2 and lines[0].strip() == "```" and lines[-1].strip() == "```":
+        lines = lines[1:-1]
+
+    lines = "\n".join(lines)   
+        
+    return json.loads(lines)
 
 
 def extract_link_label(url):
