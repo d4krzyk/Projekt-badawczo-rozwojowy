@@ -84,6 +84,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: book_combination2
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7d89c2288b37b034c8f880a69a29a5bb, type: 3}
+      propertyPath: m_TagString
+      value: Book
+      objectReference: {fileID: 0}
     - target: {fileID: 8567717000986892130, guid: 7d89c2288b37b034c8f880a69a29a5bb, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 

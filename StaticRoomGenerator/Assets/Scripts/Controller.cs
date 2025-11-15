@@ -2,13 +2,14 @@ using System;
 using LogicUI.FancyTextRendering;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(CharacterController))
+]
 public class Controller : MonoBehaviour
 {
     public float moveSpeed = 3.2f;
     public float gravity = 9.81f;
     public float mouseSensitivity = 2f;
-    public float interactDistance = 3f;
+    public float interactDistance = 2f;
     public Transform cameraTransform;
     public GameObject BookUI;
     public MarkdownRenderer leftPage;
@@ -24,6 +25,13 @@ public class Controller : MonoBehaviour
     public AudioClip footstepClip;
     [Range(0f,1f)] public float footstepVolume = 0.35f;
     public float groundCheckDistance = 1.1f;   // odległość sprawdzająca czy jesteśmy na ziemi
+
+    // --- dźwięki otwierania/zamykania książki ---
+    [Header("Book Sounds")]
+    public AudioClip openBookClip;
+    public AudioClip closeBookClip;
+    [Range(0f,1f)] public float bookSoundVolume = 0.5f;
+    public AudioSource bookAudioSource;
 
     float xRotation = 0f;
     bool isReading = false;
@@ -56,6 +64,14 @@ public class Controller : MonoBehaviour
 
         // inicjalizacja bob
         if (cameraTransform != null) defaultCamY = cameraTransform.localPosition.y;
+
+        // przygotuj AudioSource dla dźwięków książki, jeśli nie przypisano w inspectorze
+        if (bookAudioSource == null)
+        {
+            bookAudioSource = gameObject.AddComponent<AudioSource>();
+            bookAudioSource.playOnAwake = false;
+            bookAudioSource.spatialBlend = 0f; // 2D sound (możesz ustawić 3D jeśli chcesz)
+        }
     }
 
     void Update()
@@ -124,6 +140,10 @@ public class Controller : MonoBehaviour
         {
             if (isReading)
             {
+                // odtwórz dźwięk zamknięcia książki
+                if (bookAudioSource != null && closeBookClip != null)
+                    bookAudioSource.PlayOneShot(closeBookClip, bookSoundVolume);
+
                 isReading = false;
                 BookUI.SetActive(false);
                 currentBook.OnInteraction();
@@ -139,9 +159,13 @@ public class Controller : MonoBehaviour
                 IInteractable interactable = hit.collider.GetComponent<IInteractable>();
                 if (interactable != null)
                 {
-                    interactable.OnInteraction();
+                    // jeśli to książka - odtwórz dźwięk otwarcia i przejdź do trybu czytania
                     if (interactable.GetType() == typeof(BookInteraction))
                     {
+                        if (bookAudioSource != null && openBookClip != null)
+                            bookAudioSource.PlayOneShot(openBookClip, bookSoundVolume);
+
+                        interactable.OnInteraction();
                         currentBook = (BookInteraction)interactable;
                         leftPage.Source = currentBook.content;
                         rightPage.Source = currentBook.content;
@@ -151,7 +175,11 @@ public class Controller : MonoBehaviour
                         Cursor.lockState = CursorLockMode.None;
                         Cursor.visible = true;
                         openBookTime = Time.time;
+                        return;
                     }
+
+                    // ogólne interakcje nie-książkowe
+                    interactable.OnInteraction();
                 }
             }
 

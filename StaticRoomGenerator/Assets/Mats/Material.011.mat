@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Material.011
-  m_Shader: {fileID: 4800000, guid: 569928933fcf71b41b780c8433b865d0, type: 3}
+  m_Shader: {fileID: 4800000, guid: fbe5c5f5ee971c0488bf48a48f435059, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -70,7 +70,9 @@ Material:
     - _FlatShading: 1
     - _FlipbookMode: 0
     - _GeoRes: 44.16
+    - _Gloss: 0.2
     - _Jitter: 10.28
+    - _LightSteps: 4
     - _LightingEnabled: 0
     - _Mode: 0
     - _Parallax: 0.02
