@@ -103,11 +103,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbd7266687a5a2143974d0f93c64de1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BookshelfController
-  Book: {fileID: 9180335457279577621, guid: 4292b86ec7057aa4989dd7b80bef64f3, type: 3}
+  BookVariants:
+  - {fileID: 8855030370363735154, guid: 35706f294e612a8479cc2189d75123fd, type: 3}
+  - {fileID: 1544225573571686312, guid: 89feb9e355cbcc6459bfc842b0d7f2ab, type: 3}
+  - {fileID: 6357683676405959991, guid: d5ac62a225319ba4695b2264f58aef22, type: 3}
+  - {fileID: 6220459616262144272, guid: 63c4493873dd8024dacc0b8a5af36c2c, type: 3}
   Sign: {fileID: 3482480152544124024, guid: ed7c7389ed3716349876ea924b07c85c, type: 3}
   booksPerRow: 2
   zStep: -0.63
-  rowYOffset: 0.5
+  rowYOffset: 0.517
+  extraGap: 0.08
   logLocalPositions: 1
 --- !u!64 &8571489731090429360
 MeshCollider:
