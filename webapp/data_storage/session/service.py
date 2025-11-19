@@ -1,155 +1,67 @@
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from ..models import (
-    DataUser,
-    UserSession,
-    Room,
-    Book,
-    BookSessionEvent,
-    BookLink,
-)
-from ..schemas import FullSessionRequest
-
-
-def create_full_session(db: Session, request: FullSessionRequest):
-    # Find or create DataUser
-    data_user = (
-        db.execute(select(DataUser).where(DataUser.name == request.user_name))
-        .scalars()
-        .first()
-    )
-    if not data_user:
-        data_user = DataUser(name=request.user_name)
-        db.add(data_user)
-        db.flush()
-
-    # Create UserSession
-    session_start_time = datetime.utcnow()
-    session_end_time = session_start_time + timedelta(
-        seconds=request.session_logs[-1].exitTime
-    )
-    user_session = UserSession(
-        data_user_id=data_user.id,
-        start_time=session_start_time,
-        end_time=session_end_time,
-    )
-    db.add(user_session)
-    db.flush()
-
-    for room_log in request.session_logs:
-        # Create Room
-        room = Room(
-            name=room_log.roomName,
-            enter_time=session_start_time + timedelta(seconds=room_log.enterTime),
-            exit_time=session_start_time + timedelta(seconds=room_log.exitTime),
-            user_session_id=user_session.id,
-        )
-        db.add(room)
-        db.flush()
-
-        for book_log in room_log.bookLogs:
-            # Create Book
-            book = Book(name=book_log.bookName, room_id=room.id)
-            db.add(book)
-            db.flush()
-
-            # Create BookSessionEvent
-            book_session_event = BookSessionEvent(
-                book_id=book.id,
-                user_session_id=user_session.id,
-                open_time=session_start_time + timedelta(seconds=book_log.openTime),
-                close_time=session_start_time
-                + timedelta(seconds=book_log.closeTime),
-            )
-            db.add(book_session_event)
-
-        for link_log in room_log.linkLogs:
-            # Create BookLink
-            book_link = BookLink(
-                link=link_log.linkName,
-                click_time=session_start_time
-                + timedelta(seconds=link_log.clickTime),
-                room_id=room.id,
-                user_session_id=user_session.id,
-            )
-            db.add(book_link)
-
-    db.commit()
-    return
+from .usersession.schemas import FullSessionRequest, SessionInfo
+from .user.schemas import UserSessionsResponse
+from . import base_repository
+from .user.repository import UserRepository
+from .usersession.repository import UserSessionRepository
+from .room.repository import RoomRepository
+from .book.repository import BookRepository
+from .event.repository import EventRepository
+from .link.repository import LinkRepository
+from .user.service import UserService
+from .room.service import RoomService
+from .book.service import BookService
+from .link.service import LinkService
 
 
-def get_user_sessions(db: Session, user_name: str):
-    # Find the user
-    data_user = (
-        db.execute(select(DataUser).where(DataUser.name == user_name))
-        .scalars()
-        .first()
-    )
-    if not data_user:
-        raise ValueError(f"User '{user_name}' not found")
-
-    # Get all sessions for the user, loading related rooms, books, book events, and book links
-    user_sessions_db = (
-        db.execute(
-            select(UserSession)
-            .where(UserSession.data_user_id == data_user.id)
-            .options(
-                joinedload(UserSession.rooms).joinedload(Room.book_links),
-                joinedload(UserSession.rooms).joinedload(Room.books).joinedload(Book.session_events).joinedload(BookSessionEvent.book),
-            )
-            .order_by(UserSession.start_time)
-        )
-        .scalars()
-        .unique()
-        .all()
-    )
-
-    sessions_response = []
-    for session_db in user_sessions_db:
-        rooms_response = []
-        for room_db in session_db.rooms:
-            book_session_events_response = []
-            for book_db in room_db.books:
-                for event_db in book_db.session_events:
-                    book_session_events_response.append({
-                        "open_time": event_db.open_time,
-                        "close_time": event_db.close_time,
-                        "book": {"name": book_db.name}
-                    })
-            
-            book_links_response = []
-            for link_db in room_db.book_links:
-                book_links_response.append({
-                    "link": link_db.link,
-                    "click_time": link_db.click_time
-                })
-
-            rooms_response.append({
-                "name": room_db.name,
-                "enter_time": room_db.enter_time,
-                "exit_time": room_db.exit_time,
-                "book_session_events": book_session_events_response,
-                "book_link_events": book_links_response,
-            })
+class SessionService:
+    def __init__(self, db: Session):
+        self.db = db
+        # Repositories
+        self.user_repo = UserRepository(db)
+        self.usersession_repo = UserSessionRepository(db)
+        self.room_repo = RoomRepository(db)
+        self.book_repo = BookRepository(db)
+        self.event_repo = EventRepository(db)
+        self.link_repo = LinkRepository(db)
         
-        sessions_response.append({
-            "id": session_db.id,
-            "start_time": session_db.start_time,
-            "end_time": session_db.end_time,
-            "rooms": rooms_response,
-        })
+        # Services
+        self.user_service = UserService(self.user_repo)
+        self.link_service = LinkService(self.link_repo)
+        self.book_service = BookService(self.book_repo, self.event_repo)
+        self.room_service = RoomService(self.room_repo, self.book_service, self.link_service)
 
-    return {"user_name": user_name, "sessions": sessions_response}
+    def create_full_session(self, request: FullSessionRequest):
+        """Creates a full user session from request data."""
+        if not request.session_logs:
+            return
 
-def clear_all_data(db: Session):
-    # Order of deletion is important due to foreign key constraints
-    db.query(BookLink).delete()
-    db.query(BookSessionEvent).delete()
-    db.query(Book).delete()
-    db.query(Room).delete()
-    db.query(UserSession).delete()
-    db.query(DataUser).delete()
-    db.commit()
-    return
+        data_user = self.user_service.get_or_create_user(request.user_name)
+
+        session_start_time = datetime.utcnow()
+        session_end_time = session_start_time + timedelta(
+            seconds=request.session_logs[-1].exitTime
+        )
+        
+        user_session = self.usersession_repo.create(
+            user_id=data_user.id,
+            start_time=session_start_time,
+            end_time=session_end_time,
+        )
+
+        for room_log in request.session_logs:
+            self.room_service.create_room_and_logs(room_log, user_session.id, session_start_time)
+
+        self.db.commit()
+
+    def get_user_sessions(self, user_name: str):
+        data_user = self.user_service.get_user_by_name(user_name)
+        user_sessions_db = self.usersession_repo.get_all_for_user(data_user.id)
+        sessions = [SessionInfo.from_orm(s) for s in user_sessions_db]
+        return UserSessionsResponse(user_name=user_name, sessions=sessions)
+
+    def clear_all_data(self):
+        base_repository.clear_all_data(self.db)
+        self.db.commit()

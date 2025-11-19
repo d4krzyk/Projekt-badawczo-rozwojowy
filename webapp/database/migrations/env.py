@@ -23,9 +23,14 @@ if config.config_file_name is not None:
 from database.engine import DATABASE_URL
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
-# from authorization import models
-from data_storage import models
 from database.engine import Base
+from data_storage.session.user.models import DataUser
+from data_storage.session.usersession.models import UserSession
+from data_storage.session.room.models import Room
+from data_storage.session.book.models import Book
+from data_storage.session.event.models import BookSessionEvent
+from data_storage.session.link.models import BookLink
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
