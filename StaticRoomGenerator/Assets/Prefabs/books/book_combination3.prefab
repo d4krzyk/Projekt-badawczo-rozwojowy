@@ -165,6 +165,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8bd2e12456520224ebd8979b68dbc102, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8921321569028938741}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8bd2e12456520224ebd8979b68dbc102, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7981094766197968052}
   m_SourcePrefab: {fileID: 100100000, guid: 8bd2e12456520224ebd8979b68dbc102, type: 3}
 --- !u!1 &6357683676405959991 stripped
 GameObject:
@@ -255,3 +258,40 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.3992424, y: 0.38945678, z: 0.6722698}
   m_Center: {x: -0.005716324, y: 0.18331479, z: -0.12203121}
+--- !u!114 &7981094766197968052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6357683676405959991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7cf160a010bde24fa6a8b7d9fd46ca3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoverSwapper
+  CoverMaterials:
+  - {fileID: 2100000, guid: b1949ac2f041730439d5b876edb3d665, type: 2}
+  - {fileID: 2100000, guid: e2955a181aebf484e93a3068832b1ae7, type: 2}
+  - {fileID: 2100000, guid: 07397297b6e50c4489a8fbf15138b18a, type: 2}
+  - {fileID: 2100000, guid: 20c64666077117f4da52d730bed4859b, type: 2}
+  - {fileID: 2100000, guid: 46095808823077e43bc10e30b27c0508, type: 2}
+  - {fileID: 2100000, guid: 541a568be012657498285c349d483b50, type: 2}
+  - {fileID: 2100000, guid: 439bd7a63dfc1494297e3aef16dd85d5, type: 2}
+  - {fileID: 2100000, guid: cab24bc019c15bc4c9fba0ea66387c9c, type: 2}
+  - {fileID: 2100000, guid: 2aeafa32b13cb87408b34f11e2354927, type: 2}
+  - {fileID: 2100000, guid: aaebec78c4d05344c917337515e1b951, type: 2}
+  - {fileID: 2100000, guid: 58e569fb378f0ab4f9c3ec544af1af62, type: 2}
+  - {fileID: 2100000, guid: 290318649a2be0e4192ee85003356aa8, type: 2}
+  - {fileID: 2100000, guid: 87a0938b7ceeff2468dde0711e27070c, type: 2}
+  - {fileID: 2100000, guid: 298f7e233c409904cba5d3cce33d1c5b, type: 2}
+  - {fileID: 2100000, guid: 93361a14df174574bb2055104841b65e, type: 2}
+  - {fileID: 2100000, guid: 08291c78b418b054ab7ab3edb5505a4b, type: 2}
+  - {fileID: 2100000, guid: ad41c773284139941b0f526ca31b11b4, type: 2}
+  - {fileID: 2100000, guid: 5f4e219864d8ffc44888904d58b3ff32, type: 2}
+  - {fileID: 2100000, guid: c9c4362c4f0300e44834278baef2b88f, type: 2}
+  PaperMaterial: {fileID: 2100000, guid: 8894370e65376c84fa7bb712e9418be7, type: 2}
+  instantiateMaterialPerBook: 1
+  coverChildNamePrefix: cube
+  coverMaterialIndex: 0
+  paperMaterialIndex: 1
