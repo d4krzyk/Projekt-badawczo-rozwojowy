@@ -241,9 +241,6 @@ public class BookshelfController : MonoBehaviour
 
         bookObj.transform.localPosition = localPos;
 
-        if (logLocalPositions)
-            Debug.Log($"[Bookshelf:{gameObject.name}] Book_{index} prefab={prefab.name} type={prefabType} sizeZLocal={sizeZLocal:F3} localPos={localPos} overflowRows={overflowRows}");
-
         var bi = bookObj.GetComponent<BookInteraction>();
         if (bi != null)
         {

@@ -3999,7 +3999,6 @@ GameObject:
   - component: {fileID: 621679089}
   - component: {fileID: 621679088}
   - component: {fileID: 621679091}
-  - component: {fileID: 621679093}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -4175,31 +4174,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PS1CameraSnap
   pixelSize: 0.0020833334
---- !u!143 &621679093
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 621679083}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 1
-  m_Radius: 0.49999997
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!43 &633155405
 Mesh:
   m_ObjectHideFlags: 0
@@ -8851,6 +8825,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 621679087}
   teleportPoint: {fileID: 149964654}
+  gameController: {fileID: 335614232}
 --- !u!1 &1158774286
 GameObject:
   m_ObjectHideFlags: 0
@@ -8900,6 +8875,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 621679087}
   teleportPoint: {fileID: 1743887595}
+  gameController: {fileID: 335614232}
 --- !u!135 &1158774289
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -15323,11 +15299,14 @@ MonoBehaviour:
   AttachmentPoint: {fileID: 470823624}
   BookshelfAttachment: {fileID: 2342486905492265518, guid: eb600cbeaf7d2e8419920277391ec26f, type: 3}
   ClosingAttachment: {fileID: 1809771709141931084, guid: cfdf89c3c472afc458f6861bd3197e39, type: 3}
-  Bookshelf: {fileID: 919132149155446097, guid: a5ca6f3b730a85340998303727339d7b, type: 3}
-  Bookcase: {fileID: 2100000, guid: 43458aaa2aa12b04d9036107c9aadd5d, type: 2}
-  Floor: {fileID: 2100000, guid: e25e267b28af9844cb42ae0888624c79, type: 2}
-  Wall: {fileID: 2100000, guid: ce4c2946246fec849aa4bee35bc80452, type: 2}
-  initialBookshelfOffset: -3
+  Bookshelf: {fileID: 2039724192458736144, guid: 10d8801b655cab449bd84855f00560db, type: 3}
+  bookshelfMat: {fileID: 2100000, guid: 6f882a15a3bb0db4b912def8abfe08cf, type: 2}
+  floorMat: {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
+  wallMat: {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
+  defBookcaseMat: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
+  defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
+  defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
+  initialBookshelfOffset: -2.15
   initialBookshelfPosition: {fileID: 1562632235}
   articleName: Robert Lewandowski
   enterTime: 0
@@ -15391,9 +15370,12 @@ MonoBehaviour:
   BookshelfAttachment: {fileID: 2342486905492265518, guid: eb600cbeaf7d2e8419920277391ec26f, type: 3}
   ClosingAttachment: {fileID: 1809771709141931084, guid: cfdf89c3c472afc458f6861bd3197e39, type: 3}
   Bookshelf: {fileID: 2039724192458736144, guid: 10d8801b655cab449bd84855f00560db, type: 3}
-  Bookcase: {fileID: 2100000, guid: 6f882a15a3bb0db4b912def8abfe08cf, type: 2}
-  Floor: {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
-  Wall: {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
+  bookshelfMat: {fileID: 2100000, guid: 6f882a15a3bb0db4b912def8abfe08cf, type: 2}
+  floorMat: {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
+  wallMat: {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
+  defBookcaseMat: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
+  defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
+  defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
   initialBookshelfOffset: -2.15
   initialBookshelfPosition: {fileID: 501486391}
   articleName: Business

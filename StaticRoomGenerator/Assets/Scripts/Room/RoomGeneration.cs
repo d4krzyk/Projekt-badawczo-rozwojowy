@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using System.IO;
-using System.Text;
 
 public class RoomGeneration : MonoBehaviour
 {
@@ -16,9 +14,16 @@ public class RoomGeneration : MonoBehaviour
     public GameObject ClosingAttachment;
     public GameObject Bookshelf;
 
-    public Material Bookcase;
-    public Material Floor;
-    public Material Wall;
+    [Header("Room materials")]
+    public Material bookshelfMat;
+    public Material floorMat;
+    public Material wallMat;
+
+    [Header("Default materials")]
+    public Material defBookcaseMat;
+    public Material defFloorMat;
+    public Material defWallMat;
+
     public float initialBookshelfOffset;
     public Transform initialBookshelfPosition;
     public string articleName;
@@ -31,13 +36,60 @@ public class RoomGeneration : MonoBehaviour
     public ArticleStructure articleData;
     public string articleLink;
 
-    Dictionary<string, TexturesStructure> textureCache;
 
-    void Awake()
+    public async void GenerateRoom(string articleName)
     {
-        textureCache = new Dictionary<string, TexturesStructure>();
+        SetDefaultMaterials();
+        
+        articleLink = "https://en.wikipedia.org/wiki/" + articleName.Replace(" ", "_");
+        enterTime = Time.time;
+        Debug.Log($"Loading {articleName}..."); 
+
+        // Pobieranie artykułu
+        string json = await GetArticleAsync(articleName);
+        if (string.IsNullOrEmpty(json))
+        {
+            Debug.LogError("Failed to retrieve article data.");
+            return;
+        }
+        articleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
+
+        // Pobieranie tekstur i updateuj materiały
+        Debug.Log($"Waiting for {articleData.category} textures...");
+        string texturesJson = await GetTexturesJsonAsync(articleData.category);
+        TexturesStructure texturesData = null;
+        if (string.IsNullOrEmpty(texturesJson)) Debug.LogWarning("Failed to retrieve textures data.");
+        else
+        {
+            texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
+            ApplyTexturesToMaterials(texturesData);
+        }
+
+        // Przygotuj początkowe attachment point / offset
+        Vector3 offset = new Vector3(BookshelfAttachment.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
+        Vector3 lastAttachmentPoint = AttachmentPoint.position - offset;
+
+        // Stwórz półki początkowe
+        int roomSize = articleData.content.Length;
+        int bookIndex = 0;
+        CreateInitialBookshelves(roomSize, ref bookIndex);
+
+        // Dodaj dodatkowe półki jeśli potrzeba
+        CreateAdditionalBookshelves(roomSize, ref bookIndex, ref lastAttachmentPoint);
+
+        // Dodaj zamknięcie pomieszczenia
+        PlaceClosingAttachment(lastAttachmentPoint);
     }
 
+    void SetDefaultMaterials()
+    {
+        FrontRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
+        BackRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
+        BookshelfAttachment.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
+        ClosingAttachment.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
+        Bookshelf.GetComponent<MeshRenderer>().sharedMaterial = defBookcaseMat;
+    }
+    
     public async Task<string> GetArticleAsync(string article)
     {
         string encodedArticle = UnityWebRequest.EscapeURL(article);
@@ -50,7 +102,7 @@ public class RoomGeneration : MonoBehaviour
             var operation = request.SendWebRequest();
 
             while (!operation.isDone)
-                await Task.Yield(); // Wait asynchronously without blocking main thread
+                await Task.Yield(); 
 
             if (request.result == UnityWebRequest.Result.Success)
             {
@@ -64,74 +116,28 @@ public class RoomGeneration : MonoBehaviour
         }
     }
 
-
-    public async Task<string> GetTexturesJsonAsync(string category, string articleName)
+    public async Task<string> GetTexturesJsonAsync(string category)
     {
         string url = $"http://localhost:8000/gen2DTextures";
         string requestBody = "{\"category\": \"" + category + "\"}";
 
-        // cache path per-article
-        string safeName = SanitizeFileName(articleName ?? category);
-        string cacheFileName = $"textures_{safeName}.json";
-        string cachePath = Path.Combine(Application.persistentDataPath, cacheFileName);
-
-        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        using (UnityWebRequest request = UnityWebRequest.Post(url, requestBody, "application/json"))
         {
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(requestBody);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("accept", "application/json");
-
             var operation = request.SendWebRequest();
-            while (!operation.isDone) await Task.Yield(); // Wait asynchronously without blocking main thread
+            while (!operation.isDone) await Task.Yield(); 
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                string response = request.downloadHandler.text;
-                try
-                {
-                    File.WriteAllText(cachePath, response, Encoding.UTF8);
-                    Debug.Log($"Saved textures to cache: {cachePath}");
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning("Nie udało się zapisać cache: " + e.Message);
-                }
-
-                return response;
+                return request.downloadHandler.text;
             }
             else
             {
-                Debug.LogWarning("Request error (textures): " + request.error + " — próba odczytu z cache.");
-                // spróbuj odczytać z cache
-                if (File.Exists(cachePath))
-                {
-                    try
-                    {
-                        string cached = File.ReadAllText(cachePath, Encoding.UTF8);
-                        Debug.Log($"Loaded textures from cache: {cachePath}");
-                        return cached;
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogWarning("Błąd odczytu cache: " + e.Message);
-                    }
-                }
+                Debug.LogWarning($"Request error (textures): {request.error}");
                 return null;
             }
         }
     }
     
-    private static string SanitizeFileName(string name)
-    {
-        if (string.IsNullOrEmpty(name)) return "untitled";
-        var invalid = Path.GetInvalidFileNameChars();
-        var sb = new StringBuilder(name);
-        foreach (var c in invalid)
-            sb.Replace(c, '_');
-        return sb.ToString();
-    }
     private Texture2D CreateNormalMapFromGrayscale(Texture2D source, float strength = 1.0f)
     {
         int w = source.width;
@@ -165,32 +171,6 @@ public class RoomGeneration : MonoBehaviour
         return normal;
     }
 
-    private string CreateFallbackTexturesJson(string textureType)
-    {
-        try
-        {
-            string texturesDir = Path.Combine(Application.dataPath, "Textures");
-            string fileName = textureType;
-            if (!fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                fileName += ".png";
-            string fullPath = Path.Combine(texturesDir, fileName);
-
-            if (!File.Exists(fullPath))
-            {
-                Debug.LogWarning($"Fallback texture not found: {fullPath}");
-                return ""; // pusty string oznacza brak obrazka
-            }
-
-            byte[] bytes = File.ReadAllBytes(fullPath);
-            return Convert.ToBase64String(bytes);
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning("CreateFallbackTexturesJson error: " + e.Message);
-            return "";
-        }
-    }
-
     void AddBooksFromSubsection(BookshelfController bookshelf, Sections[] sections, Transform parent, ref int bookIndex)
     {
         foreach (Sections subsection in sections)
@@ -207,134 +187,42 @@ public class RoomGeneration : MonoBehaviour
         }
     }
 
-    public async void GenerateRoom(string articleName)
-    {
-        // zachowano oryginalne zachowanie (m.in. lokalne shadowing zmiennej enterTime)
-        articleLink = "https://en.wikipedia.org/wiki/" + articleName.Replace(" ", "_");
-        float enterTime = Time.time;
-        Debug.Log("Loading " + articleName + "..."); 
-
-        // 1. Pobierz artykuł
-        string json = await GetArticleAsync(articleName);
-        if (string.IsNullOrEmpty(json))
-        {
-            Debug.LogError("Failed to retrieve article data.");
-            return;
-        }
-        articleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
-
-        // 2. Pobierz tekstury (może z cache)
-        Debug.Log("Waiting for " + articleData.category + " textures...");
-        string texturesJson = await GetTexturesJsonAsync(articleData.category, articleName);
-
-        TexturesStructure texturesData = null;
-        if (string.IsNullOrEmpty(texturesJson))
-        {
-            Debug.LogWarning("Failed to retrieve textures data.");
-            // nie przerywamy działania — spróbujemy fallbacków dalej
-        }
-        else
-        {
-            try
-            {
-                texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning("Nie udało się zdeserializować texturesJson: " + e.Message);
-                texturesData = null;
-            }
-        }
-
-        if (texturesData == null)
-        {
-            // spróbuj fallbacków (jeśli masz lokalne pliki)
-            texturesData = new TexturesStructure();
-            texturesData.images = new ImagesStructure();
-            texturesData.images.bookcase = CreateFallbackTexturesJson("bookcase");
-            texturesData.images.wall = CreateFallbackTexturesJson("wall");
-            texturesData.images.floor = CreateFallbackTexturesJson("floor");
-        }
-
-        // 3. Zastosuj tekstury i materiały
-        ApplyTexturesToMaterials(texturesData);
-
-        // 4. Przygotuj początkowe attachment point / offset
-        Vector3 lastAttachmentPoint = PrepareAttachmentPoint();
-
-        // 5. Stwórz półki początkowe
-        int roomSize = articleData.content.Length;
-        int bookIndex = 0;
-        CreateInitialBookshelves(roomSize, ref bookIndex);
-
-        // 6. Dodaj dodatkowe półki jeśli potrzeba
-        CreateAdditionalBookshelves(roomSize, ref bookIndex, ref lastAttachmentPoint);
-
-        // 7. Dodaj zamknięcie pomieszczenia
-        PlaceClosingAttachment(lastAttachmentPoint);
-    }
-
-    private void ApplyTexturesToMaterials(TexturesStructure texturesData)
+    void ApplyTexturesToMaterials(TexturesStructure texturesData)
     {
         byte[] texData = Convert.FromBase64String(texturesData.images.bookcase);
         Texture2D bookshelfTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         bookshelfTex.LoadImage(texData);
         bookshelfTex.filterMode = FilterMode.Point;
-        bookshelfTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
-        Bookcase.mainTexture = bookshelfTex;
+        bookshelfTex.Apply(false, false);
+        bookshelfMat.mainTexture = bookshelfTex;
 
-        Texture2D bookcaseNormalTex = null;
-
-        if (bookcaseNormalTex == null)
-        {
-            // wygeneruj z kolorowej tekstury (użyje jasności jako height)
-            bookcaseNormalTex = CreateNormalMapFromGrayscale(bookshelfTex, strength: 2.0f);
-        }
-
-        if (bookcaseNormalTex != null)
-        {
-            Bookcase.SetTexture("_BumpMap", bookcaseNormalTex);
-            Bookcase.SetFloat("_BumpScale", 1.0f);
-            Bookcase.EnableKeyword("_NORMALMAP");
-        }
-
-        if (Bookcase.HasProperty("_Glossiness"))
-            Bookcase.SetFloat("_Glossiness", 0.35f);
-        if (Bookcase.HasProperty("_Metallic"))
-            Bookcase.SetFloat("_Metallic", 0.0f);
+        // wygeneruj z kolorowej tekstury (użyje jasności jako height)
+        Texture2D bookcaseNormalTex = CreateNormalMapFromGrayscale(bookshelfTex, 2.0f);
+        bookshelfMat.SetTexture("_BumpMap", bookcaseNormalTex);
+        bookshelfMat.SetFloat("_BumpScale", 1.0f);
+        bookshelfMat.EnableKeyword("_NORMALMAP");
+        if (bookshelfMat.HasProperty("_Glossiness")) bookshelfMat.SetFloat("_Glossiness", 0.35f);
+        if (bookshelfMat.HasProperty("_Metallic")) bookshelfMat.SetFloat("_Metallic", 0.0f);
 
         texData = Convert.FromBase64String(texturesData.images.wall);
         Texture2D wallTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
-        wallTex.LoadImage(texData, false);
+        wallTex.LoadImage(texData);
         wallTex.filterMode = FilterMode.Point;    
-        wallTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
-        Wall.mainTexture = wallTex;
+        wallTex.Apply(false, false);
+        wallMat.mainTexture = wallTex;
 
         texData = Convert.FromBase64String(texturesData.images.floor);
         Texture2D floorTex = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
         floorTex.LoadImage(texData);
         floorTex.filterMode = FilterMode.Point;
-        floorTex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
-        Floor.mainTexture = floorTex;
+        floorTex.Apply(false, false);
+        floorMat.mainTexture = floorTex;
 
-        FrontRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
-        BackRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
-
-        var a = Instantiate(BookshelfAttachment, gameObject.transform);
-        a.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
-        DestroyImmediate(a, true);
-    }
-
-    private Vector3 PrepareAttachmentPoint()
-    {
-        // utwórz tymczasowo obiekt aby odczytać bounds, potem usuń
-        var a = Instantiate(BookshelfAttachment, gameObject.transform);
-        Vector3 offset = new Vector3(a.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
-        DestroyImmediate(a, true);
-
-        // zwróć punkt startowy skorygowany o połowę szerokości attachmentu
-        Vector3 lastAttachmentPoint = AttachmentPoint.position - offset;
-        return lastAttachmentPoint;
+        FrontRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
+        BackRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
+        BookshelfAttachment.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
+        ClosingAttachment.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
+        Bookshelf.GetComponent<MeshRenderer>().sharedMaterial = bookshelfMat;
     }
 
     private void CreateInitialBookshelves(int roomSize, ref int bookIndex)
@@ -348,7 +236,6 @@ public class RoomGeneration : MonoBehaviour
             
             GameObject b = Instantiate(Bookshelf, container.transform.position, Quaternion.Euler(new Vector3(-90, 90, -90)), transform);
             b.transform.parent = container.transform;
-            b.GetComponent<MeshRenderer>().sharedMaterial = Bookcase;
             BookshelfController currentBookshelfController = b.GetComponent<BookshelfController>();
             if (i < roomSize)
             {
@@ -392,12 +279,10 @@ public class RoomGeneration : MonoBehaviour
             container.transform.position = placement;
 
             var a = Instantiate(BookshelfAttachment, container.transform.position, Quaternion.identity, transform);
-            a.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
-
+            
             container.transform.position = new Vector3(container.transform.position.x, initialBookshelfPosition.position.y - 0.08f, container.transform.position.z);
 
             GameObject b = Instantiate(Bookshelf, container.transform.position, Quaternion.Euler(new Vector3(-90, 90, -90)), transform);
-            b.GetComponent<MeshRenderer>().sharedMaterial = Bookcase;
             BookshelfController currentBookshelfController = b.GetComponent<BookshelfController>();
             b.transform.position = new Vector3(b.transform.position.x, 8.87f, b.transform.position.z);
 
@@ -425,7 +310,6 @@ public class RoomGeneration : MonoBehaviour
     {
         Vector3 offset = new Vector3(ClosingAttachment.GetComponent<Renderer>().bounds.size.x / 2, 0, 0);
         var c = Instantiate(ClosingAttachment, lastAttachmentPoint - offset, Quaternion.identity, transform);
-        c.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { Wall, Floor });
     }
 
     public void ResetRoom()

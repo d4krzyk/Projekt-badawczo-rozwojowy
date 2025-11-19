@@ -1,10 +1,9 @@
 using System;
 using LogicUI.FancyTextRendering;
+using UnityEditor.Callbacks;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))
-]
-public class Controller : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 3.2f;
     public float gravity = 9.81f;
@@ -43,23 +42,18 @@ public class Controller : MonoBehaviour
     float defaultCamY;
     float bobTimer = 0f;
     bool playedThisStep = false;
-    bool wasMoving = false;
     // character controller + vertical velocity (przeniesione z FPSCharacterWalkController)
-    private CharacterController controller;
-    private float verticalVelocity = 0f;
+    Rigidbody rb;    
 
     void Start()
     {
-        // wymagamy CharacterControllera i pobieramy go
-        if (GetComponent<CharacterController>() == null) gameObject.AddComponent<CharacterController>();
-        controller = GetComponent<CharacterController>();
-
+        rb = GetComponent<Rigidbody>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
         hexPosition = DataCollectionUtil.PixelToHexPos(new Vector2(transform.position.x, transform.position.z));
         System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
         customCulture.NumberFormat.NumberDecimalSeparator = ".";
-
         System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
 
         // inicjalizacja bob
@@ -76,11 +70,8 @@ public class Controller : MonoBehaviour
 
     void Update()
     {
-        HandleMovement();
         HandleMouseLook();
         HandleInteraction();
-
-        // obsługa prostego bob i kroków
         HandleCameraBobAndFootsteps();
 
         Vector2Int newPosition = DataCollectionUtil.PixelToHexPos(new Vector2(transform.position.x, transform.position.z));
@@ -92,29 +83,18 @@ public class Controller : MonoBehaviour
         }
     }
 
+    void FixedUpdate()
+    {
+        HandleMovement();
+    }
+
     void HandleMovement()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
 
-        // input ruchu w lokalnych osiach
-        Vector3 input = new Vector3(horizontal, 0f, vertical);
-        Vector3 desiredMove = Vector3.zero;
-        if (!isReading)
-        {
-            desiredMove = (transform.right * horizontal + transform.forward * vertical);
-            if (desiredMove.sqrMagnitude > 1f) desiredMove.Normalize();
-            desiredMove *= moveSpeed;
-        }
-
-        // gravity + CharacterController.Move (jak we FPSCharacterWalkController)
-        if (controller.isGrounded)
-            verticalVelocity = -0.5f;
-        else
-            verticalVelocity -= gravity * Time.deltaTime;
-
-        desiredMove.y = verticalVelocity;
-        controller.Move(desiredMove * Time.deltaTime);
+        Vector3 move = isReading ? Vector3.zero : (transform.right * horizontal + transform.forward * vertical).normalized;
+        transform.position += move * moveSpeed * Time.fixedDeltaTime;
     }
 
     void HandleMouseLook()
@@ -123,15 +103,13 @@ public class Controller : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
         // Rotate the character left/right
-        if(!isReading)
-            transform.Rotate(Vector3.up * mouseX);
+        if(!isReading) transform.Rotate(Vector3.up * mouseX);
 
         // Rotate the camera up/down
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Prevent flipping
 
-        if(!isReading)
-            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        if(!isReading) cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
     void HandleInteraction()
@@ -177,8 +155,6 @@ public class Controller : MonoBehaviour
                         openBookTime = Time.time;
                         return;
                     }
-
-                    // ogólne interakcje nie-książkowe
                     interactable.OnInteraction();
                 }
             }
@@ -195,8 +171,7 @@ public class Controller : MonoBehaviour
 
         // czy gracz podaje input ruchu?
         bool inputMove = (Input.GetAxisRaw("Horizontal") != 0f || Input.GetAxisRaw("Vertical") != 0f);
-        // CharacterController.isGrounded (stabilniejsze)
-        bool grounded = controller != null ? controller.isGrounded : Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
+        bool grounded = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
         bool movingAndGrounded = inputMove && grounded && !isReading;
 
         if (movingAndGrounded)
@@ -225,15 +200,12 @@ public class Controller : MonoBehaviour
             {
                 playedThisStep = false;
             }
-
-            wasMoving = true;
         }
         else
         {
             // resetuj i płynnie ustaw kamerę z powrotem
             bobTimer = 0f;
             playedThisStep = false;
-            wasMoving = false;
             cameraTransform.localPosition = new Vector3(
                 cameraTransform.localPosition.x,
                 Mathf.Lerp(cameraTransform.localPosition.y, defaultCamY, Time.deltaTime * 8f),
