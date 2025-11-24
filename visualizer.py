@@ -63,6 +63,7 @@ class Hexbin:
         self.canvas.bind('<Configure>', self.set_canvas_size)
 
         self.current_mouse_position = None
+        self.image = None
         self.photo_img = None
 
         self.path = None
@@ -71,6 +72,9 @@ class Hexbin:
         self.zoom = 1.0
 
         self.heatmap = heatmap
+
+    def save(self, path):
+        self.image.save(path)
 
     def scroll(self, event):
         if event.num == 5:
@@ -138,6 +142,7 @@ class Hexbin:
                     (point * HEX_SIZE * SCALING_FACTOR + self.translation[i % 2]) * self.zoom)
             d.line(path, fill='red')
 
+        self.image = d._image
         self.photo_img = ImageTk.PhotoImage(
             d._image.resize((self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight())))
         self.canvas.create_image(0, 0, image=self.photo_img, anchor='nw')
@@ -185,9 +190,19 @@ def main():
     hexbin.canvas.pack(fill='both', expand=True)
     hexbin.canvas.configure(width=512, height=512-64)
 
-    button = tk.Button(
-        text="Hey", command=lambda: hexbin.set_path(paths[1][1]))
-    button.pack()
+    button1 = tk.Button(
+        text="Path 0", command=lambda: hexbin.set_path(paths[0][1]))
+    button1.pack(side='left')
+    button2 = tk.Button(
+        text="Path 1", command=lambda: hexbin.set_path(paths[1][1]))
+    button2.pack(side='left')
+    button3 = tk.Button(
+        text="Path 2", command=lambda: hexbin.set_path(paths[2][1]))
+    button3.pack(side='left')
+
+    button4 = tk.Button(
+        text="Save to file", command=lambda: hexbin.save('out.png'))
+    button4.pack(side='left')
 
     root.mainloop()
 
