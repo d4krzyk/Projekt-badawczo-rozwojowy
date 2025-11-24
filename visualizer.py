@@ -72,16 +72,24 @@ class Hexbin:
         self.translation = [0, 0]
         self.zoom = 1.0
 
+        self.event = None
+        self.event_update = False
+        self.event_cached_position = None
         self.heatmap = heatmap
+
+    def set_event(self, time, message):
+        self.event = (time, message)
+        self.event_update = True
+        self.redraw()
 
     def save(self, path):
         self.image.save(path)
 
     def scroll(self, event):
         if event.num == 5:
-            self.zoom -= 0.1
+            self.zoom = math.exp(math.log(self.zoom) - 0.1)
         elif event.num == 4:
-            self.zoom += 0.1
+            self.zoom = math.exp(math.log(self.zoom) + 0.1)
 
         self.redraw()
 
@@ -157,6 +165,40 @@ class Hexbin:
 
             d.line(path, fill='red')
 
+            if self.event:
+                if self.event_update:
+                    self.event_update = False
+                    self.event_cached_position = [
+                        (self.path[0][2] * HEX_SIZE * SCALING_FACTOR +
+                         self.translation[0]) * self.zoom,
+                        (self.path[0][3] * HEX_SIZE * SCALING_FACTOR +
+                         self.translation[1]) * self.zoom,
+                    ]
+                    for i, point in enumerate(self.path):
+                        if point[4] > self.event[0]:
+                            if i - 1 >= 0:
+                                previous = self.path[i - 1]
+                                t = (self.event[0] - previous[4]
+                                     ) / (point[4] - previous[4])
+
+                                x, y = (
+                                    (1.0 - t) * previous[2] + t * point[2],
+                                    (1.0 - t) * previous[3] + t * point[3]
+                                )
+
+                                self.event_cached_position = [
+                                    (x * HEX_SIZE * SCALING_FACTOR),
+                                    (y * HEX_SIZE * SCALING_FACTOR),
+                                ]
+                                break
+                            else:
+                                break
+                event_pos = ((self.event_cached_position[0] + self.translation[0]) * self.zoom,
+                             (self.event_cached_position[1] + self.translation[1]) * self.zoom)
+                d.circle(event_pos, 4.0 * SCALING_FACTOR, fill='blue')
+                d.text(
+                    (event_pos[0] + 10, event_pos[1]), self.event[1], fill='yellow', font_size=20 * SCALING_FACTOR,  anchor='lm')
+
         self.image = d._image
         self.photo_img = ImageTk.PhotoImage(
             d._image.resize((self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight())))
@@ -229,6 +271,8 @@ def main():
     button5 = tk.Button(
         text="Toggle draw hex", command=lambda: hexbin.toggle_draw_hex())
     button5.pack(side='left')
+
+    hexbin.set_event(20.4, 'Test Event')
 
     root.mainloop()
 
