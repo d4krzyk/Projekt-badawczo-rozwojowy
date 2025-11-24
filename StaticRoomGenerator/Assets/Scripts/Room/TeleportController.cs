@@ -4,16 +4,7 @@ public class TeleportController : MonoBehaviour
 {
     public Transform player;
     public Transform teleportPoint;
-    RoomsController _gameController;
-    public RoomsController gameController
-    {
-        get
-        {
-            if (_gameController == null)
-                _gameController = FindObjectOfType<RoomsController>();
-            return _gameController;
-        }
-    }
+    public RoomsController gameController;
 
     void TeleportPlayer()
     {
@@ -22,7 +13,7 @@ public class TeleportController : MonoBehaviour
 
     void OnTriggerEnter(Collider collider)
     {
-        if (collider.CompareTag("Player"))
+        if (collider.GetComponent<Transform>() == player)
         {
             TeleportPlayer();
             gameController.SwapRooms();

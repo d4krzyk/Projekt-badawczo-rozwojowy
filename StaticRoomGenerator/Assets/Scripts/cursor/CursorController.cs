@@ -17,9 +17,7 @@ public class CursorController : MonoBehaviour
     public AudioClip hoverSound;
     [Range(0f,1f)] public float hoverVolume = 0.5f;
     public AudioSource audioSource;
-
-    // opcjonalne powiązanie z Twoim Controllerem - jeśli jest przypisane, używamy jego interactDistance
-    public Controller playerController;
+    public PlayerController playerController;
 
     // pole śledzące ostatnio najechany obiekt
     GameObject lastHoveredObject;
@@ -33,12 +31,6 @@ public class CursorController : MonoBehaviour
             Debug.LogError("Crosshair Image not assigned!");
         if (mainCamera == null)
             mainCamera = Camera.main;
-
-        // spróbuj automatycznie znaleźć Controller, jeśli nie przypisano w inspektorze
-        if (playerController == null)
-        {
-            playerController = FindObjectOfType<Controller>();
-        }
 
         if (crosshairImage != null)
             crosshairImage.raycastTarget = false;
