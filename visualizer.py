@@ -77,8 +77,9 @@ class Hexbin:
         self.event_cached_position = None
         self.heatmap = heatmap
 
-    def set_event(self, time, message):
-        self.event = (time, message)
+    # Event is (time, message)
+    def set_event(self, event):
+        self.event = event
         self.event_update = True
         self.redraw()
 
@@ -120,6 +121,7 @@ class Hexbin:
 
     def set_path(self, path):
         self.path = path
+        self.event = None
         self.redraw()
 
     def redraw(self):
@@ -272,7 +274,10 @@ def main():
         text="Toggle draw hex", command=lambda: hexbin.toggle_draw_hex())
     button5.pack(side='left')
 
-    hexbin.set_event(20.4, 'Test Event')
+    hexbin.set_event((20.4, 'Test Event'))
+    button6 = tk.Button(
+        text="Clear event", command=lambda: hexbin.set_event(None))
+    button6.pack(side='left')
 
     root.mainloop()
 
