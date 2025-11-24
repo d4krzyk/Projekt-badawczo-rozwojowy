@@ -14,6 +14,43 @@ HEX_HEIGHT = 2.0 * HEX_SIZE
 SCALING_FACTOR = 2
 
 
+def axial_to_pixel(position):
+    x, y = position
+    x_out = (SQRT3 * x + SQRT3 / 2.0 * y) * HEX_SIZE * SCALING_FACTOR
+    y_out = (3.0 / 2.0 * y) * HEX_SIZE * SCALING_FACTOR
+
+    return (x_out, y_out)
+
+
+def color_lerp(color_a, color_b, t):
+    return (
+        int(color_b[0] * t + (1.0 - t) * color_a[0]),
+        int(color_b[1] * t + (1.0 - t) * color_a[1]),
+        int(color_b[2] * t + (1.0 - t) * color_a[2]),
+    )
+
+
+class Heatmap:
+    def __init__(self):
+        self.data = {}
+        self.max = 0
+
+    def update_data(self, data):
+        for e in data:
+            idx = (e[0], e[1])
+            if idx not in self.data:
+                self.data[idx] = 0
+            self.data[idx] += 1
+            if self.data[idx] > self.max:
+                self.max = self.data[idx]
+
+    def get_value(self, idx):
+        if idx not in self.data:
+            return 0.0
+        else:
+            return self.data[idx] / self.max
+
+
 class Hexbin:
     def __init__(self, heatmap, master=None):
         self.canvas = tk.Canvas(background='black', master=master)
@@ -33,6 +70,8 @@ class Hexbin:
         self.translation = [0, 0]
         self.zoom = 1.0
 
+        self.heatmap = heatmap
+
     def scroll(self, event):
         if event.num == 5:
             self.zoom -= 0.1
@@ -42,7 +81,7 @@ class Hexbin:
         self.redraw()
 
     def set_canvas_size(self, event):
-        self.canvas.configure(width=event.width, height=event.height)
+        # self.canvas.configure(width=event.width, height=event.height)
         print(event)
         self.redraw()
 
@@ -74,16 +113,29 @@ class Hexbin:
         image = Image.new("RGB", (
             self.canvas.winfo_reqwidth() * SCALING_FACTOR,
             self.canvas.winfo_reqheight() * SCALING_FACTOR
-        ), (255, 255, 255))
+        ), (0, 0, 0))
         d = ImageDraw.Draw(image)
-        d.regular_polygon(
-            ((-256.0 + self.translation[0]) * self.zoom, (-256.0 + self.translation[1]) * self.zoom, HEX_SIZE * 2.0 * self.zoom), 6, fill='blue')
+
+        for i in range(-20, 20):
+            for j in range(-20, 20):
+                x, y = axial_to_pixel((i, j))
+                d.regular_polygon(
+                    (
+                        (x + self.translation[0]) * self.zoom,
+                        (y + self.translation[1]) * self.zoom,
+                        HEX_SIZE * SCALING_FACTOR * self.zoom
+                    ),
+                    6,
+                    fill=color_lerp((0, 0, 0), (255, 255, 255),
+                                    self.heatmap.get_value((i, j))),
+                    rotation=30
+                )
 
         if self.path:
             path = []
             for i, point in enumerate(self.path):
                 path.append(
-                    (point * HEX_SIZE + self.translation[i % 2]) * self.zoom)
+                    (point * HEX_SIZE * SCALING_FACTOR + self.translation[i % 2]) * self.zoom)
             d.line(path, fill='red')
 
         self.photo_img = ImageTk.PhotoImage(
@@ -112,19 +164,30 @@ def parse_path(path_string):
 
 
 def main():
+    heatmap = Heatmap()
+
+    paths = []
+    with open('paths.txt', 'r') as file:
+        for line in file:
+            toks, xys_ = parse_path(line.rstrip())
+            heatmap.update_data(toks)
+            paths.append((toks, xys_))
+
+    print(heatmap.get_value((-3, 12)))
 
     root = tk.Tk()
     root.geometry("512x512")
     root.resizable(False, False)
 
-    hexbin = Hexbin({})
+    hexbin = Hexbin(heatmap)
     hexbin.redraw()
+    hexbin.set_path(paths[0][1])
     hexbin.canvas.pack(fill='both', expand=True)
+    hexbin.canvas.configure(width=512, height=512-64)
 
-    with open('paths.txt', 'r') as file:
-        for line in file:
-            toks, xys_ = parse_path(line.rstrip())
-            hexbin.set_path(xys_)
+    button = tk.Button(
+        text="Hey", command=lambda: hexbin.set_path(paths[1][1]))
+    button.pack()
 
     root.mainloop()
 
