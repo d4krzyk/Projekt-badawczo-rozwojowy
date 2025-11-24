@@ -65,6 +65,7 @@ class Hexbin:
         self.current_mouse_position = None
         self.image = None
         self.photo_img = None
+        self.draw_hex = False
 
         self.path = None
 
@@ -137,15 +138,36 @@ class Hexbin:
 
         if self.path:
             path = []
-            for i, point in enumerate(self.path):
-                path.append(
-                    (point * HEX_SIZE * SCALING_FACTOR + self.translation[i % 2]) * self.zoom)
+            if not self.draw_hex:
+                for point in self.path:
+                    path.extend([
+                        (point[2] * HEX_SIZE * SCALING_FACTOR +
+                         self.translation[0]) * self.zoom,
+                        (point[3] * HEX_SIZE * SCALING_FACTOR +
+                         self.translation[1]) * self.zoom
+                    ])
+
+            else:
+                for point in self.path:
+                    x, y = axial_to_pixel((point[0], point[1]))
+                    path.extend([
+                        (x + self.translation[0]) * self.zoom,
+                        (y + self.translation[1]) * self.zoom
+                    ])
+
             d.line(path, fill='red')
 
         self.image = d._image
         self.photo_img = ImageTk.PhotoImage(
             d._image.resize((self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight())))
         self.canvas.create_image(0, 0, image=self.photo_img, anchor='nw')
+
+    def set_draw_hex(self, draw_hex):
+        self.draw_hex = draw_hex
+
+    def toggle_draw_hex(self):
+        self.draw_hex = not self.draw_hex
+        self.redraw()
 
 
 def parse_path(path_string):
@@ -176,7 +198,7 @@ def main():
         for line in file:
             toks, xys_ = parse_path(line.rstrip())
             heatmap.update_data(toks)
-            paths.append((toks, xys_))
+            paths.append(toks)
 
     print(heatmap.get_value((-3, 12)))
 
@@ -186,23 +208,27 @@ def main():
 
     hexbin = Hexbin(heatmap)
     hexbin.redraw()
-    hexbin.set_path(paths[0][1])
+    hexbin.set_path(paths[0])
     hexbin.canvas.pack(fill='both', expand=True)
     hexbin.canvas.configure(width=512, height=512-64)
 
     button1 = tk.Button(
-        text="Path 0", command=lambda: hexbin.set_path(paths[0][1]))
+        text="Path 0", command=lambda: hexbin.set_path(paths[0]))
     button1.pack(side='left')
     button2 = tk.Button(
-        text="Path 1", command=lambda: hexbin.set_path(paths[1][1]))
+        text="Path 1", command=lambda: hexbin.set_path(paths[1]))
     button2.pack(side='left')
     button3 = tk.Button(
-        text="Path 2", command=lambda: hexbin.set_path(paths[2][1]))
+        text="Path 2", command=lambda: hexbin.set_path(paths[2]))
     button3.pack(side='left')
 
     button4 = tk.Button(
         text="Save to file", command=lambda: hexbin.save('out.png'))
     button4.pack(side='left')
+
+    button5 = tk.Button(
+        text="Toggle draw hex", command=lambda: hexbin.toggle_draw_hex())
+    button5.pack(side='left')
 
     root.mainloop()
 
