@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2039724192458736144
+--- !u!1 &690143747799167353
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,51 +8,50 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5018733654452541365}
-  - component: {fileID: 9161842667508247595}
-  - component: {fileID: 2447348355012316520}
-  - component: {fileID: -4311781144046576697}
-  - component: {fileID: 8571489731090429360}
+  - component: {fileID: 2577992957434935387}
+  - component: {fileID: 850022199123281878}
+  - component: {fileID: 2905955499027758736}
+  - component: {fileID: -7737073103342611365}
   m_Layer: 0
-  m_Name: bookcase_triangulated
+  m_Name: RoomExtensionClosure
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5018733654452541365
+--- !u!4 &2577992957434935387
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039724192458736144}
+  m_GameObject: {fileID: 690143747799167353}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
-  m_LocalPosition: {x: -101.78, y: 8.9, z: 44.88808}
-  m_LocalScale: {x: 150, y: 150, z: 150}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -90, y: 90, z: -90}
---- !u!33 &9161842667508247595
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &850022199123281878
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039724192458736144}
-  m_Mesh: {fileID: -504287076391719059, guid: a5ca6f3b730a85340998303727339d7b, type: 3}
---- !u!23 &2447348355012316520
+  m_GameObject: {fileID: 690143747799167353}
+  m_Mesh: {fileID: 4300000, guid: 772f0a2dbd894954a96b300394829f31, type: 2}
+--- !u!23 &2905955499027758736
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039724192458736144}
+  m_GameObject: {fileID: 690143747799167353}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 0
+  m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
@@ -68,7 +67,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
+  - {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
+  - {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -91,43 +91,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &-4311781144046576697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039724192458736144}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cbd7266687a5a2143974d0f93c64de1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BookshelfController
-  BookVariants:
-  - {fileID: 8855030370363735154, guid: 35706f294e612a8479cc2189d75123fd, type: 3}
-  - {fileID: 1544225573571686312, guid: 89feb9e355cbcc6459bfc842b0d7f2ab, type: 3}
-  - {fileID: 6357683676405959991, guid: d5ac62a225319ba4695b2264f58aef22, type: 3}
-  - {fileID: 6220459616262144272, guid: 63c4493873dd8024dacc0b8a5af36c2c, type: 3}
-  Sign: {fileID: 3482480152544124024, guid: ed7c7389ed3716349876ea924b07c85c, type: 3}
-  shelfRowInitialPosition: []
-  booksPerRow: 2
-  zStep: -0.63
-  rowYOffset: 0.517
-  extraGap: 0.08
-  rowHeights:
-  - 1.05
-  - 0.53
-  - 0.02
-  - -0.45
-  lastRowShiftX: 0.35
-  logLocalPositions: 1
---- !u!64 &8571489731090429360
+--- !u!64 &-7737073103342611365
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2039724192458736144}
+  m_GameObject: {fileID: 690143747799167353}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -142,4 +112,4 @@ MeshCollider:
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: -504287076391719059, guid: a5ca6f3b730a85340998303727339d7b, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 772f0a2dbd894954a96b300394829f31, type: 2}

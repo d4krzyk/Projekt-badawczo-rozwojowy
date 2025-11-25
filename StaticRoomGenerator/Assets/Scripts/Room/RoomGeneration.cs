@@ -27,14 +27,15 @@ public class RoomGeneration : MonoBehaviour
     public float initialBookshelfOffset;
     public Transform initialBookshelfPosition;
     public string articleName;
-    public float enterTime;
     public float exitTime;
     public Logger logger;
     public string previousRoom;
     public int BookshelfPerRoom = 5;
-    
     public ArticleStructure articleData;
-    public string articleLink;
+
+    public float EnterTime;
+
+    string articleLink;
 
 
     public async void GenerateRoom(string articleName)
@@ -42,7 +43,7 @@ public class RoomGeneration : MonoBehaviour
         SetDefaultMaterials();
         
         articleLink = "https://en.wikipedia.org/wiki/" + articleName.Replace(" ", "_");
-        enterTime = Time.time;
+        EnterTime = Time.time;
         Debug.Log($"Loading {articleName}..."); 
 
         // Pobieranie artykułu
@@ -171,9 +172,9 @@ public class RoomGeneration : MonoBehaviour
         return normal;
     }
 
-    void AddBooksFromSubsection(BookshelfController bookshelf, Sections[] sections, Transform parent, ref int bookIndex)
+    void AddBooksFromSubsection(BookshelfController bookshelf, Section[] sections, Transform parent, ref int bookIndex)
     {
-        foreach (Sections subsection in sections)
+        foreach (Section subsection in sections)
         {
             if (subsection.content != null)
             {
@@ -323,7 +324,7 @@ public class RoomGeneration : MonoBehaviour
     public void LogRoom()
     { 
         string previousRoomUrl = "https://en.wikipedia.org/wiki/" + previousRoom.Replace(" ", "_");
-        logger.LogOnRoomExit(articleLink, enterTime, exitTime, previousRoomUrl);
+        logger.LogOnRoomExit(articleLink, EnterTime, exitTime, previousRoomUrl);
     }
 }
 

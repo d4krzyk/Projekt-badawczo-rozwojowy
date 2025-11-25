@@ -5,6 +5,7 @@ public class BookshelfController : MonoBehaviour
 {
     public List<GameObject> BookVariants; // różne prefaby book_combination
     public GameObject Sign;
+    public Transform[] shelfRowInitialPosition;
 
     public int booksPerRow = 2;
     public float zStep = -0.63f;   // domyślny przesunięcie w osi Z między książkami (używane gdy brak rendererów)
@@ -269,6 +270,12 @@ public class BookshelfController : MonoBehaviour
         var sc = signObj.GetComponent<SignController>();
         if (sc != null) sc.SetSignText(name);
     }
+
+    public void AddBookElongatedRoom(string name, string content, string articleLink, Transform parent)
+    {
+        
+    }
+    
 
     public void ResetLayout()
     {

@@ -6,13 +6,13 @@ public class ArticleStructure
     public string name;
     public string url;
     public string category;
-    public Sections[] content;
+    public Section[] content;
 }
 
 [System.Serializable]
-public class Sections
+public class Section
 {
     public string name;
     public string content;
-    public Sections[] subsections;
+    public Section[] subsections;
 }
