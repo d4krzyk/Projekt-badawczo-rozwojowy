@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using JimmysUnityUtilities;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -22,8 +21,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
     [Space]
     public string articleName;
     public int maxBooksPerBookshelf;
-    public float EnterTime;
-    public ArticleStructure ArticleData;
+    public Logger logger;
+
+    [HideInInspector] public float EnterTime;
+    [HideInInspector] public float ExitTime;
+    [HideInInspector] public string PreviousRoom;
+    [HideInInspector] public ArticleStructure ArticleData;
     
     string articleLink;
 
@@ -291,5 +294,19 @@ public class ElongatedRoomGenerator : MonoBehaviour
             if(addedBooks == maxBooksPerBookshelf) return i; 
         }
         return i;
+    }
+
+    public void LogRoom()
+    { 
+        string previousRoomUrl = "https://en.wikipedia.org/wiki/" + PreviousRoom.Replace(" ", "_");
+        logger.LogOnRoomExit(articleLink, EnterTime, ExitTime, previousRoomUrl);
+    }
+
+    public void ResetRoom()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }
