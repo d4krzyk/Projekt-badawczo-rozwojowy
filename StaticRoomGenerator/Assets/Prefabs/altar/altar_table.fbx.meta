@@ -1,9 +1,37 @@
 fileFormatVersion: 2
+<<<<<<< Updated upstream
 guid: 50550056f9dae8f4fafd6e57e5103e4e
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects: {}
+=======
+guid: 887dd0fb021057843a42ee95b5136797
+ModelImporter:
+  serializedVersion: 24200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stand-book
+    second: {fileID: 2100000, guid: 7e58f04f0503e6242b9bfa8126317572, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stand-book-column
+    second: {fileID: 2100000, guid: b8f773462392ac245a98443ecba580c8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stand-book-up
+    second: {fileID: 2100000, guid: c49d4a5190482b54aa33623e1858e110, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stand-book-wall
+    second: {fileID: 2100000, guid: 98f48c6fc0c40524391ede2eb341b017, type: 2}
+>>>>>>> Stashed changes
   materials:
     materialImportMode: 2
     materialName: 0
