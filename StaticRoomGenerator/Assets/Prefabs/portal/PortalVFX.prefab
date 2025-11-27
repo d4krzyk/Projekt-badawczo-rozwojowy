@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3567162669506254448
+--- !u!1 &5394789905558648702
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 129075663525855635}
-  - component: {fileID: 7565903711910883822}
-  - component: {fileID: 4959358187088083758}
+  - component: {fileID: 3740675008352502071}
+  - component: {fileID: 6830608049488820532}
+  - component: {fileID: 5351018387774653273}
   m_Layer: 0
   m_Name: PortalVFX
   m_TagString: Portal
@@ -18,28 +18,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &129075663525855635
+--- !u!4 &3740675008352502071
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3567162669506254448}
+  m_GameObject: {fileID: 5394789905558648702}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -23.92, y: 19.61, z: 13.54}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.09, z: -3.2405806}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!2083052967 &7565903711910883822
+--- !u!2083052967 &6830608049488820532
 VisualEffect:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3567162669506254448}
+  m_GameObject: {fileID: 5394789905558648702}
   m_Enabled: 1
   m_Asset: {fileID: 8926484042661614526, guid: bfd5096c95652e94787eb97ff9e12d43, type: 3}
   m_InitialEventName: OnPlay
@@ -71,14 +71,14 @@ VisualEffect:
       m_Array: []
     m_Bool:
       m_Array: []
---- !u!73398921 &4959358187088083758
+--- !u!73398921 &5351018387774653273
 VFXRenderer:
   serializedVersion: 1
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3567162669506254448}
+  m_GameObject: {fileID: 5394789905558648702}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 0

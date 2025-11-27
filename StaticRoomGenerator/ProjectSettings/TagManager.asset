@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Undefined
   - Book
+  - Portal
   layers:
   - Default
   - TransparentFX
