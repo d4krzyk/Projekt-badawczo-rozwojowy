@@ -16,6 +16,9 @@ public class PlayerController : MonoBehaviour
     public BookController bookController;
     public Logger logger;
 
+    // nowe pole do blokowania ruchu z zewnątrz (np. PortalLift)
+    [HideInInspector] public bool movementLocked = false;
+
     // --- proste parametry bob + footsteps ---
     [Header("Camera Bob / Footsteps")]
     public float bobAmount = 0.05f;            // ile kamera schodzi (metry)
@@ -90,10 +93,11 @@ public class PlayerController : MonoBehaviour
 
     void HandleMovement()
     {
+        // zablokuj ruch gdy czytamy lub movementLocked ustawione z zewnątrz (np. PortalLift)
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
-        Vector3 move = isReading ? Vector3.zero : (transform.right * horizontal + transform.forward * vertical).normalized;
+        Vector3 move = (isReading || movementLocked) ? Vector3.zero : (transform.right * horizontal + transform.forward * vertical).normalized;
         transform.position += move * moveSpeed * Time.fixedDeltaTime;
     }
 
@@ -103,17 +107,20 @@ public class PlayerController : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
         // Rotate the character left/right
-        if(!isReading) transform.Rotate(Vector3.up * mouseX);
+        if(!isReading && !movementLocked) transform.Rotate(Vector3.up * mouseX);
 
         // Rotate the camera up/down
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Prevent flipping
 
-        if(!isReading) cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        if(!isReading && !movementLocked) cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
     void HandleInteraction()
     {
+        // zablokuj interakcje gdy movementLocked (np. w trakcie liftu)
+        if (movementLocked) return;
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (isReading)
