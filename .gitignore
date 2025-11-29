@@ -14,13 +14,13 @@ venv
 .idea
 
 # Unity
-/StaticRoomGenerator/[Ll]ibrary/
-/StaticRoomGenerator/[Tt]emp/
-/StaticRoomGenerator/[Oo]bj/
-/StaticRoomGenerator/[Bb]uild/
-/StaticRoomGenerator/[Bb]uilds/
-/StaticRoomGenerator/[Ll]ogs/
-/StaticRoomGenerator/[Uu]ser[Ss]ettings/
+/WikiRoomsProjectUnity/[Ll]ibrary/
+/WikiRoomsProjectUnity/[Tt]emp/
+/WikiRoomsProjectUnity/[Oo]bj/
+/WikiRoomsProjectUnity/[Bb]uild/
+/WikiRoomsProjectUnity/[Bb]uilds/
+/WikiRoomsProjectUnity/[Ll]ogs/
+/WikiRoomsProjectUnity/[Uu]ser[Ss]ettings/
 *.csproj
 *.sln
 *.vscode
