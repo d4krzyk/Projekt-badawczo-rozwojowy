@@ -2,328 +2,439 @@ using UnityEngine;
 
 public class PortalLift : MonoBehaviour
 {
-    public float pullSpeed = 1f;           // jak szybko gracz idzie w górę (metry/s)
-    public float rotateSpeed = 360f;       // docelowa prędkość kątowa (deg/s)
-    public float liftHeight = 2f;          // ile ma polecieć do góry
-    public float angularAcceleration = 360f;// przyspieszenie kątowe (deg/s^2) - zachowany dla kompatybilności
+    private const float EPS = 0.0001f;
+    private const float YReachTolerance = 0.05f;
 
-    public Transform portalVFX;
+    [Header("Movement")]
+    public float pullSpeed = 1f;
+    public float rotateSpeed = 360f;
+    public float liftHeight = 2f;
 
-    // parametry szybkiego przemieszczenia do środka (animacja)
-    public float centerMoveDuration = 1.5f;   // czas animacji przeniesienia do środka (s)
+    [Header("Center Move")]
+    public float centerMoveDuration = 1.5f;
     public AnimationCurve centerMoveCurve = AnimationCurve.EaseInOut(0,0,1,1);
 
-    // NOWE: krzywa sterująca obrotem w czasie liftu (0..1 -> mnożnik prędkości obrotu)
+    [Header("Lift")]
     public AnimationCurve rotateSpeedCurve = AnimationCurve.EaseInOut(0,0,1,1);
-
-    // OPCJONALNIE: krzywa płynności unoszenia (jeśli false, używane MoveTowards z pullSpeed)
     public bool useLiftYCurve = false;
     public AnimationCurve liftYCurve = AnimationCurve.EaseInOut(0,0,1,1);
 
-    // NOWE: audio / pitch
-    public AudioSource portalAudioSource;                 // jeśli null, spróbuje pobrać z portalVFX lub tego obiektu
-    public AnimationCurve audioPitchCurve = AnimationCurve.Linear(0, 0, 1, 1); // 0..1 -> mnożnik mapowany do min..max
+    [Header("Camera")]
+    public AnimationCurve cameraZeroCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public AnimationCurve lookDownCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public float lookDownOrbitDuration = 1.25f;
+    public float cameraDownAngleDegrees = 35f;
+    public float orbitSpeedDuringLookDown = 360f;
+
+    [Header("Suck Back")]
+    public float suckBackDuration = 0.35f;
+    public AnimationCurve suckBackCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public AudioClip suckBackClip;
+    public float suckBackVolume = 1f;
+
+    [Header("Audio")]
+    public AudioSource portalAudioSource;
+    public AnimationCurve audioPitchCurve = AnimationCurve.Linear(0,0,1,1);
     public float audioPitchMin = 0.8f;
     public float audioPitchMax = 1.2f;
-    public bool affectDuringMoveToCenter = true;         // czy również modyfikować pitch podczas MoveToCenter
+    public bool affectDuringMoveToCenter = true;
 
-    private enum Phase { Idle, MoveToCenter, Lift, Hover }
+    [Header("Refs")]
+    public Transform portalVFX;
+
+    [Header("Teleport")]
+    public Transform teleportPoint;
+    public RoomsController gameController;
+    public bool teleportAfterSequence = true;
+
+    private enum Phase { Idle, MoveToCenter, Lift, LookDownOrbit }
     private Phase phase = Phase.Idle;
 
-    private Transform player;
-    private Rigidbody playerRb;
-    private PlayerController playerController;
+    Transform player;
+    Rigidbody playerRb;
+    PlayerController playerController;
 
-    private Vector3 portalCenter;
-    private Vector3 moveStartPos;
-    private float moveElapsed;
+    Vector3 portalCenter;
+    Vector3 moveStartPos;
+    float moveElapsed;
 
-    private float startY;
-    private float targetY;
+    float startY;
+    float targetY;
 
-    // zapamiętane stany rigidbody
-    private bool previousUseGravity;
-    private bool previousIsKinematic;
-    private float currentAngularSpeed = 0f;
+    bool previousUseGravity;
+    bool previousIsKinematic;
+    float currentAngularSpeed;
 
-    // timery do liftu
-    private float liftElapsed = 0f;
-    private float liftDuration = 1f;
+    float liftElapsed;
+    float liftDuration;
 
-    // kamery: zapamiętana lokalna rotacja na starcie snapa
-    private Quaternion camStartLocalRot = Quaternion.identity;
+    // Camera state
+    Quaternion camPhaseStartLocalRot = Quaternion.identity;
+    float camProgressMove;
+    float camProgressLift;
+    float camProgressLook;
 
-    // audio: zapamiętany początkowy pitch, aby przywrócić po zakończeniu
-    private float previousAudioPitch = 1f;
+    // LookDown & SuckBack
+    float lookElapsed;
+    bool isSuckingBack;
+    float suckElapsed;
+    Vector3 suckStartPos;
+    bool suckSoundPlayed;
 
-    // NOWE: parametry hover (bujanie w fazie Hover)
-    public float hoverAmplitude = 0.15f;   // metry
-    public float hoverFrequency = 0.8f;    // Hz
-    private float hoverTimer = 0f;
+    // Audio state
+    float previousAudioPitch;
+
+    bool triggerLocked;
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && phase == Phase.Idle)
-        {
-            player = other.transform;
-            playerRb = other.GetComponent<Rigidbody>();
-            playerController = other.GetComponent<PlayerController>();
+        if (triggerLocked) return;
+        if (!other.CompareTag("Player") || phase != Phase.Idle) return;
 
-            portalCenter = portalVFX != null ? portalVFX.position : transform.position;
+        player = other.transform;
+        playerRb = other.GetComponent<Rigidbody>();
+        playerController = other.GetComponent<PlayerController>();
 
-            // przygotuj animację przeniesienia do środka (XZ only — Y zostawiaj bez zmian)
-            moveStartPos = playerRb != null ? playerRb.position : player.position;
-            moveElapsed = 0f;
-            phase = Phase.MoveToCenter;
+        portalCenter = portalVFX ? portalVFX.position : transform.position;
+        moveStartPos = GetPlayerPos();
 
-            // zapamiętaj startową rotację kamery (jeśli dostępna)
-            if (playerController != null && playerController.cameraTransform != null)
-                camStartLocalRot = playerController.cameraTransform.localRotation;
-            else
-                camStartLocalRot = Quaternion.identity;
+        ResetPhaseProgress();
+        phase = Phase.MoveToCenter;
 
-            if (playerRb != null)
-            {
-                // zapamiętaj i wyłącz fizykę — ruch wykonamy manipulując transformem (eliminujemy drgania)
-                previousUseGravity = playerRb.useGravity;
-                previousIsKinematic = playerRb.isKinematic;
+        CacheCameraStart();
+        PrepareRigidbody();
+        PrepareAudio();
+        LockMovement(true);
+    }
 
-                playerRb.linearVelocity = Vector3.zero;
-                playerRb.angularVelocity = Vector3.zero;
-                playerRb.useGravity = false;
-                playerRb.isKinematic = true; // wyłączamy wpływ kolizji i fizyki podczas snapa
-            }
-            else
-            {
-                previousUseGravity = false;
-                previousIsKinematic = false;
-            }
-
-            // audio: znajdź źródło jeśli nie przypisano i zapamiętaj oryginalny pitch
-            if (portalAudioSource == null)
-            {
-                if (portalVFX != null) portalAudioSource = portalVFX.GetComponent<AudioSource>();
-                if (portalAudioSource == null) portalAudioSource = GetComponent<AudioSource>();
-            }
-            if (portalAudioSource != null)
-            {
-                previousAudioPitch = portalAudioSource.pitch;
-            }
-
-            // zablokuj kontrolę gracza
-            if (playerController != null)
-                playerController.movementLocked = true;
-        }
+    void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+        triggerLocked = false;
     }
 
     void FixedUpdate()
     {
         if (phase == Phase.Idle || player == null) return;
-
         float dt = Time.fixedDeltaTime;
 
-        if (phase == Phase.MoveToCenter)
+        switch (phase)
         {
-            moveElapsed += dt;
-            float t = Mathf.Clamp01(moveElapsed / Mathf.Max(0.0001f, centerMoveDuration));
-            float eval = centerMoveCurve.Evaluate(t);
-
-            // interpolacja tylko w XZ — Y pozostaje na wysokości startowej gracza
-            Vector2 startXZ = new Vector2(moveStartPos.x, moveStartPos.z);
-            Vector2 targetXZ = new Vector2(portalCenter.x, portalCenter.z);
-            Vector2 nextXZ = Vector2.Lerp(startXZ, targetXZ, eval);
-            float nextY = moveStartPos.y;
-            Vector3 next = new Vector3(nextXZ.x, nextY, nextXZ.y);
-
-            // manipulujemy transform bez fizyki (isKinematic = true)
-            if (playerRb != null)
-                playerRb.transform.position = next;
-            else
-                player.position = next;
-
-            // płynne prostowanie kamery (lokalna rotacja) równolegle do ruchu
-            if (playerController != null && playerController.cameraTransform != null)
-            {
-                Quaternion targetCamLocal = Quaternion.identity;
-                Quaternion s = Quaternion.Slerp(camStartLocalRot, targetCamLocal, eval);
-                playerController.cameraTransform.localRotation = s;
-            }
-
-            if (t >= 1f)
-            {
-                // zakończ animację przeniesienia i rozpocznij lift
-                phase = Phase.Lift;
-                currentAngularSpeed = 0f;
-
-                // ważne: nie ustawiamy startY na wysokości portalCenter — używamy aktualnej wysokości gracza
-                float currentY = playerRb != null ? playerRb.transform.position.y : player.position.y;
-                startY = currentY;
-                targetY = startY + liftHeight;
-
-                // ustaw dokładnie XZ centrum, zachowując Y startową wysokość
-                Vector3 fixedPos = new Vector3(portalCenter.x, startY, portalCenter.z);
-                if (playerRb != null) playerRb.transform.position = fixedPos; else player.position = fixedPos;
-
-                // initializuj lift timer
-                liftElapsed = 0f;
-                liftDuration = Mathf.Max(0.0001f, Mathf.Abs(liftHeight) / Mathf.Max(0.0001f, Mathf.Abs(pullSpeed)));
-            }
-
-            return;
-        }
-
-        if (phase == Phase.Lift)
-        {
-            // sterowanie rotacją przez krzywą zależną od czasu liftu
-            liftElapsed += dt;
-            float tLift = Mathf.Clamp01(liftElapsed / Mathf.Max(0.0001f, liftDuration)); // 0..1
-
-            // rotacja: mnożnik z krzywej (0..1 typowo) razy rotateSpeed (deg/s)
-            float rotFactor = rotateSpeedCurve.Evaluate(tLift);
-            currentAngularSpeed = rotateSpeed * rotFactor;
-            float deltaAngle = currentAngularSpeed * dt;
-            Quaternion deltaRot = Quaternion.Euler(0f, deltaAngle, 0f);
-
-            // audio podczas liftu
-            if (portalAudioSource != null)
-            {
-                float pitchFactor = audioPitchCurve.Evaluate(tLift);
-                portalAudioSource.pitch = Mathf.Lerp(audioPitchMin, audioPitchMax, pitchFactor);
-            }
-
-            if (playerRb != null)
-            {
-                Vector3 curr = playerRb.transform.position;
-                Vector3 offset = curr - portalCenter;
-                Vector3 offsetXZ = new Vector3(offset.x, 0f, offset.z);
-                Vector3 rotatedXZ = deltaRot * offsetXZ;
-                Vector3 newHorizontal = portalCenter + rotatedXZ;
-
-                float newY;
-                if (useLiftYCurve)
-                {
-                    float yFactor = liftYCurve.Evaluate(tLift); // 0..1 mapped by curve
-                    newY = Mathf.Lerp(startY, targetY, yFactor);
-                }
-                else
-                {
-                    newY = Mathf.MoveTowards(curr.y, targetY, pullSpeed * dt);
-                }
-
-                Vector3 newPos = new Vector3(newHorizontal.x, newY, newHorizontal.z);
-
-                // ustawiamy transform (isKinematic = true)
-                playerRb.transform.position = newPos;
-                playerRb.transform.rotation = playerRb.transform.rotation * deltaRot;
-            }
-            else
-            {
-                Vector3 curr = player.position;
-                Vector3 offset = curr - portalCenter;
-                Vector3 offsetXZ = new Vector3(offset.x, 0f, offset.z);
-                Vector3 rotatedXZ = deltaRot * offsetXZ;
-                Vector3 newHorizontal = portalCenter + rotatedXZ;
-
-                float newY;
-                if (useLiftYCurve)
-                {
-                    float yFactor = liftYCurve.Evaluate(tLift);
-                    newY = Mathf.Lerp(startY, targetY, yFactor);
-                }
-                else
-                {
-                    newY = Mathf.MoveTowards(curr.y, targetY, pullSpeed * dt);
-                }
-
-                Vector3 newPos = new Vector3(newHorizontal.x, newY, newHorizontal.z);
-
-                player.position = newPos;
-                player.Rotate(Vector3.up * deltaAngle, Space.World);
-            }
-
-            // zakończenie po osiągnięciu wysokości (jeśli używamy krzywej Y, końimy gdy tLift==1)
-            float currY = playerRb != null ? playerRb.transform.position.y : player.position.y;
-            bool reachedY = useLiftYCurve ? (tLift >= 1f - 0.0001f) : (Mathf.Abs(currY - targetY) < 0.05f);
-
-            if (reachedY)
-            {
-                // ustaw dokładnie finalną pozycję i przejdź do fazy Hover (ciągła rotacja w stałej prędkości)
-                Vector3 finalPos = new Vector3(portalCenter.x, targetY, portalCenter.z);
-                if (playerRb != null) playerRb.transform.position = finalPos; else player.position = finalPos;
-
-                phase = Phase.Hover;
-                // zapewnij, że currentAngularSpeed ustawia się na ostateczną prędkość
-                currentAngularSpeed = rotateSpeed;
-
-                // resetuj timer hover i ustaw docelowy pitch w hover (koniec krzywej)
-                hoverTimer = 0f;
-                if (portalAudioSource != null)
-                    portalAudioSource.pitch = Mathf.Lerp(audioPitchMin, audioPitchMax, audioPitchCurve.Evaluate(1f));
-            }
-        }
-
-        if (phase == Phase.Hover)
-        {
-            // bujanie: sinusiczny bob w pionie
-            hoverTimer += dt;
-            float bob = Mathf.Sin(hoverTimer * Mathf.PI * 2f * hoverFrequency) * hoverAmplitude;
-
-            // obracaj ciągle wokół środka portalCenter przy stałej prędkości rotateSpeed
-            float deltaAngle = rotateSpeed * dt;
-            Quaternion deltaRot = Quaternion.Euler(0f, deltaAngle, 0f);
-
-            if (playerRb != null)
-            {
-                Vector3 curr = playerRb.transform.position;
-                Vector3 offset = curr - portalCenter;
-                Vector3 offsetXZ = new Vector3(offset.x, 0f, offset.z);
-                Vector3 rotatedXZ = deltaRot * offsetXZ;
-                Vector3 newHorizontal = portalCenter + rotatedXZ;
-                Vector3 newPos = new Vector3(newHorizontal.x, targetY + bob, newHorizontal.z);
-
-                playerRb.transform.position = newPos;
-                playerRb.transform.rotation = playerRb.transform.rotation * deltaRot;
-            }
-            else
-            {
-                Vector3 curr = player.position;
-                Vector3 offset = curr - portalCenter;
-                Vector3 offsetXZ = new Vector3(offset.x, 0f, offset.z);
-                Vector3 rotatedXZ = deltaRot * offsetXZ;
-                Vector3 newHorizontal = portalCenter + rotatedXZ;
-                Vector3 newPos = new Vector3(newHorizontal.x, targetY + bob, newHorizontal.z);
-
-                player.position = newPos;
-                player.Rotate(Vector3.up * deltaAngle, Space.World);
-            }
-
-            // Hover nie przywraca fizyki automatycznie — jeśli chcesz zakończyć hover i przywrócić fizykę, dodaj warunek/wywołanie EndLift()
+            case Phase.MoveToCenter:
+                UpdateMoveToCenter(dt);
+                break;
+            case Phase.Lift:
+                UpdateLift(dt);
+                break;
+            case Phase.LookDownOrbit:
+                UpdateLookDownOrbit(dt);
+                break;
         }
     }
 
-    void EndLift()
+    void LateUpdate()
     {
-        phase = Phase.Idle;
+        if (phase == Phase.Idle || playerController == null || playerController.cameraTransform == null) return;
 
-        if (playerController != null)
-            playerController.movementLocked = false;
+        if (phase == Phase.MoveToCenter) UpdateCameraZero(camProgressMove);
+        else if (phase == Phase.Lift)    UpdateCameraZero(camProgressLift);
+        else if (phase == Phase.LookDownOrbit) UpdateCameraLookDown(camProgressLook);
+    }
 
-        if (playerRb != null)
+    // --- Phase Updates ---
+    void UpdateMoveToCenter(float dt)
+    {
+        moveElapsed += dt;
+        float t = Mathf.Clamp01(moveElapsed / Mathf.Max(EPS, centerMoveDuration));
+        camProgressMove = t;
+
+        Vector2 startXZ = new(moveStartPos.x, moveStartPos.z);
+        Vector2 targetXZ = new(portalCenter.x, portalCenter.z);
+        Vector2 lerpXZ = Vector2.Lerp(startXZ, targetXZ, centerMoveCurve.Evaluate(t));
+        SetPlayerPos(new Vector3(lerpXZ.x, moveStartPos.y, lerpXZ.y));
+
+        UpdateCameraZero(t);
+        if (t < 1f) return;
+
+        TransitionToLift();
+    }
+
+    void UpdateLift(float dt)
+    {
+        liftElapsed += dt;
+        float tLift = Mathf.Clamp01(liftElapsed / Mathf.Max(EPS, liftDuration));
+        camProgressLift = tLift;
+
+        // orbit
+        float rotFactor = rotateSpeedCurve.Evaluate(tLift);
+        currentAngularSpeed = rotateSpeed * rotFactor;
+        float deltaAngle = currentAngularSpeed * dt;
+        OrbitXZ(deltaAngle);
+
+        // vertical
+        float newY = useLiftYCurve
+            ? Mathf.Lerp(startY, targetY, liftYCurve.Evaluate(tLift))
+            : Mathf.MoveTowards(GetPlayerPos().y, targetY, pullSpeed * dt);
+
+        SetPlayerY(newY);
+        ApplySelfRotation(deltaAngle);
+
+        // audio
+        if (portalAudioSource)
+            portalAudioSource.pitch = Mathf.Lerp(audioPitchMin, audioPitchMax, audioPitchCurve.Evaluate(tLift));
+
+        bool reachedY = useLiftYCurve ? (tLift >= 1f - EPS) : (Mathf.Abs(GetPlayerPos().y - targetY) < YReachTolerance);
+        UpdateCameraZero(tLift);
+        if (!reachedY) return;
+
+        TransitionToLookDown();
+    }
+
+    void UpdateLookDownOrbit(float dt)
+    {
+        if (!isSuckingBack)
         {
-            // przywróć stany fizyki
-            playerRb.useGravity = previousUseGravity;
-            playerRb.isKinematic = previousIsKinematic;
-            // zeruj prędkości aby nie dostać nagłego impulse
-            playerRb.linearVelocity = Vector3.zero;
-            playerRb.angularVelocity = Vector3.zero;
+            lookElapsed += dt;
+            float tLook = Mathf.Clamp01(lookElapsed / Mathf.Max(EPS, lookDownOrbitDuration));
+            camProgressLook = tLook;
+
+            float deltaAngle = orbitSpeedDuringLookDown * dt;
+            OrbitXZ(deltaAngle);
+            ApplySelfRotation(deltaAngle);
+            SetPlayerY(targetY);
+
+            // camera pitching
+            if (playerController?.cameraTransform)
+            {
+                float lookEval = lookDownCurve.Evaluate(tLook);
+                Quaternion downTarget = Quaternion.Euler(cameraDownAngleDegrees, 0f, 0f);
+                Quaternion zeroed = Quaternion.Slerp(camPhaseStartLocalRot, Quaternion.identity, lookEval);
+                playerController.cameraTransform.localRotation =
+                    Quaternion.Slerp(zeroed, downTarget, lookEval);
+            }
+
+            if (tLook >= 1f - EPS)
+            {
+                suckStartPos = GetPlayerPos();
+                isSuckingBack = true;
+                suckElapsed = 0f;
+                if (portalAudioSource) portalAudioSource.pitch = audioPitchMax;
+            }
+            return;
         }
 
-        // przywróć pitch audio
-        if (portalAudioSource != null)
+        // suck back
+        suckElapsed += dt;
+        float tSuck = Mathf.Clamp01(suckElapsed / Mathf.Max(EPS, suckBackDuration));
+        float suckEval = suckBackCurve.Evaluate(tSuck);
+
+        // orbit podczas ssania z max prędkością rotateSpeed
+        float deltaAngleSuck = rotateSpeed * dt;
+        OrbitXZ(deltaAngleSuck);
+        ApplySelfRotation(deltaAngleSuck);
+
+        // pozycja
+        Vector3 targetPos = Vector3.Lerp(suckStartPos, moveStartPos, suckEval);
+        SetPlayerPos(new Vector3(GetPlayerPos().x, targetPos.y, GetPlayerPos().z)); // Y zasysany, XZ z orbitu
+
+        // camera domykanie z down do zero
+        if (playerController?.cameraTransform)
+        {
+            Quaternion downTarget = Quaternion.Euler(cameraDownAngleDegrees, 0f, 0f);
+            playerController.cameraTransform.localRotation =
+                Quaternion.Slerp(downTarget, Quaternion.identity, suckEval);
+        }
+
+        if (tSuck < 1f) return;
+
+        
+
+        EndLift();
+        if (teleportAfterSequence)
+            DoTeleport();
+
+        if (!suckSoundPlayed && suckBackClip)
+        {
+            suckSoundPlayed = true;
+            // wcześniej: portalAudioSource.PlayOneShot(...)
+            // teraz: odtwarzanie przy graczu aby nie ucięło po teleportacji
+            Vector3 playPos = player ? player.position : portalCenter;
+            AudioSource.PlayClipAtPoint(suckBackClip, playPos, suckBackVolume);
+        }
+        
+    }
+
+    // --- Transitions ---
+    void TransitionToLift()
+    {
+        phase = Phase.Lift;
+        currentAngularSpeed = 0f;
+        startY = GetPlayerPos().y;
+        targetY = startY + liftHeight;
+        SetPlayerPos(new Vector3(portalCenter.x, startY, portalCenter.z));
+
+        liftElapsed = 0f;
+        liftDuration = Mathf.Max(EPS, Mathf.Abs(liftHeight) / Mathf.Max(EPS, Mathf.Abs(pullSpeed)));
+        camProgressMove = 1f;
+        camProgressLift = 0f;
+
+        if (playerController?.cameraTransform)
+            camPhaseStartLocalRot = playerController.cameraTransform.localRotation;
+    }
+
+    void TransitionToLookDown()
+    {
+        SetPlayerPos(new Vector3(portalCenter.x, targetY, portalCenter.z));
+        phase = Phase.LookDownOrbit;
+        currentAngularSpeed = orbitSpeedDuringLookDown;
+
+        lookElapsed = 0f;
+        suckElapsed = 0f;
+        isSuckingBack = false;
+        camProgressLift = 1f;
+        camProgressLook = 0f;
+
+        if (portalAudioSource)
+            portalAudioSource.pitch = Mathf.Lerp(audioPitchMin, audioPitchMax, audioPitchCurve.Evaluate(1f));
+
+        if (playerController?.cameraTransform)
+            camPhaseStartLocalRot = playerController.cameraTransform.localRotation;
+    }
+
+    // --- Helpers ---
+    void OrbitXZ(float deltaAngleDeg)
+    {
+        Quaternion deltaRot = Quaternion.Euler(0f, deltaAngleDeg, 0f);
+        Vector3 pos = GetPlayerPos();
+        Vector3 offset = pos - portalCenter;
+        Vector3 offsetXZ = new(offset.x, 0f, offset.z);
+        Vector3 rotatedXZ = deltaRot * offsetXZ;
+        Vector3 newPos = new Vector3(portalCenter.x + rotatedXZ.x, pos.y, portalCenter.z + rotatedXZ.z);
+        SetPlayerPos(newPos);
+    }
+
+    void ApplySelfRotation(float deltaAngleDeg)
+    {
+        if (playerRb) playerRb.transform.rotation *= Quaternion.Euler(0f, deltaAngleDeg, 0f);
+        else if (player) player.Rotate(Vector3.up * deltaAngleDeg, Space.World);
+    }
+
+    void UpdateCameraZero(float progress01)
+    {
+        if (!playerController?.cameraTransform) return;
+        float camT = cameraZeroCurve.Evaluate(progress01);
+        playerController.cameraTransform.localRotation =
+            Quaternion.Slerp(camPhaseStartLocalRot, Quaternion.identity, camT);
+    }
+
+    void UpdateCameraLookDown(float progress01)
+    {
+        if (!playerController?.cameraTransform) return;
+        float lookT = lookDownCurve.Evaluate(progress01);
+        Quaternion downTarget = Quaternion.Euler(cameraDownAngleDegrees, 0f, 0f);
+        Quaternion zeroed = Quaternion.Slerp(camPhaseStartLocalRot, Quaternion.identity, lookT);
+        playerController.cameraTransform.localRotation =
+            Quaternion.Slerp(zeroed, downTarget, lookT);
+    }
+
+    void CacheCameraStart()
+    {
+        if (playerController?.cameraTransform)
+        {
+            camPhaseStartLocalRot = playerController.cameraTransform.localRotation;
+        }
+        else camPhaseStartLocalRot = Quaternion.identity;
+    }
+
+    void PrepareRigidbody()
+    {
+        if (!playerRb)
+        {
+            previousUseGravity = false;
+            previousIsKinematic = false;
+            return;
+        }
+        previousUseGravity = playerRb.useGravity;
+        previousIsKinematic = playerRb.isKinematic;
+        playerRb.linearVelocity = Vector3.zero;
+        playerRb.angularVelocity = Vector3.zero;
+        playerRb.useGravity = false;
+        playerRb.isKinematic = true;
+    }
+
+    void PrepareAudio()
+    {
+        if (!portalAudioSource)
+        {
+            if (portalVFX) portalAudioSource = portalVFX.GetComponent<AudioSource>();
+            if (!portalAudioSource) portalAudioSource = GetComponent<AudioSource>();
+        }
+        if (portalAudioSource) previousAudioPitch = portalAudioSource.pitch;
+    }
+
+    void LockMovement(bool locked)
+    {
+        if (playerController) playerController.movementLocked = locked;
+    }
+
+    Vector3 GetPlayerPos() => playerRb ? playerRb.transform.position : player.position;
+    void SetPlayerPos(Vector3 p)
+    {
+        if (playerRb) playerRb.transform.position = p;
+        else if (player) player.position = p;
+    }
+    void SetPlayerY(float y)
+    {
+        Vector3 p = GetPlayerPos();
+        p.y = y;
+        SetPlayerPos(p);
+    }
+
+    void ResetPhaseProgress()
+    {
+        camProgressMove = camProgressLift = camProgressLook = 0f;
+        liftElapsed = moveElapsed = lookElapsed = suckElapsed = 0f;
+        isSuckingBack = false;
+        suckSoundPlayed = false;
+    }
+
+    // Zakończenie — jeśli chcesz użyć po dźwięku ssania
+    void EndLift()
+    {
+        if (playerRb)
+        {
+            playerRb.useGravity = previousUseGravity;
+            playerRb.isKinematic = previousIsKinematic;
+            playerRb.angularVelocity = Vector3.zero;
+            playerRb.linearVelocity = Vector3.zero;
+        }
+
+        LockMovement(false);
+
+        if (playerController?.cameraTransform)
+            playerController.cameraTransform.localRotation = Quaternion.identity;
+
+        if (portalAudioSource)
             portalAudioSource.pitch = previousAudioPitch;
 
+        ResetPhaseProgress();
         currentAngularSpeed = 0f;
-        liftElapsed = 0f;
+        phase = Phase.Idle;
+        // USUNIĘTO stałe blokowanie:
+        // triggerLocked = true;
+        triggerLocked = true; // tymczasowo, zdejmujemy w DoTeleport albo korutynie
+    }
+
+    void DoTeleport()
+    {
+        if (!teleportPoint) return;
+        if (playerRb) playerRb.transform.position = teleportPoint.position;
+        else if (player) player.position = teleportPoint.position;
+
+        if (gameController) gameController.SwapRooms();
+
+        // Odblokuj ponownie po zmianie pokoju
+        triggerLocked = false;
     }
 }
 
