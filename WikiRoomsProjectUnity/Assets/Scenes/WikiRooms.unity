@@ -5791,8 +5791,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65043d99e9498f545811fc87e44afd31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentRoom: {fileID: 1812434001}
-  secondRoom: {fileID: 1808799296}
   elongatedRoom: {fileID: 1892327105}
   secondElongatedRoom: {fileID: 558933053}
 --- !u!4 &335614233
@@ -13711,7 +13709,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
     - target: {fileID: -927199367670048503, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
       propertyPath: m_Name
-      value: altar
+      value: Altar
       objectReference: {fileID: 0}
     - target: {fileID: -927199367670048503, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
       propertyPath: m_IsActive
@@ -13960,7 +13958,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 19
+    m_Bits: 83
   m_RenderingPath: 1
   m_TargetTexture: {fileID: 8400000, guid: fd4232449a5783245b636c742f468227, type: 2}
   m_TargetDisplay: 0
@@ -16913,7 +16911,7 @@ MonoBehaviour:
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
-  m_Dithering: 0
+  m_Dithering: 1
   m_ClearDepth: 1
   m_AllowXRRendering: 1
   m_AllowHDROutput: 1
@@ -25665,7 +25663,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_Name
-      value: PortalVFX
+      value: Portal
+      objectReference: {fileID: 0}
+    - target: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_IsActive
@@ -25687,6 +25689,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6605233807946993759}
+    - targetCorrespondingSourceObject: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6605233807946993763}
   m_SourcePrefab: {fileID: 100100000, guid: f317520e52301314fa15a57dcc606a73, type: 3}
 --- !u!1 &410983050840802480 stripped
 GameObject:
@@ -26138,6 +26143,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 0.5, z: 2}
   m_Center: {x: 0, y: 0.17, z: 0}
+--- !u!114 &6605233807946993763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410983050840802480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e4f80848e9e63f4c98e183489a9dbb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PortalVignetteController
+  _FullScreenBlizzard: {fileID: 1240686817165140765, guid: 2aa42a8842c07784294e22137dbfc579, type: 2}
+  _PortalVignetteMaterial: {fileID: 2100000, guid: 3d6e6ae7f574ef34aba6ac2ce42ccae1, type: 2}
+  _vignetteIntensityMaxAmount: 7
+  _portalTag: Portal
+  _portalLayerMask:
+    serializedVersion: 2
+    m_Bits: 65
+  _detectionRadius: 0.025
+  _smoothSpeed: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
