@@ -43,12 +43,11 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         logger.LogOnLinkClick(link, Time.time);
 
         Match match = Regex.Match(link, pattern);
-        Debug.Log(match.Groups[1].Value);
         if (match.Success)
         {
             roomsController.secondElongatedRoom.articleName = match.Groups[1].Value.Replace('_', ' ');
             roomsController.secondElongatedRoom.ResetRoom();
-            roomsController.secondElongatedRoom.GenerateRoom(roomsController.secondElongatedRoom.articleName);
+            roomsController.secondElongatedRoom.GenerateRoom(roomsController.secondElongatedRoom.articleName, roomsController);
         }
     }
 

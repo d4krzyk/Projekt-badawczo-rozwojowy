@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -27,16 +28,18 @@ public class ElongatedRoomGenerator : MonoBehaviour
     [HideInInspector] public float ExitTime;
     [HideInInspector] public string PreviousRoom;
     [HideInInspector] public ArticleStructure ArticleData;
-    
-    string articleLink;
 
-    public async void GenerateRoom(string articleName)
+    string articleLink;
+    RoomsController roomsController;
+
+    public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
+        this.roomsController = roomsController;
         SetDefaultMaterials();
-        
+
         articleLink = "https://en.wikipedia.org/wiki/" + articleName.Replace(" ", "_");
         EnterTime = Time.time;
-        Debug.Log($"Loading {articleName}..."); 
+        Debug.Log($"Loading {articleName}...");
 
         // Pobieranie artykułu
         string json = await GetArticleAsync(articleName);
@@ -49,16 +52,27 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
         // Pobieranie tekstur i updateuj materiały
         Debug.Log($"Waiting for {ArticleData.category} textures...");
-        string texturesJson = await GetTexturesJsonAsync(ArticleData.category);
-        TexturesStructure texturesData = null;
-        if (string.IsNullOrEmpty(texturesJson)) Debug.LogWarning("Failed to retrieve textures data.");
+        TexturesStructure cachedTextures = roomsController.GetCachedTextures(articleName);
+        if (cachedTextures != null)
+        {
+            Debug.Log("Using cached textures.");
+            ApplyTexturesToMaterials(cachedTextures);
+        }
         else
         {
-            texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
-            ApplyTexturesToMaterials(texturesData);
+            string texturesJson = await GetTexturesJsonAsync(ArticleData.category);
+            TexturesStructure texturesData;
+            if (string.IsNullOrEmpty(texturesJson)) Debug.LogWarning("Failed to retrieve textures data.");
+            else
+            {
+                texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
+                roomsController.CacheTextures(articleName, texturesData);
+                ApplyTexturesToMaterials(texturesData);
+            }
         }
 
         SpawnExtensionsWithBookselfs();
+        Debug.Log($"Loaded {articleName} successfully.");
     }
 
 
@@ -81,7 +95,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             var operation = request.SendWebRequest();
 
             while (!operation.isDone)
-                await Task.Yield(); 
+                await Task.Yield();
 
             if (request.result == UnityWebRequest.Result.Success)
             {
@@ -103,7 +117,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         using (UnityWebRequest request = UnityWebRequest.Post(url, requestBody, "application/json"))
         {
             var operation = request.SendWebRequest();
-            while (!operation.isDone) await Task.Yield(); 
+            while (!operation.isDone) await Task.Yield();
 
             if (request.result == UnityWebRequest.Result.Success)
             {
@@ -120,7 +134,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     void ApplyTexturesToMaterials(TexturesStructure texturesData)
     {
         byte[] textureByteData = Convert.FromBase64String(texturesData.images.bookcase);
-        Texture2D bookshelfTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
+        Texture2D bookshelfTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         bookshelfTexture.LoadImage(textureByteData);
         bookshelfTexture.filterMode = FilterMode.Point;
         bookshelfTexture.Apply(false, false);
@@ -135,14 +149,14 @@ public class ElongatedRoomGenerator : MonoBehaviour
         if (bookshelfMat.HasProperty("_Metallic")) bookshelfMat.SetFloat("_Metallic", 0.0f);
 
         textureByteData = Convert.FromBase64String(texturesData.images.wall);
-        Texture2D wallTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
+        Texture2D wallTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         wallTexture.LoadImage(textureByteData);
-        wallTexture.filterMode = FilterMode.Point;    
+        wallTexture.filterMode = FilterMode.Point;
         wallTexture.Apply(false, false);
         wallMat.mainTexture = wallTexture;
 
         textureByteData = Convert.FromBase64String(texturesData.images.floor);
-        Texture2D floorTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false); 
+        Texture2D floorTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         floorTexture.LoadImage(textureByteData);
         floorTexture.filterMode = FilterMode.Point;
         floorTexture.Apply(false, false);
@@ -196,43 +210,43 @@ public class ElongatedRoomGenerator : MonoBehaviour
         int bookIndex = 0;
         int sectionIndex = 0;
 
-        for(int i = 0; i < BookshelfCountForArticle(ArticleData); i++)
+        for (int i = 0; i < BookshelfCountForArticle(ArticleData); i++)
         {
-            if(i % 6 == 0)
+            if (i % 6 == 0)
             {
                 extension = Instantiate(extensionRoom, nextExtensionPoint, Quaternion.identity, transform);
-                extension.name = $"Extension Room {(i/6) + 1}";       
+                extension.name = $"Extension Room {(i / 6) + 1}";
                 nextExtensionPoint -= offset;
             }
             GameObject bookshelfContainer = new GameObject($"Bookshelf Container {i}");
             bookshelfContainer.transform.parent = extension.transform;
 
             GameObject currentBookshelf = Instantiate(bookshelf, bookshelfContainer.transform);
-            Vector3 bookshelfTranlation = new Vector3(roomSize.x/4, 0, 0);
+            Vector3 bookshelfTranlation = new Vector3(roomSize.x / 4, 0, 0);
             Vector3 bookshelfPos;
-            if((i%6) < 3) bookshelfPos = new Vector3(-roomSize.x/4, 0.72f, roomSize.y/4) + bookshelfTranlation * (i%3);
-            else bookshelfPos = new Vector3(-roomSize.x/4, 0.72f, -roomSize.y/4) + bookshelfTranlation * (i%3);
+            if ((i % 6) < 3) bookshelfPos = new Vector3(-roomSize.x / 4, 0.72f, roomSize.y / 4) + bookshelfTranlation * (i % 3);
+            else bookshelfPos = new Vector3(-roomSize.x / 4, 0.72f, -roomSize.y / 4) + bookshelfTranlation * (i % 3);
             bookshelfContainer.transform.localPosition = bookshelfPos;
             currentBookshelf.transform.localPosition = Vector3.zero;
 
             BookshelfController currentBookshelfController = currentBookshelf.GetComponent<BookshelfController>();
-            while(nextSection.content == null && nextSection.subsections == null)
+            while (nextSection.content == null && nextSection.subsections == null)
             {
                 sectionIndex++;
                 nextSection = ArticleData.content[sectionIndex];
                 bookIndex = 0;
             }
             currentBookshelfController.AddSign(nextSection.name, bookshelfContainer.transform);
-            
+
             bookIndex = AddBooksForSection(currentBookshelfController, nextSection, bookshelfContainer.transform, bookIndex - 1);
-            if(bookIndex == BookCountForSection(nextSection))
+            if (bookIndex == BookCountForSection(nextSection))
             {
                 sectionIndex++;
-                if(sectionIndex < ArticleData.content.Length) nextSection = ArticleData.content[sectionIndex];
+                if (sectionIndex < ArticleData.content.Length) nextSection = ArticleData.content[sectionIndex];
                 bookIndex = 0;
             }
         }
-        nextExtensionPoint += offset/2;
+        nextExtensionPoint += offset / 2;
         extension = Instantiate(extensionRoomClosure, nextExtensionPoint, Quaternion.identity, transform);
         extension.name = "Extension Room Closure";
     }
@@ -240,16 +254,16 @@ public class ElongatedRoomGenerator : MonoBehaviour
     int BookCountForSection(Section section)
     {
         int bookCount = 0;
-        if(string.IsNullOrEmpty(section.content) && section.subsections == null) return 0;
+        if (string.IsNullOrEmpty(section.content) && section.subsections == null) return 0;
         Stack<Section> subsections = new Stack<Section>();
         subsections.Push(section);
-        while(subsections.Count > 0)
+        while (subsections.Count > 0)
         {
             Section s = subsections.Pop();
-            if(string.IsNullOrEmpty(s.content) && s.subsections == null) continue;
-            if(s.subsections != null) 
+            if (string.IsNullOrEmpty(s.content) && s.subsections == null) continue;
+            if (s.subsections != null)
             {
-                foreach(Section sub in s.subsections) subsections.Push(sub);
+                foreach (Section sub in s.subsections) subsections.Push(sub);
             }
             bookCount++;
         }
@@ -259,10 +273,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
     int BookshelfCountForArticle(ArticleStructure article)
     {
         int bookshelfCount = 0;
-        foreach(Section section in article.content)
+        foreach (Section section in article.content)
         {
-            if(string.IsNullOrEmpty(section.content) && section.subsections == null) continue;
-            int bookshelfsPerSection = ((BookCountForSection(section) - 1)/ maxBooksPerBookshelf) + 1;
+            if (string.IsNullOrEmpty(section.content) && section.subsections == null) continue;
+            int bookshelfsPerSection = ((BookCountForSection(section) - 1) / maxBooksPerBookshelf) + 1;
             bookshelfCount += bookshelfsPerSection;
         }
         return bookshelfCount;
@@ -275,12 +289,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
         sections.Push(initialSection);
         int i = 0;
         int addedBooks = 0;
-        while(sections.Count > 0)
+        while (sections.Count > 0)
         {
             Section subsection = sections.Pop();
             if (subsection.content != null)
             {
-                if(i > lastBookIndex)
+                if (i > lastBookIndex)
                 {
                     bookshelf.AddBook(subsection.name, subsection.content, articleLink, parent, addedBooks);
                     addedBooks++;
@@ -288,16 +302,16 @@ public class ElongatedRoomGenerator : MonoBehaviour
             }
             if (subsection.subsections != null)
             {
-                foreach(var s in subsection.subsections.Reverse()) sections.Push(s);
+                foreach (var s in subsection.subsections.Reverse()) sections.Push(s);
             }
             i++;
-            if(addedBooks == maxBooksPerBookshelf) return i; 
+            if (addedBooks == maxBooksPerBookshelf) return i;
         }
         return i;
     }
 
     public void LogRoom()
-    { 
+    {
         string previousRoomUrl = "https://en.wikipedia.org/wiki/" + PreviousRoom.Replace(" ", "_");
         logger.LogOnRoomExit(articleLink, EnterTime, ExitTime, previousRoomUrl);
     }

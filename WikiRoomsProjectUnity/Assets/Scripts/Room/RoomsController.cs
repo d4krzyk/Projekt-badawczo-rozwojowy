@@ -1,31 +1,19 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RoomsController : MonoBehaviour
 {
-    public RoomGeneration currentRoom;
-    public RoomGeneration secondRoom;
     public ElongatedRoomGenerator elongatedRoom;
     public ElongatedRoomGenerator secondElongatedRoom;
 
+    Dictionary<string, TexturesStructure> textureCache;
+
     void Start()
     {
-        // currentRoom.GenerateRoom(currentRoom.articleName);
-        elongatedRoom.GenerateRoom(elongatedRoom.articleName);
-        currentRoom.previousRoom = "";
+        textureCache = new Dictionary<string, TexturesStructure>();
+        elongatedRoom.GenerateRoom(elongatedRoom.articleName, this);
+        elongatedRoom.PreviousRoom = "";
     }
-
-    // public void SwapRooms()
-    // {
-    //     RoomGeneration temp = currentRoom;
-    //     currentRoom = secondRoom;
-    //     secondRoom = temp;
-
-
-    //     currentRoom.EnterTime = Time.time;
-    //     secondRoom.exitTime = Time.time;
-    //     currentRoom.previousRoom = secondRoom.articleData.name;
-    //     secondRoom.LogRoom();
-    // }
 
     public void SwapRooms()
     {
@@ -38,6 +26,23 @@ public class RoomsController : MonoBehaviour
         secondElongatedRoom.ExitTime = Time.time;
         elongatedRoom.PreviousRoom = secondElongatedRoom.ArticleData.name;
         secondElongatedRoom.LogRoom();
+    }
+
+    public TexturesStructure GetCachedTextures(string articleName)
+    {
+        if (textureCache.ContainsKey(articleName))
+        {
+            return textureCache[articleName];
+        }
+        return null;
+    }
+
+    public void CacheTextures(string articleName, TexturesStructure images)
+    {
+        if (!textureCache.ContainsKey(articleName))
+        {
+            textureCache[articleName] = images;
+        }
     }
 
 }
