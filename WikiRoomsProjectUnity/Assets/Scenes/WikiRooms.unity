@@ -149,7 +149,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 942533381}
-  - {fileID: 89814885}
+  - {fileID: 1836512197}
   - {fileID: 1381128512}
   - {fileID: 1212071582}
   - {fileID: 1958911164}
@@ -605,71 +605,6 @@ MonoBehaviour:
   clickSound: {fileID: 8300000, guid: f296c2ea885ace441acac23d821758f1, type: 3}
   clickVolume: 0.25
   userTransform: {fileID: 621679087}
---- !u!1 &89814884
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 89814885}
-  - component: {fileID: 89814886}
-  m_Layer: 0
-  m_Name: RoomGenerator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &89814885
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 89814884}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 1.3, z: 4.9}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 553673561}
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!1 &149964653
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 89814884}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf51845a9d127fc4fbf7e29497035f35, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  extensionRoom: {fileID: 2431010039713694873, guid: ef04e68c91a4ffc4faa91dfc346eb82a, type: 3}
-  extensionRoomClosure: {fileID: 690143747799167353, guid: c544f46c538b63849b2f5f06a3cc6b03, type: 3}
-  bookshelf: {fileID: 2039724192458736144, guid: 10d8801b655cab449bd84855f00560db, type: 3}
-  initialRoomPosition: {fileID: 942533381}
-  bookshelfMat: {fileID: 2100000, guid: 6f882a15a3bb0db4b912def8abfe08cf, type: 2}
-  floorMat: {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
-  wallMat: {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
-  defBookcaseMat: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
-  defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
-  defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
-  articleName: Franklin D. Roosevelt
-  maxBooksPerBookshelf: 8
-  logger: {fileID: 2101044395}
-  EnterTime: 0
-  ExitTime: 0
-  PreviousRoom: 
-  ArticleData:
-    name: 
-    url: 
-    category: 
-    content: []
 --- !u!1001 &139559545
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1025,7 +960,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   elongatedRoom: {fileID: 1892327105}
-  secondElongatedRoom: {fileID: 89814886}
+  secondElongatedRoom: {fileID: 1836512196}
 --- !u!4 &335614233
 Transform:
   m_ObjectHideFlags: 0
@@ -4329,6 +4264,71 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &1836512195
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1836512197}
+  - component: {fileID: 1836512196}
+  m_Layer: 0
+  m_Name: RoomGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1836512196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1836512195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf51845a9d127fc4fbf7e29497035f35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  extensionRoom: {fileID: 2431010039713694873, guid: ef04e68c91a4ffc4faa91dfc346eb82a, type: 3}
+  extensionRoomClosure: {fileID: 690143747799167353, guid: c544f46c538b63849b2f5f06a3cc6b03, type: 3}
+  bookshelf: {fileID: 2039724192458736144, guid: 10d8801b655cab449bd84855f00560db, type: 3}
+  initialRoomPosition: {fileID: 942533381}
+  bookshelfMat: {fileID: 2100000, guid: 6f882a15a3bb0db4b912def8abfe08cf, type: 2}
+  floorMat: {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
+  wallMat: {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
+  defBookcaseMat: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
+  defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
+  defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
+  articleName: Franklin D. Roosevelt
+  maxBooksPerBookshelf: 8
+  logger: {fileID: 2101044395}
+  EnterTime: 0
+  ExitTime: 0
+  PreviousRoom: 
+  ArticleData:
+    name: 
+    url: 
+    category: 
+    content: []
+--- !u!4 &1836512197
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1836512195}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 11383945}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1892327103
 GameObject:
   m_ObjectHideFlags: 0
@@ -4494,12 +4494,11 @@ MonoBehaviour:
   _FullScreenBlizzard: {fileID: 1240686817165140765, guid: 2aa42a8842c07784294e22137dbfc579, type: 2}
   _PortalVignetteMaterial: {fileID: 2100000, guid: 3d6e6ae7f574ef34aba6ac2ce42ccae1, type: 2}
   _vignetteIntensityMaxAmount: 7
-  _portalTag: Portal
-  _portalLayerMask:
-    serializedVersion: 2
-    m_Bits: 65
-  _detectionRadius: 0.025
   _smoothSpeed: 3
+  _portalTag: Portal
+  _playerTag: Player
+  _scriptIsOnPortal: 0
+  _logDebug: 1
 --- !u!114 &1958911166
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4849,60 +4848,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 0.5, z: 2}
   m_Center: {x: 0, y: 0.17, z: 0}
---- !u!1 &1993942648
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1993942651}
-  - component: {fileID: 1993942650}
-  m_Layer: 0
-  m_Name: 
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!64 &1993942650
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1993942648}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 1019386347547055254, guid: dce587bcbc4fe0c4593a185378021048, type: 3}
---- !u!4 &1993942651
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1993942648}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &2029438623
 Mesh:
   m_ObjectHideFlags: 0
@@ -6021,10 +5966,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 3740675008352502071, guid: f317520e52301314fa15a57dcc606a73, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 87004287}
+    m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       insertIndex: 1
@@ -6493,7 +6435,6 @@ BoxCollider:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1993942651}
   - {fileID: 705507995}
   - {fileID: 1265772527}
   - {fileID: 621679087}
