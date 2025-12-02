@@ -115,4 +115,28 @@ public class PortalVignetteController : MonoBehaviour
     {
         if (_logDebug) Debug.LogWarning($"[PortalVignette] {msg}", this);
     }
+
+    // Przy wyłączeniu komponentu / zatrzymaniu gry wyłączamy efekt, żeby nie pozostał aktywny po End Play
+    private void OnDisable()
+    {
+        if (_FullScreenBlizzard != null)
+        {
+            _FullScreenBlizzard.SetActive(false);
+            _featureEnabled = false;
+            if (_PortalVignetteMaterial != null)
+                _PortalVignetteMaterial.SetFloat(vignetteIntensity, VIGNETTE_INTENSITY_START_AMOUNT);
+            Log("OnDisable: wyłączono efekt (renderer feature OFF).");
+        }
+    }
+
+    // Dodatkowo upewniamy się przy zamykaniu aplikacji
+    private void OnApplicationQuit()
+    {
+        if (_FullScreenBlizzard != null)
+        {
+            _FullScreenBlizzard.SetActive(false);
+            _featureEnabled = false;
+            Log("OnApplicationQuit: wyłączono efekt (renderer feature OFF).");
+        }
+    }
 }
