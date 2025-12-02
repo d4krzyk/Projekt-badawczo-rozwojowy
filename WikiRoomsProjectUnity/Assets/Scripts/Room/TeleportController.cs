@@ -15,8 +15,7 @@ public class TeleportController : MonoBehaviour
     {
         if (collider.GetComponent<Transform>() == player)
         {
-            TeleportPlayer();
-            gameController.SwapRooms();
+            if (gameController.SwapRoomsPrevious()) TeleportPlayer();
         }
     }
 }

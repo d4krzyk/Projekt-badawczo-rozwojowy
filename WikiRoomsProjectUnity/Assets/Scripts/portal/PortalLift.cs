@@ -12,29 +12,29 @@ public class PortalLift : MonoBehaviour
 
     [Header("Center Move")]
     public float centerMoveDuration = 1.5f;
-    public AnimationCurve centerMoveCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public AnimationCurve centerMoveCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [Header("Lift")]
-    public AnimationCurve rotateSpeedCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public AnimationCurve rotateSpeedCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     public bool useLiftYCurve = false;
-    public AnimationCurve liftYCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public AnimationCurve liftYCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     [Header("Camera")]
-    public AnimationCurve cameraZeroCurve = AnimationCurve.EaseInOut(0,0,1,1);
-    public AnimationCurve lookDownCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public AnimationCurve cameraZeroCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    public AnimationCurve lookDownCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     public float lookDownOrbitDuration = 1.25f;
     public float cameraDownAngleDegrees = 35f;
     public float orbitSpeedDuringLookDown = 360f;
 
     [Header("Suck Back")]
     public float suckBackDuration = 0.35f;
-    public AnimationCurve suckBackCurve = AnimationCurve.EaseInOut(0,0,1,1);
+    public AnimationCurve suckBackCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     public AudioClip suckBackClip;
     public float suckBackVolume = 1f;
 
     [Header("Audio")]
     public AudioSource portalAudioSource;
-    public AnimationCurve audioPitchCurve = AnimationCurve.Linear(0,0,1,1);
+    public AnimationCurve audioPitchCurve = AnimationCurve.Linear(0, 0, 1, 1);
     public float audioPitchMin = 0.8f;
     public float audioPitchMax = 1.2f;
     public bool affectDuringMoveToCenter = true;
@@ -137,7 +137,7 @@ public class PortalLift : MonoBehaviour
         if (phase == Phase.Idle || playerController == null || playerController.cameraTransform == null) return;
 
         if (phase == Phase.MoveToCenter) UpdateCameraZero(camProgressMove);
-        else if (phase == Phase.Lift)    UpdateCameraZero(camProgressLift);
+        else if (phase == Phase.Lift) UpdateCameraZero(camProgressLift);
         else if (phase == Phase.LookDownOrbit) UpdateCameraLookDown(camProgressLook);
     }
 
@@ -247,7 +247,7 @@ public class PortalLift : MonoBehaviour
 
         if (tSuck < 1f) return;
 
-        
+
 
         EndLift();
         if (teleportAfterSequence)
@@ -261,7 +261,7 @@ public class PortalLift : MonoBehaviour
             Vector3 playPos = player ? player.position : portalCenter;
             AudioSource.PlayClipAtPoint(suckBackClip, playPos, suckBackVolume);
         }
-        
+
     }
 
     // --- Transitions ---
@@ -428,10 +428,13 @@ public class PortalLift : MonoBehaviour
     void DoTeleport()
     {
         if (!teleportPoint) return;
+        if (gameController)
+        {
+            if (!gameController.SwapRoomsNext()) return;
+        }
         if (playerRb) playerRb.transform.position = teleportPoint.position;
         else if (player) player.position = teleportPoint.position;
 
-        if (gameController) gameController.SwapRooms();
 
         // Odblokuj ponownie po zmianie pokoju
         triggerLocked = false;
