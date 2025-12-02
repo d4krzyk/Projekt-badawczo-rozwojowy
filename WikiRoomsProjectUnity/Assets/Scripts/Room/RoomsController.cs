@@ -36,6 +36,9 @@ public class RoomsController : MonoBehaviour
         elongatedRoom.PreviousRoom = secondElongatedRoom.ArticleData.name;
         secondElongatedRoom.LogRoom();
         currentRoomNode = currentRoomNode.Next;
+        elongatedRoom.SetActivePortalPrevious(true);
+        if (currentRoomNode.Next != null) elongatedRoom.SetActivePortalNext(true);
+        else elongatedRoom.SetActivePortalNext(false);
         return true;
     }
 
@@ -57,6 +60,9 @@ public class RoomsController : MonoBehaviour
         currentRoomNode = currentRoomNode.Previous;
         elongatedRoom.ResetRoom();
         elongatedRoom.GenerateRoom(currentRoomNode.Value, this);
+        elongatedRoom.SetActivePortalNext(true);
+        if (currentRoomNode.Previous != null) elongatedRoom.SetActivePortalPrevious(true);
+        else elongatedRoom.SetActivePortalPrevious(false);
         return true;
     }
 
@@ -84,6 +90,7 @@ public class RoomsController : MonoBehaviour
             roomHistory.RemoveLast();
         }
         roomHistory.AddAfter(currentRoomNode, articleName);
+        elongatedRoom.SetActivePortalNext(true);
     }
 
 }

@@ -206,7 +206,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5351018387774653273, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_Name
@@ -218,7 +218,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -822,7 +822,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &294082831
 Transform:
   m_ObjectHideFlags: 0
@@ -3798,7 +3798,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1381128512
 Transform:
   m_ObjectHideFlags: 0
@@ -4454,6 +4454,8 @@ MonoBehaviour:
   articleName: Franklin D. Roosevelt
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
+  portalNext: {fileID: 1958911163}
+  portalPrevious: {fileID: 1381128511}
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
@@ -4534,6 +4536,8 @@ MonoBehaviour:
   articleName: Franklin D. Roosevelt
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
+  portalNext: {fileID: 410983050840802480}
+  portalPrevious: {fileID: 294082830}
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
@@ -6078,7 +6082,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5351018387774653273, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_Name
@@ -6090,7 +6094,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

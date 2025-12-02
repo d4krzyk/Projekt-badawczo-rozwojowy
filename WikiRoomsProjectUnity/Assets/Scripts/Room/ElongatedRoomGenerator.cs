@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -23,6 +22,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public string articleName;
     public int maxBooksPerBookshelf;
     public Logger logger;
+    public GameObject portalNext;
+    public GameObject portalPrevious;
 
     [HideInInspector] public float EnterTime;
     [HideInInspector] public float ExitTime;
@@ -322,5 +323,15 @@ public class ElongatedRoomGenerator : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+    }
+
+    public void SetActivePortalNext(bool isActive)
+    {
+        portalNext.SetActive(isActive);
+    }
+
+    public void SetActivePortalPrevious(bool isActive)
+    {
+        portalPrevious.SetActive(isActive);
     }
 }
