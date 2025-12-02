@@ -1075,7 +1075,7 @@
     "m_ObjectId": "0c800c56c14c4215b61b172cf9e0741e",
     "m_Title": "Animation",
     "m_Position": {
-        "x": -2100.0,
+        "x": -2100.000244140625,
         "y": 1115.199951171875
     }
 }
@@ -1145,7 +1145,7 @@
     "m_Title": "Pixelization",
     "m_Position": {
         "x": -2276.7998046875,
-        "y": -155.19998168945313
+        "y": -155.20001220703126
     }
 }
 
@@ -1311,7 +1311,7 @@
     "m_PerRendererData": false,
     "m_customAttributes": [],
     "m_Value": {
-        "x": 200.0,
+        "x": 64.0,
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
@@ -1900,8 +1900,8 @@
     "m_PerRendererData": false,
     "m_customAttributes": [],
     "m_Value": {
-        "x": 1.0,
-        "y": 1.0,
+        "x": 0.25,
+        "y": 0.25,
         "z": 0.0,
         "w": 0.0
     }
