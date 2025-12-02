@@ -1,22 +1,27 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
-using System.Collections;
-using System.Collections.Generic;
 
 public class PortalVignetteController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private ScriptableRendererFeature _FullScreenBlizzard;
     [SerializeField] private Material _PortalVignetteMaterial;
+
     [Header("Settings")]
-    [SerializeField] private float _vignetteIntensityMaxAmount = 7.0f;
+    [SerializeField] private float _vignetteIntensityMaxAmount = 20.0f;
+    [SerializeField] private float _smoothSpeed = 50.0f;
+
+    [Header("Tags")]
     [SerializeField] private string _portalTag = "Portal";
-    [SerializeField] private LayerMask _portalLayerMask = 0;
-    [SerializeField] private float _detectionRadius = 0.5f;
-    [SerializeField] private float _smoothSpeed = 3.0f;
+    [SerializeField] private string _playerTag = "Player";
+
+    [Header("Placement")]
+    [SerializeField] private bool _scriptIsOnPortal = false; // zaznacz, jeśli ten skrypt jest na obiekcie portalu
+
+    [Header("Debug")]
+    [SerializeField] private bool _logDebug = true;
 
     private int vignetteIntensity = Shader.PropertyToID("_VignetteIntensity");
-    
     private const float VIGNETTE_INTENSITY_START_AMOUNT = 0.0f;
 
     private float _currentIntensity = VIGNETTE_INTENSITY_START_AMOUNT;
@@ -25,51 +30,28 @@ public class PortalVignetteController : MonoBehaviour
 
     void Start()
     {
-
         if (_FullScreenBlizzard != null)
             _FullScreenBlizzard.SetActive(false);
 
         if (_PortalVignetteMaterial != null)
             _PortalVignetteMaterial.SetFloat(vignetteIntensity, VIGNETTE_INTENSITY_START_AMOUNT);
+
+        Log($"Start. OnPortal={_scriptIsOnPortal}, portalTag='{_portalTag}', playerTag='{_playerTag}'. Mat={(_PortalVignetteMaterial ? _PortalVignetteMaterial.name : "NULL")}, Feature={(_FullScreenBlizzard ? _FullScreenBlizzard.name : "NULL")}");
+
+        if (_PortalVignetteMaterial == null) LogWarning("Brak przypisanego materiału _PortalVignetteMaterial.");
+        if (_FullScreenBlizzard == null) LogWarning("Brak przypisanego ScriptableRendererFeature _FullScreenBlizzard.");
+
+        var col = GetComponent<Collider>();
+        if (col == null) LogWarning("Brak Collider na tym obiekcie (Trigger wymagany).");
+        else if (!col.isTrigger) LogWarning("Collider nie jest Triggerem (isTrigger = true).");
+
+        if (GetComponent<Rigidbody>() == null)
+            Log("Brak Rigidbody na tym obiekcie. Upewnij się, że co najmniej JEDEN z obiektów w kolizji ma Rigidbody (np. gracz lub portal).");
     }
 
-    // Update is called once per frame
     void Update()
     {
-        DetectPortalCollision();
         SmoothVignette();
-    }
-
-    private void DetectPortalCollision()
-    {
-        bool collided = false;
-
-        // jeśli w inspektorze maska = 0 (Nothing), traktujemy to jako "wszystkie warstwy"
-        int layerMask = (_portalLayerMask.value == 0) ? ~0 : _portalLayerMask.value;
-
-        // uwzględnij trigger'y (jeśli portal ma isTrigger)
-        Collider[] hits = Physics.OverlapSphere(transform.position, _detectionRadius, layerMask, QueryTriggerInteraction.Collide);
-        if (hits != null)
-        {
-            float r2 = _detectionRadius * _detectionRadius;
-            foreach (var c in hits)
-            {
-                if (c == null) continue;
-                // pomiń własny collider/obiekt jeśli skrypt jest na tym samym obiekcie
-                if (c.gameObject == this.gameObject) continue;
-                // porównuj tag i upewnij się, że faktycznie w odległości (dla bezpieczeństwa)
-                if (c.CompareTag(_portalTag))
-                {
-                    if ((c.transform.position - transform.position).sqrMagnitude <= r2 + 0.0001f)
-                    {
-                        collided = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        _targetIntensity = collided ? _vignetteIntensityMaxAmount : VIGNETTE_INTENSITY_START_AMOUNT;
     }
 
     private void SmoothVignette()
@@ -85,17 +67,52 @@ public class PortalVignetteController : MonoBehaviour
         {
             _FullScreenBlizzard.SetActive(true);
             _featureEnabled = true;
+            Log("Włączono efekt (renderer feature ON).");
         }
         else if (_featureEnabled && _currentIntensity <= epsilon)
         {
             _FullScreenBlizzard.SetActive(false);
             _featureEnabled = false;
+            Log("Wyłączono efekt (renderer feature OFF).");
         }
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnTriggerEnter(Collider other)
     {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, _detectionRadius);
+        string expectedTag = _scriptIsOnPortal ? _playerTag : _portalTag;
+        if (other.CompareTag(expectedTag))
+        {
+            _targetIntensity = _vignetteIntensityMaxAmount;
+            Log($"OnTriggerEnter: wykryto '{other.name}' (tag='{expectedTag}') — uruchamiam efekt.");
+        }
+        else
+        {
+            Log($"OnTriggerEnter: ignoruję '{other.name}' (tag={other.tag}). Oczekiwano '{expectedTag}'.");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        string expectedTag = _scriptIsOnPortal ? _playerTag : _portalTag;
+        if (other.CompareTag(expectedTag))
+        {
+            Log($"OnTriggerExit: '{other.name}' (tag='{expectedTag}') — wygaszam efekt.");
+            ExitPortal();
+        }
+    }
+
+    private void ExitPortal()
+    {
+        _targetIntensity = VIGNETTE_INTENSITY_START_AMOUNT;
+    }
+
+    private void Log(string msg)
+    {
+        if (_logDebug) Debug.Log($"[PortalVignette] {msg}", this);
+    }
+
+    private void LogWarning(string msg)
+    {
+        if (_logDebug) Debug.LogWarning($"[PortalVignette] {msg}", this);
     }
 }
