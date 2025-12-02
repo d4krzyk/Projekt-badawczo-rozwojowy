@@ -484,7 +484,7 @@
     ],
     "synonyms": [],
     "m_Precision": 0,
-    "m_PreviewExpanded": false,
+    "m_PreviewExpanded": true,
     "m_DismissedVersion": 0,
     "m_PreviewMode": 2,
     "m_CustomColors": {
@@ -922,8 +922,8 @@
     "m_ObjectId": "475eff8f567948a9b0f2969598b3e731",
     "m_Title": "Pixelization",
     "m_Position": {
-        "x": -1701.0001220703125,
-        "y": -250.00003051757813
+        "x": -1701.599853515625,
+        "y": -251.99998474121095
     }
 }
 
