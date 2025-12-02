@@ -792,8 +792,8 @@
     },
     "m_FragmentContext": {
         "m_Position": {
-            "x": 685.5999755859375,
-            "y": -30.399978637695314
+            "x": 1006.4000854492188,
+            "y": 260.8000183105469
         },
         "m_Blocks": [
             {
@@ -1057,7 +1057,7 @@
     "m_Hidden": false,
     "m_PerRendererData": false,
     "m_customAttributes": [],
-    "m_Value": 1.0,
+    "m_Value": 0.44999998807907107,
     "m_FloatType": 0,
     "m_RangeValues": {
         "x": 0.0,
@@ -1872,10 +1872,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": 681.60009765625,
-            "y": 423.2000427246094,
-            "width": 208.00006103515626,
-            "height": 301.5999450683594
+            "x": 496.8000793457031,
+            "y": 423.20001220703127,
+            "width": 207.99996948242188,
+            "height": 301.5999755859375
         }
     },
     "m_Slots": [
@@ -2797,10 +2797,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": 119.20008850097656,
-            "y": -63.20008087158203,
-            "width": 207.99998474121095,
-            "height": 301.6001281738281
+            "x": -65.60002899169922,
+            "y": 314.4000244140625,
+            "width": 208.0,
+            "height": 301.5999755859375
         }
     },
     "m_Slots": [
@@ -3235,8 +3235,8 @@
     "m_ObjectId": "7a63d14b8ae8499a9bb14ee276d06be7",
     "m_Title": "Quantize Time",
     "m_Position": {
-        "x": -2448.0,
-        "y": 1429.5999755859375
+        "x": -2448.000244140625,
+        "y": 1429.599853515625
     }
 }
 
@@ -3364,8 +3364,8 @@
     "m_ObjectId": "80c6e78481094b17a46d18a1c14d65d7",
     "m_Title": "Pixelization",
     "m_Position": {
-        "x": -2574.400390625,
-        "y": 8.799930572509766
+        "x": -2574.400146484375,
+        "y": 8.79998779296875
     }
 }
 
@@ -4903,8 +4903,8 @@
     "m_ShaderOutputName": "OutMinMax",
     "m_StageCapability": 3,
     "m_Value": {
-        "x": 0.699999988079071,
-        "y": 0.800000011920929
+        "x": 0.6000000238418579,
+        "y": 0.699999988079071
     },
     "m_DefaultValue": {
         "x": 0.0,
@@ -5092,7 +5092,7 @@
     "m_Hidden": false,
     "m_PerRendererData": false,
     "m_customAttributes": [],
-    "m_Value": 2.0,
+    "m_Value": 3.0,
     "m_FloatType": 0,
     "m_RangeValues": {
         "x": 0.0,

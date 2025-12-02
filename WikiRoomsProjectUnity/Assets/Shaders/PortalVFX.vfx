@@ -237,7 +237,7 @@ MonoBehaviour:
     x: -2972
     y: -962
     width: 8264
-    height: 3460
+    height: 3463
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4706,7 +4706,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Color, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"r":0.2221049964427948,"g":0.6630000472068787,"b":0.47658127546310427,"a":1.0}'
+      m_SerializableObject: '{"r":0.16920000314712525,"g":0.4699999988079071,"b":0.34334734082221987,"a":1.0}'
     m_Space: -1
   m_Property:
     name: _Color
@@ -13967,7 +13967,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 16
+      m_SerializableObject: 15.25
     m_Space: -1
   m_Property:
     name: _Size
@@ -15237,7 +15237,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 2.68
+      m_SerializableObject: 3.75
     m_Space: -1
   m_Property:
     name: _intensity
@@ -15271,7 +15271,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 4
+      m_SerializableObject: 3.5
     m_Space: -1
   m_Property:
     name: _rangeLight
@@ -15305,7 +15305,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 0.25
+      m_SerializableObject: 0.57
     m_Space: -1
   m_Property:
     name: _centerShadowIntensity
@@ -15339,7 +15339,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 2
+      m_SerializableObject: 1.5
     m_Space: -1
   m_Property:
     name: _LightSpeedBreath
