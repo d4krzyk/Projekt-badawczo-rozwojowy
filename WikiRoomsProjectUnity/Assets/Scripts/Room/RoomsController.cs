@@ -36,6 +36,11 @@ public class RoomsController : MonoBehaviour
         elongatedRoom.PreviousRoom = secondElongatedRoom.ArticleData.name;
         secondElongatedRoom.LogRoom();
         currentRoomNode = currentRoomNode.Next;
+        if (currentRoomNode.Value != elongatedRoom.articleName)
+        {
+            elongatedRoom.ResetRoom();
+            elongatedRoom.GenerateRoom(currentRoomNode.Value, this);
+        }
         elongatedRoom.SetActivePortalPrevious(true);
         if (currentRoomNode.Next != null) elongatedRoom.SetActivePortalNext(true);
         else elongatedRoom.SetActivePortalNext(false);

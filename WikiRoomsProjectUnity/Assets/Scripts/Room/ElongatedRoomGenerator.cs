@@ -35,6 +35,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
+        this.articleName = articleName;
         this.roomsController = roomsController;
         SetDefaultMaterials();
 
