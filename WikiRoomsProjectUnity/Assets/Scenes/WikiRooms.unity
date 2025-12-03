@@ -4441,13 +4441,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf51845a9d127fc4fbf7e29497035f35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  spawnRoom: {fileID: 942533380}
   extensionRoom: {fileID: 2431010039713694873, guid: ef04e68c91a4ffc4faa91dfc346eb82a, type: 3}
   extensionRoomClosure: {fileID: 690143747799167353, guid: c544f46c538b63849b2f5f06a3cc6b03, type: 3}
   bookshelf: {fileID: 2039724192458736144, guid: 10d8801b655cab449bd84855f00560db, type: 3}
   initialRoomPosition: {fileID: 942533381}
-  bookshelfMat: {fileID: 2100000, guid: 6f882a15a3bb0db4b912def8abfe08cf, type: 2}
-  floorMat: {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
-  wallMat: {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
+  bookshelfMat: {fileID: 2100000, guid: b54182df40daf63449af1aa243fa2e4c, type: 2}
+  floorMat: {fileID: 2100000, guid: d9aeccf606d064e4fb69b0626b49f159, type: 2}
+  wallMat: {fileID: 2100000, guid: 5d4af03f1ee0c3e4da754b36074f2baf, type: 2}
   defBookcaseMat: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
   defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
@@ -4523,6 +4524,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf51845a9d127fc4fbf7e29497035f35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  spawnRoom: {fileID: 2030654680}
   extensionRoom: {fileID: 2431010039713694873, guid: ef04e68c91a4ffc4faa91dfc346eb82a, type: 3}
   extensionRoomClosure: {fileID: 690143747799167353, guid: c544f46c538b63849b2f5f06a3cc6b03, type: 3}
   bookshelf: {fileID: 2039724192458736144, guid: 10d8801b655cab449bd84855f00560db, type: 3}

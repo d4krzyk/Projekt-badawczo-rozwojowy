@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 
 public class ElongatedRoomGenerator : MonoBehaviour
 {
-    public GameObject extensionRoom, extensionRoomClosure, bookshelf;
+    public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf;
     public Transform initialRoomPosition;
     [Header("Room materials")]
     public Material bookshelfMat;
@@ -80,6 +80,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     void SetDefaultMaterials()
     {
+        spawnRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat, defFloorMat });
         extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
         extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
         bookshelf.GetComponent<MeshRenderer>().sharedMaterial = defBookcaseMat;
@@ -164,6 +165,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         floorTexture.Apply(false, false);
         floorMat.mainTexture = floorTexture;
 
+        spawnRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat, floorMat });
         extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
         extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
         bookshelf.GetComponent<MeshRenderer>().sharedMaterial = bookshelfMat;
