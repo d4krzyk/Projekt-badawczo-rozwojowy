@@ -9,21 +9,21 @@ public abstract class Log
 }
 
 [Serializable]
-public class RoomLog : Log
+public class RoomLog
 {
-    public string roomLink;
+    public string roomName;
     public float enterTime;
     public float exitTime;
     public List<BookLog> bookLogs;
     public List<LinkLog> linkLogs;
-    public string previousRoomLink;
-    public string roomPath;
+    // public string previousRoomLink;
+    // public string roomPath;
 }
 
 [Serializable]
 public class BookLog
 {
-    public string bookLink;
+    public string bookName;
     public float openTime;
     public float closeTime;
 }
@@ -33,4 +33,11 @@ public class LinkLog
 {
     public string linkName;
     public float clickTime;
+}
+
+[Serializable]
+public class AppLog
+{
+    public string user_name;
+    public List<RoomLog> session_logs;
 }
