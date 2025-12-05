@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
+using TMPro; 
 
 public class ElongatedRoomGenerator : MonoBehaviour
 {
@@ -33,10 +34,20 @@ public class ElongatedRoomGenerator : MonoBehaviour
     string articleLink;
     RoomsController roomsController;
 
+    [Header("Article title in Room")]
+    public TextMeshPro articleTitleText; // przypnij TextMeshProUGUI z Canvasu
+
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
         this.articleName = articleName;
         this.roomsController = roomsController;
+
+        // Ustaw tytuł w UI od razu po otrzymaniu nazwy
+        if (articleTitleText != null)
+        {
+            articleTitleText.text = this.articleName;
+        }
+
         SetDefaultMaterials();
 
         articleLink = "https://en.wikipedia.org/wiki/" + articleName.Replace(" ", "_");
