@@ -27,14 +27,14 @@ public class PlayerController : MonoBehaviour
     public float baseStepSpeed = 1.7f;         // tempo bobbingu przy domyślnym moveSpeed
     public AudioSource footstepSource;
     public AudioClip footstepClip;
-    [Range(0f,1f)] public float footstepVolume = 0.35f;
+    [Range(0f, 1f)] public float footstepVolume = 0.35f;
     public float groundCheckDistance = 1.1f;   // odległość sprawdzająca czy jesteśmy na ziemi
 
     // --- dźwięki otwierania/zamykania książki ---
     [Header("Book Sounds")]
     public AudioClip openBookClip;
     public AudioClip closeBookClip;
-    [Range(0f,1f)] public float bookSoundVolume = 0.5f;
+    [Range(0f, 1f)] public float bookSoundVolume = 0.5f;
     public AudioSource bookAudioSource;
 
     float xRotation = 0f;
@@ -48,7 +48,7 @@ public class PlayerController : MonoBehaviour
     float bobTimer = 0f;
     bool playedThisStep = false;
     // character controller + vertical velocity (przeniesione z FPSCharacterWalkController)
-    Rigidbody rb;    
+    Rigidbody rb;
     // yaw dla stabilnej rotacji postaci
     float yaw = 0f;
 
@@ -134,8 +134,11 @@ public class PlayerController : MonoBehaviour
         }
 
         // Rotate the camera up/down
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Prevent flipping
+        if (!isReading && !movementLocked)
+        {
+            xRotation -= mouseY;
+            xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Prevent flipping
+        }
 
         if (cameraTransform != null)
         {
@@ -172,38 +175,38 @@ public class PlayerController : MonoBehaviour
             }
 
             if (cameraTransform == null) return;
-             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-             if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
-             {
-                 IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-                 if (interactable != null)
-                 {
-                     // jeśli to książka - odtwórz dźwięk otwarcia i przejdź do trybu czytania
-                     var book = interactable as BookInteraction;
-                     if (book != null)
-                     {
-                         if (bookAudioSource != null && openBookClip != null)
-                             bookAudioSource.PlayOneShot(openBookClip, bookSoundVolume);
- 
-                         interactable.OnInteraction();
-                         currentBook = book;
-                         leftPage.Source = currentBook.content;
-                         rightPage.Source = currentBook.content;
-                         BookUI.SetActive(true);
-                         bookController.ResetPages();
-                         isReading = true;
-                         Cursor.lockState = CursorLockMode.None;
-                         Cursor.visible = true;
-                         openBookTime = Time.time;
-                         return;
-                     }
-                     interactable.OnInteraction();
-                 }
-             }
- 
-         }
- 
-     }
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+            if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
+            {
+                IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+                if (interactable != null)
+                {
+                    // jeśli to książka - odtwórz dźwięk otwarcia i przejdź do trybu czytania
+                    var book = interactable as BookInteraction;
+                    if (book != null)
+                    {
+                        if (bookAudioSource != null && openBookClip != null)
+                            bookAudioSource.PlayOneShot(openBookClip, bookSoundVolume);
+
+                        interactable.OnInteraction();
+                        currentBook = book;
+                        leftPage.Source = currentBook.content;
+                        rightPage.Source = currentBook.content;
+                        BookUI.SetActive(true);
+                        bookController.ResetPages();
+                        isReading = true;
+                        Cursor.lockState = CursorLockMode.None;
+                        Cursor.visible = true;
+                        openBookTime = Time.time;
+                        return;
+                    }
+                    interactable.OnInteraction();
+                }
+            }
+
+        }
+
+    }
 
     // proste przeniesione zachowanie: jeśli gracz się porusza i stoi na ziemi ->
     // sinusoidalny bob (im szybciej moveSpeed tym szybciej) oraz pojedynczy dźwięk raz na "dół" fali
