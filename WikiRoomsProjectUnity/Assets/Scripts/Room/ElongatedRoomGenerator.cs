@@ -15,6 +15,9 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public Material bookshelfMat;
     public Material floorMat;
     public Material wallMat;
+    [Header("Test image")]
+    public Material testImageMat; // przypisz materiał "test-image" w inspectorze
+    public GameObject imageWikiQuad; // przypisz GameObject "ImageWikiQuad" w inspectorze
     [Header("Default materials")]
     public Material defBookcaseMat;
     public Material defFloorMat;
@@ -36,6 +39,18 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     [Header("Article title in Room")]
     public TextMeshPro articleTitleText; // przypnij TextMeshProUGUI z Canvasu
+
+    // cache pobranych tekstur dla bieżącej strony
+    List<Texture2D> cachedImages = null;
+
+    // struktura odpowiadająca JSON z /images/generator
+    [Serializable]
+    class ImagesResponse
+    {
+        public string page_name;
+        public List<string> images;
+        public float time;
+    }
 
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
@@ -93,6 +108,29 @@ public class ElongatedRoomGenerator : MonoBehaviour
                 roomsController.CacheTextures(articleName, texturesData);
                 ApplyTexturesToMaterials(texturesData);
             }
+        }
+
+        // po pobraniu nazwy artykułu (lub gdzieś tam), pobierz obrazy:
+        try
+        {
+            cachedImages = await GetImagesAsTextures(articleName);
+            // teraz masz listę Texture2D w cachedImages — użyj ich np. do materiałów półek/książek
+
+            // przypisz pierwszy obraz do materiału test-image (jeśli ustawiony)
+            if (cachedImages != null && cachedImages.Count > 0 && testImageMat != null)
+            {
+                Texture2D t = cachedImages[0];
+                t.filterMode = FilterMode.Point; // ostry pixel-art
+                t.wrapMode = TextureWrapMode.Clamp;
+                // przypisz teksturę do materiału (bez skalowania materiału)
+                testImageMat.mainTexture = t;
+                // skaluj GameObject ImageWikiQuad, żeby zachować aspect ratio tekstury (nie skalujemy materiału)
+                SetImageQuadScale(imageWikiQuad, t);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
         }
 
         SpawnExtensionsWithBookselfs();
@@ -358,5 +396,98 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public void SetActivePortalPrevious(bool isActive)
     {
         portalPrevious.SetActive(isActive);
+    }
+
+    // Pobiera listę URL-i z API i zwraca listę Texture2D
+    public async Task<List<Texture2D>> GetImagesAsTextures(string pageName)
+    {
+        if (string.IsNullOrEmpty(pageName)) return new List<Texture2D>();
+
+        string url = $"http://localhost/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            var op = request.SendWebRequest();
+            while (!op.isDone)
+                await Task.Yield();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogWarning($"GetImages list failed: {request.error}");
+                return new List<Texture2D>();
+            }
+
+            string json = request.downloadHandler.text;
+            ImagesResponse resp = null;
+            try
+            {
+                resp = JsonConvert.DeserializeObject<ImagesResponse>(json);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"JSON parse error: {e.Message}");
+                return new List<Texture2D>();
+            }
+
+            var textures = new List<Texture2D>();
+            if (resp?.images == null || resp.images.Count == 0) return textures;
+
+            foreach (var imgUrl in resp.images)
+            {
+                if (string.IsNullOrEmpty(imgUrl)) continue;
+
+                using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(imgUrl))
+                {
+                    var texOp = texReq.SendWebRequest();
+                    while (!texOp.isDone)
+                        await Task.Yield();
+
+                    if (texReq.result == UnityWebRequest.Result.Success)
+                    {
+                        try
+                        {
+                            Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
+                            // opcjonalnie: ustawienie filter mode na Point jeśli chcesz ostry pixel-art
+                            // tex.filterMode = FilterMode.Point;
+                            textures.Add(tex);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogWarning($"Błąd tworzenia Texture2D z {imgUrl}: {e.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Failed to download texture {imgUrl}: {texReq.error}");
+                    }
+                }
+            }
+
+            return textures;
+        }
+    }
+
+
+    // Skaluje podany quad / plane tak, aby zachować proporcje tekstury.
+    // Zakładamy, że quad ma jednostkowy proporcjonalny rozmiar w localScale (height bazowy na localScale.y).
+    void SetImageQuadScale(GameObject quad, Texture2D tex)
+    {
+        if (quad == null || tex == null)
+        {
+            Debug.LogWarning("[SetImageQuadScale] Brak quad lub tekstury.");
+            return;
+        }
+
+        float texAspect = (float)tex.width / Mathf.Max(1, tex.height);
+        // Pobierz aktualny localScale
+        Vector3 ls = quad.transform.localScale;
+        Debug.Log($"[SetImageQuadScale] '{quad.name}' przed localScale={ls} (texture {tex.width}x{tex.height})");
+
+        // Trzymamy wysokość (localScale.y) i dopasowujemy szerokość (localScale.x)
+        // Jeśli Twoje ustawienie sceny ma inną orientację, zamień osie odpowiednio.
+        ls.x = ls.y * texAspect;
+        // Zostawiamy ls.z bez zmian (grubość)
+        quad.transform.localScale = ls;
+
+        Debug.Log($"[SetImageQuadScale] '{quad.name}' po localScale={quad.transform.localScale}");
     }
 }
