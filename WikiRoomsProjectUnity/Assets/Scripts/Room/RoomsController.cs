@@ -7,12 +7,14 @@ public class RoomsController : MonoBehaviour
     public ElongatedRoomGenerator secondElongatedRoom;
 
     Dictionary<string, TexturesStructure> textureCache;
+    Dictionary<string, ArticleStructure> articleCache;
     LinkedList<string> roomHistory;
     LinkedListNode<string> currentRoomNode;
 
     void Start()
     {
         textureCache = new Dictionary<string, TexturesStructure>();
+        articleCache = new Dictionary<string, ArticleStructure>();
         roomHistory = new LinkedList<string>();
         elongatedRoom.GenerateRoom(elongatedRoom.articleName, this);
         elongatedRoom.PreviousRoom = "";
@@ -85,6 +87,23 @@ public class RoomsController : MonoBehaviour
         if (!textureCache.ContainsKey(articleName))
         {
             textureCache[articleName] = images;
+        }
+    }
+
+    public ArticleStructure GetCachedArticle(string articleName)
+    {
+        if (articleCache.ContainsKey(articleName))
+        {
+            return articleCache[articleName];
+        }
+        return null;
+    }
+
+    public void CacheArticle(string articleName, ArticleStructure article)
+    {
+        if (!articleCache.ContainsKey(articleName))
+        {
+            articleCache[articleName] = article;
         }
     }
 

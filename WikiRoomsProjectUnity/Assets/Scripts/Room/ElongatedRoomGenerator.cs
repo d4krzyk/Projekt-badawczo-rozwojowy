@@ -55,13 +55,24 @@ public class ElongatedRoomGenerator : MonoBehaviour
         Debug.Log($"Loading {articleName}...");
 
         // Pobieranie artykułu
-        string json = await GetArticleAsync(articleName);
-        if (string.IsNullOrEmpty(json))
+        Debug.Log($"Waiting for {articleName} article data...");
+        ArticleStructure cachedArticle = roomsController.GetCachedArticle(articleName);
+        if (cachedArticle != null)
         {
-            Debug.LogError("Failed to retrieve article data.");
-            return;
+            Debug.Log("Using cached article data.");
+            ArticleData = cachedArticle;
         }
-        ArticleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
+        else
+        {
+            string json = await GetArticleAsync(articleName);
+            if (string.IsNullOrEmpty(json))
+            {
+                Debug.LogError("Failed to retrieve article data.");
+                return;
+            }
+            ArticleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
+            roomsController.CacheArticle(articleName, ArticleData);
+        }
 
         // Pobieranie tekstur i updateuj materiały
         Debug.Log($"Waiting for {ArticleData.category} textures...");
