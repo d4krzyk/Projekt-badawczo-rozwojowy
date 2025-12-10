@@ -1,6 +1,7 @@
 using UnityEngine;
 using LogicUI.FancyTextRendering;
 using System.Text.RegularExpressions;
+using System;
 
 [RequireComponent(typeof(TextLinkHelper))]
 [DisallowMultipleComponent]
@@ -38,6 +39,7 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         // Odtwórz dźwięk w lokalizacji użytkownika
         PlayClickSoundAtUser();
 
+        link = CloseParentheses(link);
         string pattern = @"https:\/\/en\.wikipedia\.org\/wiki\/([^#]+)(?:#(.+))?";
 
         logger.LogOnLinkClick(link, Time.time);
@@ -71,5 +73,22 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         }
 
         AudioSource.PlayClipAtPoint(clickSound, pos, clickVolume);
+    }
+
+    string CloseParentheses(string link)
+    {
+        string newLink = String.Copy(link);
+        int openParantheses = 0;
+        foreach(var c in link)
+        {
+            if (c == '(') openParantheses++;
+            else if (c == ')') openParantheses--;
+        }
+        Debug.Log(openParantheses);
+        for(int i = 0; i < openParantheses; i++)
+        {
+            newLink += ')';
+        }
+        return newLink;
     }
 }
