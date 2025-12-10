@@ -15,11 +15,12 @@ async def log_data(request: Request):
         raw_data = await request.body()
         data = json.loads(raw_data.decode("utf-8"))
 
+        # TODO: save to the db
+
         with open(DATA_FILE, "a", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False)
             f.write("\n")
 
-        print(f"Data: {data}")
         return {"status": "OK"}
 
     except Exception as e:

@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wikipedia Tracker
 // @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Rejestruje aktywność użytkownika na Wikipedii
+// @version      1.3
+// @description  Record user activity on Wikipedia and send data to the API
 // @match        https://en.wikipedia.org/*
 // @grant        none
 // ==/UserScript==
@@ -39,10 +39,47 @@
 
 
     /* ------------------------------
+       ŚLEDZENIE KLIKNIĘTYCH LINKÓW (NOWE)
+    --------------------------------*/
+
+    const clickedLinks = [];
+
+    function logLinkInteraction(event, interactionType) {
+        const linkElement = event.target.closest('a');
+
+        if (linkElement && linkElement.href) {
+            clickedLinks.push({
+                link: linkElement.href,
+                click_time: new Date().toISOString(),
+            });
+        }
+    }
+
+    // 1. mouse + Ctrl/Cmd
+    document.addEventListener('click', (e) => {
+        let type = 'left-click';
+        if (e.ctrlKey || e.metaKey) type = 'ctrl-left-click';
+        if (e.shiftKey) type = 'shift-left-click';
+        logLinkInteraction(e, type);
+    });
+
+    // 2. Auxiliary click
+    document.addEventListener('auxclick', (e) => {
+        if (e.button === 1) { // 1 to zazwyczaj środkowy przycisk
+            logLinkInteraction(e, 'middle-click');
+        }
+    });
+
+    // 3. Opening context menu
+    document.addEventListener('contextmenu', (e) => {
+        logLinkInteraction(e, 'right-click-context');
+    });
+
+    /* ------------------------------
        PROFILOWANIE CZASU W SEKCJACH
     --------------------------------*/
 
-    const startTime = Date.now();
+    const startTime = new Date();
     const sectionTimes = [];
     let currentSection = null;
     let sectionStartTime = null;
@@ -56,17 +93,20 @@
     function onSectionEnter(section) {
         if (currentSection !== section) {
             if (currentSection && sectionStartTime) {
-                const duration = (Date.now() - sectionStartTime) / 1000;
+                const duration = (new Date() - sectionStartTime) / 1000;
                 if (duration > 1) {
                     sectionTimes.push({
-                        title: currentSection,
-                        time: duration
+                        name: currentSection,
+                        session_events: [{
+                            open_time: sectionStartTime.toISOString(),
+                            close_time: new Date().toISOString(),
+                        }],
                     });
                     console.log('old section:', currentSection, duration);
                 }
             }
             currentSection = section;
-            sectionStartTime = Date.now();
+            sectionStartTime = new Date();
         }
     }
 
@@ -98,22 +138,26 @@
 
     window.addEventListener('beforeunload', () => {
         if (currentSection && sectionStartTime) {
-            const duration = (Date.now() - sectionStartTime) / 1000;
             sectionTimes.push({
-                title: currentSection,
-                time: duration
+                name: currentSection,
+                session_events: [{
+                    open_time: sectionStartTime,
+                    close_time: new Date().toISOString(),
+                }],
             });
         }
 
-        const totalTime = (Date.now() - startTime) / 1000;
-
         const data = {
-            url: window.location.href,
-            totalTime: totalTime,
-            sections: sectionTimes,
-            timestamp: new Date().toISOString(),
-            navigationType: navigationType,
-            entrySource: entrySource
+            name: window.location.href,
+            enter_time: startTime,
+            exit_time: new Date().toISOString(),
+            books: sectionTimes,
+            book_links: clickedLinks,
+            extra_data: {
+                timestamp: new Date().toISOString(),
+                navigationType: navigationType,
+                entrySource: entrySource
+            },
         };
 
         navigator.sendBeacon('http://localhost:5000/log', JSON.stringify(data));
