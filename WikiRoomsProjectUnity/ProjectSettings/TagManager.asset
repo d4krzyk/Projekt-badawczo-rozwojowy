@@ -8,6 +8,7 @@ TagManager:
   - Book
   - Portal
   - Image
+  - MenuOption
   layers:
   - Default
   - TransparentFX
