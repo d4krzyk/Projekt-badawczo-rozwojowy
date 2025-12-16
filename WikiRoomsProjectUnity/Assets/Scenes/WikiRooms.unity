@@ -304,65 +304,72 @@ MonoBehaviour:
       m_Calls: []
   m_text: "The pope is the bishop of Rome and the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Head_of_the_Church#Catholic_Church\">visible
     head</link></color> of the  <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_Church\">Catholic
-    Church</link></color> . He is also known as the   ![xd](https://i.imgur.com/fGJ83lM.png) 
-    worldwide ![zodiac](https://upload.wikimedia.org/wikipedia/commons/3/33/June_26_1970_Zodiac_letter.jpg)
+    Church</link></color> . He is also known as the   !<color=#5D1DEAFF><link=\"https://i.imgur.com/fGJ83lM.png\">xd</link></color> 
+    worldwide !<color=#5D1DEAFF><link=\"https://upload.wikimedia.org/wikipedia/commons/3/33/June_26_1970_Zodiac_letter.jpg\">zodiac</link></color>
     supreme pontiff , Roman pontiff , or sovereign pontiff . From the 8th century
-    until 1870, the pope was the [sovereign](https://en.wikipedia.org/wiki/Sovereign)
-    or [head of state](https://en.wikipedia.org/wiki/Head_of_state) of the [Papal
-    States](https://en.wikipedia.org/wiki/Papal_States) , and since 1929 of the much
-    smaller [Vatican City](https://en.wikipedia.org/wiki/Vatican_City) state. From
-    a Catholic viewpoint, the [primacy of the bishop of Rome](https://en.wikipedia.org/wiki/Primacy_of_the_bishop_of_Rome)
-    is largely derived from his role as the [apostolic successor](https://en.wikipedia.org/wiki/Apostolic_successor)
-    to [Saint Peter](https://en.wikipedia.org/wiki/Saint_Peter) , to whom [primacy](https://en.wikipedia.org/wiki/Petrine_primacy)
-    was conferred by [Jesus](https://en.wikipedia.org/wiki/Jesus) , who gave Peter
-    the [Keys of Heaven](https://en.wikipedia.org/wiki/Keys_of_Heaven) and the powers
-    of \"binding and loosing\", naming him as the \"rock\" upon which the Church
-    would be built. The current pope is [Leo XIV](https://en.wikipedia.org/wiki/Leo_XIV)
-    , who was elected on 8 May 2025 on the second day of the [2025 papal conclave](https://en.wikipedia.org/wiki/2025_papal_conclave)
-    .nnAlthough his office is called the papacy , the [jurisdiction](https://en.wikipedia.org/wiki/Ecclesiastical_jurisdiction)
-    of the [episcopal see](https://en.wikipedia.org/wiki/Episcopal_see) is called
-    the [Holy See](https://en.wikipedia.org/wiki/Holy_See) . The word see comes from
-    the Latin for 'seat' or 'chair' ( sede , referring in particular to the one on
-    which the newly elected pope sits during the enthronement ceremony). It is the
-    Holy See that is the [sovereign entity](https://en.wikipedia.org/wiki/Sovereign_entity)
-    under [international law](https://en.wikipedia.org/wiki/International_law) headquartered
-    in the distinctively independent Vatican City, a [city-state](https://en.wikipedia.org/wiki/City-state)
-    which forms a geographical [enclave](https://en.wikipedia.org/wiki/Enclave) within
-    the conurbation of [Rome](https://en.wikipedia.org/wiki/Rome) , established by
-    the [Lateran Treaty](https://en.wikipedia.org/wiki/Lateran_Treaty) in 1929 between
-    [Fascist Italy](https://en.wikipedia.org/wiki/Fascist_Italy) and the Holy See
-    to ensure its [temporal](https://en.wiktionary.org/wiki/temporal) and spiritual
-    independence. The Holy See is recognized by its adherence at various levels to
-    international organizations and by means of its diplomatic relations and political
-    accords with many independent states.nnAccording to [Catholic tradition](https://en.wikipedia.org/wiki/Catholic_tradition)
-    , the [apostolic see](https://en.wikipedia.org/wiki/Apostolic_see) of [Rome](https://en.wikipedia.org/wiki/Diocese_of_Rome)
-    was founded by [Saint Peter](https://en.wikipedia.org/wiki/Saint_Peter) and [Saint
-    Paul](https://en.wikipedia.org/wiki/Saint_Paul) in the first century. The papacy
-    is one of the most enduring institutions in the world and has had a prominent
-    part in [human history](https://en.wikipedia.org/wiki/Human_history) . In ancient
-    times, the popes helped spread Christianity and intervened to find resolutions
-    in various doctrinal disputes. In the [Middle Ages](https://en.wikipedia.org/wiki/Middle_Ages)
-    , they played a role of secular importance in Western Europe, often acting as
-    arbitrators between Christian monarchs. In addition to the expansion of [Christian
-    faith and doctrine](https://en.wikipedia.org/wiki/Christian_theology) , modern
-    popes are involved in [ecumenism](https://en.wikipedia.org/wiki/Ecumenism) and
-    [interfaith dialogue](https://en.wikipedia.org/wiki/Interfaith_dialogue) , [charitable
-    work](https://en.wikipedia.org/wiki/Catholic_charities) , and the defence of
-    human rights.nnOver time, the papacy accrued [broad secular and political influence](https://en.wikipedia.org/wiki/Temporal_power_of_the_Holy_See)
-    , eventually rivalling those of territorial rulers. In recent centuries, the
-    temporal authority of the papacy has declined and the office is now largely focused
-    on religious matters. By contrast, papal claims of spiritual authority have been
-    increasingly firmly expressed over time, culminating in 1870 with the proclamation
-    of the [dogma](https://en.wikipedia.org/wiki/Catholic_dogma) of [papal infallibility](https://en.wikipedia.org/wiki/Papal_infallibility)
-    for rare occasions when the pope speaks [ex cathedra](https://en.wikipedia.org/wiki/Ex_cathedra)
-    \u2014literally 'from the [chair (of Saint Peter)](https://en.wikipedia.org/wiki/Chair_of_Saint_Peter)
-    '\u2014to issue a formal definition of [faith](https://en.wikipedia.org/wiki/Dogma)
+    until 1870, the pope was the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Sovereign\">sovereign</link></color>
+    or <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Head_of_state\">head
+    of state</link></color> of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Papal_States\">Papal
+    States</link></color> , and since 1929 of the much smaller <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Vatican_City\">Vatican
+    City</link></color> state. From a Catholic viewpoint, the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Primacy_of_the_bishop_of_Rome\">primacy
+    of the bishop of Rome</link></color> is largely derived from his role as the
+    <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Apostolic_successor\">apostolic
+    successor</link></color> to <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Saint_Peter\">Saint
+    Peter</link></color> , to whom <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Petrine_primacy\">primacy</link></color>
+    was conferred by <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Jesus\">Jesus</link></color>
+    , who gave Peter the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Keys_of_Heaven\">Keys
+    of Heaven</link></color> and the powers of \"binding and loosing\", naming him
+    as the \"rock\" upon which the Church would be built. The current pope is <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Leo_XIV\">Leo
+    XIV</link></color> , who was elected on 8 May 2025 on the second day of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/2025_papal_conclave\">2025
+    papal conclave</link></color> .nnAlthough his office is called the papacy , the
+    <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Ecclesiastical_jurisdiction\">jurisdiction</link></color>
+    of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Episcopal_see\">episcopal
+    see</link></color> is called the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Holy_See\">Holy
+    See</link></color> . The word see comes from the Latin for 'seat' or 'chair'
+    ( sede , referring in particular to the one on which the newly elected pope sits
+    during the enthronement ceremony). It is the Holy See that is the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Sovereign_entity\">sovereign
+    entity</link></color> under <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/International_law\">international
+    law</link></color> headquartered in the distinctively independent Vatican City,
+    a <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/City-state\">city-state</link></color>
+    which forms a geographical <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Enclave\">enclave</link></color>
+    within the conurbation of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Rome\">Rome</link></color>
+    , established by the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Lateran_Treaty\">Lateran
+    Treaty</link></color> in 1929 between <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Fascist_Italy\">Fascist
+    Italy</link></color> and the Holy See to ensure its <color=#5D1DEAFF><link=\"https://en.wiktionary.org/wiki/temporal\">temporal</link></color>
+    and spiritual independence. The Holy See is recognized by its adherence at various
+    levels to international organizations and by means of its diplomatic relations
+    and political accords with many independent states.nnAccording to <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_tradition\">Catholic
+    tradition</link></color> , the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Apostolic_see\">apostolic
+    see</link></color> of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Diocese_of_Rome\">Rome</link></color>
+    was founded by <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Saint_Peter\">Saint
+    Peter</link></color> and <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Saint_Paul\">Saint
+    Paul</link></color> in the first century. The papacy is one of the most enduring
+    institutions in the world and has had a prominent part in <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Human_history\">human
+    history</link></color> . In ancient times, the popes helped spread Christianity
+    and intervened to find resolutions in various doctrinal disputes. In the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Middle_Ages\">Middle
+    Ages</link></color> , they played a role of secular importance in Western Europe,
+    often acting as arbitrators between Christian monarchs. In addition to the expansion
+    of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Christian_theology\">Christian
+    faith and doctrine</link></color> , modern popes are involved in <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Ecumenism\">ecumenism</link></color>
+    and <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Interfaith_dialogue\">interfaith
+    dialogue</link></color> , <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_charities\">charitable
+    work</link></color> , and the defence of human rights.nnOver time, the papacy
+    accrued <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Temporal_power_of_the_Holy_See\">broad
+    secular and political influence</link></color> , eventually rivalling those of
+    territorial rulers. In recent centuries, the temporal authority of the papacy
+    has declined and the office is now largely focused on religious matters. By contrast,
+    papal claims of spiritual authority have been increasingly firmly expressed over
+    time, culminating in 1870 with the proclamation of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_dogma\">dogma</link></color>
+    of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Papal_infallibility\">papal
+    infallibility</link></color> for rare occasions when the pope speaks <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Ex_cathedra\">ex
+    cathedra</link></color> \u2014literally 'from the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Chair_of_Saint_Peter\">chair
+    (of Saint Peter)</link></color> '\u2014to issue a formal definition of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Dogma\">faith</link></color>
     or morals. The pope is considered one of the world's most powerful people due
     to the extensive diplomatic, cultural, and spiritual influence of his position
     on both 1.3 billion Catholics and those outside the Catholic faith, and because
-    he heads the world's largest non-government provider of [education](https://en.wikipedia.org/wiki/Catholic_school)
-    and [health care](https://en.wikipedia.org/wiki/Catholic_Church_and_health_care)
-    , with a vast network of charities.\r\n"
+    he heads the world's largest non-government provider of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_school\">education</link></color>
+    and <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_Church_and_health_care\">health
+    care</link></color> , with a vast network of charities.\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
   m_sharedMaterial: {fileID: 1708306230045072050, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
@@ -857,7 +864,7 @@ PrefabInstance:
       objectReference: {fileID: 1842080615}
     - target: {fileID: 4594270182288116811, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
       propertyPath: m_VersionIndex
-      value: 43
+      value: 55
       objectReference: {fileID: 0}
     - target: {fileID: 4955558334518422723, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
       propertyPath: m_Mesh
@@ -869,7 +876,7 @@ PrefabInstance:
       objectReference: {fileID: 1594029829}
     - target: {fileID: 5349192714112127306, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
       propertyPath: m_VersionIndex
-      value: 49
+      value: 61
       objectReference: {fileID: 0}
     - target: {fileID: 5420170903560013837, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
       propertyPath: m_Mesh
@@ -877,7 +884,7 @@ PrefabInstance:
       objectReference: {fileID: 696498934}
     - target: {fileID: 5420170903560013837, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
       propertyPath: m_VersionIndex
-      value: 55
+      value: 67
       objectReference: {fileID: 0}
     - target: {fileID: 5911857994821215278, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
       propertyPath: m_Mesh
@@ -889,7 +896,7 @@ PrefabInstance:
       objectReference: {fileID: 1773632190}
     - target: {fileID: 7393136564107500007, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
       propertyPath: m_VersionIndex
-      value: 46
+      value: 58
       objectReference: {fileID: 0}
     - target: {fileID: 8287182961661605087, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
       propertyPath: m_Name
