@@ -10,6 +10,7 @@ from tkinter import ttk, messagebox
 
 from ..analyzers.hexmap.core import Heatmap, Hexbin, parse_path
 from ..app_config import config
+from .styles import FONTS
 
 
 class HexmapTab:
@@ -33,7 +34,7 @@ class HexmapTab:
         
         # Create tab frame
         self.frame = ttk.Frame(parent)
-        parent.add(self.frame, text="Hexmap Visualizer")
+        parent.add(self.frame, text="Mapa Cieplna")
         
         # Build UI
         self._create_ui()
@@ -44,10 +45,10 @@ class HexmapTab:
         control_panel = ttk.Frame(self.frame)
         control_panel.pack(fill=tk.X, padx=5, pady=5)
         
-        ttk.Label(control_panel, text="Hexmap Visualization", 
-                 font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT, padx=5)
+        ttk.Label(control_panel, text="Wizualizacja Mapy Cieplnej", 
+                 font=FONTS["HEADER"]).pack(side=tk.LEFT, padx=5)
         
-        load_btn = ttk.Button(control_panel, text="Load paths.txt", 
+        load_btn = ttk.Button(control_panel, text="Wczytaj paths.txt", 
                              command=self.load_data)
         load_btn.pack(side=tk.RIGHT, padx=5)
         
@@ -57,8 +58,8 @@ class HexmapTab:
         
         # Initial message
         msg = ttk.Label(self.canvas_frame, 
-                       text="Click 'Load paths.txt' to visualize path data",
-                       font=("Segoe UI", 10))
+                       text="Kliknij 'Wczytaj paths.txt' aby zwizualizować dane",
+                       font=FONTS["NORMAL"])
         msg.pack(expand=True)
     
     def load_data(self):
@@ -66,9 +67,9 @@ class HexmapTab:
         paths_file = config.get_paths_file()
         
         if not os.path.exists(paths_file):
-            messagebox.showerror("Error", 
-                               f"paths.txt not found at {paths_file}\n\n"
-                               "Please create a paths.txt file in the project root.")
+            messagebox.showerror("Błąd", 
+                                f"Nie znaleziono paths.txt w {paths_file}\n\n"
+                                "Proszę utworzyć plik paths.txt w katalogu głównym projektu.")
             return
         
         try:
@@ -87,7 +88,7 @@ class HexmapTab:
                     paths.append(toks)
             
             if not paths:
-                messagebox.showwarning("Warning", "No paths found in paths.txt")
+                messagebox.showwarning("Ostrzeżenie", "Nie znaleziono ścieżek w paths.txt")
                 return
             
             # Create hexmap widget
@@ -102,19 +103,19 @@ class HexmapTab:
             
             # Path selection buttons (max 5)
             for i, path in enumerate(paths[:5]):
-                btn = ttk.Button(button_panel, text=f"Path {i}",
-                               command=lambda p=path: hexbin.set_path(p))
+                btn = ttk.Button(button_panel, text=f"Ścieżka {i}",
+                                command=lambda p=path: hexbin.set_path(p))
                 btn.pack(side=tk.LEFT, padx=2)
             
             # Utility buttons
             ttk.Separator(button_panel, orient=tk.VERTICAL).pack(side=tk.LEFT, 
                                                                  fill=tk.Y, padx=10)
             
-            ttk.Button(button_panel, text="Save PNG",
+            ttk.Button(button_panel, text="Zapisz PNG",
                       command=lambda: self._save_hexmap(hexbin)).pack(
                           side=tk.LEFT, padx=2)
             
-            ttk.Button(button_panel, text="Toggle Grid",
+            ttk.Button(button_panel, text="Przełącz Siatkę",
                       command=lambda: hexbin.toggle_draw_hex()).pack(
                           side=tk.LEFT, padx=2)
             
@@ -125,10 +126,10 @@ class HexmapTab:
             
             # Update status
             if self.status_callback:
-                self.status_callback(f"Loaded {len(paths)} paths from {paths_file}")
+                self.status_callback(f"Wczytano {len(paths)} ścieżek z {paths_file}")
             
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to load hexmap data:\n{e}")
+            messagebox.showerror("Błąd", f"Nie udało się wczytać danych mapy:\n{e}")
             import traceback
             traceback.print_exc()
     
@@ -136,4 +137,4 @@ class HexmapTab:
         """Save hexmap to file."""
         hexbin.save('hexmap_output.png')
         if self.status_callback:
-            self.status_callback("Saved hexmap to hexmap_output.png")
+            self.status_callback("Zapisano mapę do hexmap_output.png")
