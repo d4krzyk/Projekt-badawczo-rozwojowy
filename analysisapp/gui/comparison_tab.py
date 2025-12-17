@@ -2,25 +2,23 @@
 Comparison Tab
 
 Tab component for comparing multiple sessions with advanced visualization.
+Orchestrator using ChartRenderer, GraphRenderer, and TableRenderer.
 """
 
 import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-import matplotlib
-matplotlib.use('TkAgg')
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
 
-from ..analyzers.session.core import load_json
 from ..analyzers.session.comparison import calculate_session_metrics, aggregate_metrics_multi
 from ..app_config import config
 from .styles import FONTS
 from .session.data_manager import DataManager
+from .comparison import ChartRenderer, GraphRenderer, TableRenderer
+
 
 class RoomMappingDialog(tk.Toplevel):
     """Dialog for configuring visit mapping pairs (N-way) based on visit sequence."""
+    
     def __init__(self, parent, session_names, sessions_visits, current_mapping, callback):
         super().__init__(parent)
         self.title("Konfiguracja Mapowania Wizyt (Przebieg)")
@@ -29,14 +27,12 @@ class RoomMappingDialog(tk.Toplevel):
         self.grab_set()
         
         self.session_names = session_names
-        self.sessions_visits_raw = sessions_visits # List of lists of visit dicts
+        self.sessions_visits_raw = sessions_visits
         
-        # Prepare display strings: "1. Kitchen", "2. Salon", etc.
+        # Przygotowanie etykiet: "1. Kitchen", "2. Salon", etc.
         self.display_values = []
         for s_idx, visits in enumerate(sessions_visits):
-            vals = []
-            for i, v in enumerate(visits):
-                vals.append(f"{i+1}. {v['name']}")
+            vals = [f"{i+1}. {v['name']}" for i, v in enumerate(visits)]
             self.display_values.append(vals)
             
         self.mapping = list(current_mapping) if current_mapping else []
@@ -44,14 +40,17 @@ class RoomMappingDialog(tk.Toplevel):
         self.combos = []
         
         self._create_ui()
-        # center
+        self._center_on_parent(parent)
+        
+    def _center_on_parent(self, parent):
+        """Centruje okno dialogowe względem rodzica."""
         self.update_idletasks()
         x = parent.winfo_rootx() + (parent.winfo_width() - self.winfo_width()) // 2
         y = parent.winfo_rooty() + (parent.winfo_height() - self.winfo_height()) // 2
         self.geometry(f"+{x}+{y}")
         
     def _create_ui(self):
-        # 1. Pairing Controls
+        # Panel kontrolny
         control_frame = ttk.LabelFrame(self, text="Dodaj Wiersz Mapowania (Wybierz wizytę)")
         control_frame.pack(fill=tk.X, padx=10, pady=5)
         
@@ -68,7 +67,7 @@ class RoomMappingDialog(tk.Toplevel):
         
         ttk.Button(control_frame, text="Dodaj", command=self._add_row).pack(side=tk.LEFT, padx=10)
         
-        # 2. List
+        # Lista mapowań
         list_frame = ttk.Frame(self)
         list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
@@ -89,7 +88,7 @@ class RoomMappingDialog(tk.Toplevel):
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scr.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # 3. Actions
+        # Przyciski akcji
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -103,16 +102,13 @@ class RoomMappingDialog(tk.Toplevel):
         self._refresh_list()
         
     def _add_row(self):
-        # We need to store INDICES (integers), but Combo has strings "1. Name"
-        # We find index in display_values
-        
+        """Dodaje wiersz mapowania na podstawie wybranych wartości w comboboxach."""
         row_indices = []
         has_any = False
         
         for i, cb in enumerate(self.combos):
             val = cb.get()
             if val:
-                # Find index of this string in self.display_values[i]
                 try:
                     idx = self.display_values[i].index(val)
                     row_indices.append(idx)
@@ -127,14 +123,15 @@ class RoomMappingDialog(tk.Toplevel):
             self._refresh_list()
             
     def _remove_row(self):
+        """Usuwa zaznaczone wiersze."""
         sel = self.tree.selection()
         indices = []
         for item in sel:
             try:
-                # idx column is 1-based index in table
                 idx_in_list = int(self.tree.item(item, "values")[0]) - 1
                 indices.append(idx_in_list)
-            except: pass
+            except:
+                pass
             
         indices.sort(reverse=True)
         for idx in indices:
@@ -143,31 +140,27 @@ class RoomMappingDialog(tk.Toplevel):
         self._refresh_list()
 
     def _clear_all(self):
+        """Czyści wszystkie mapowania."""
         self.mapping = []
         self._refresh_list()
         
     def _auto_map(self):
-        # Sequential mapping by index
+        """Automatycznie mapuje wizyty sekwencyjnie po indeksie."""
         self.mapping = []
         max_len = max((len(d) for d in self.display_values), default=0)
         
         for i in range(max_len):
-            row = []
-            for d_list in self.display_values:
-                if i < len(d_list):
-                    row.append(i)
-                else:
-                    row.append(None)
+            row = [i if i < len(d_list) else None for d_list in self.display_values]
             self.mapping.append(tuple(row))
         self._refresh_list()
         
     def _refresh_list(self):
+        """Odświeża widok listy mapowań."""
         for item in self.tree.get_children():
             self.tree.delete(item)
             
         for r_idx, idx_tuple in enumerate(self.mapping):
-            # Convert indices back to strings for display
-            row_vals = [r_idx+1]
+            row_vals = [r_idx + 1]
             for sess_i, visit_idx in enumerate(idx_tuple):
                 if visit_idx is not None and visit_idx < len(self.display_values[sess_i]):
                     row_vals.append(self.display_values[sess_i][visit_idx])
@@ -176,112 +169,207 @@ class RoomMappingDialog(tk.Toplevel):
             self.tree.insert("", tk.END, values=row_vals)
             
     def _on_save(self):
+        """Zapisuje mapowanie i zamyka dialog."""
         self.callback(self.mapping)
         self.destroy()
 
+
 class ComparisonTab:
-    """Session comparison tab component with charts and advanced metrics (Multi-Session)."""
+    """
+    Orchestrator zakładki porównania sesji.
+    
+    Deleguje renderowanie do:
+    - ChartRenderer (wykresy słupkowe)
+    - GraphRenderer (graf przejść)
+    - TableRenderer (tabela metryk)
+    """
     
     def __init__(self, parent, status_callback=None):
         self.parent = parent
         self.status_callback = status_callback
         
-        # Data
+        # Dane sesji
         self.sessions = []
-        self.mapped_pairs = None # List of tuples of INDICES (int)
+        self.mapped_pairs = None
         
-        # Create tab frame
+        # Tworzenie głównej ramki
         self.frame = ttk.Frame(parent)
         parent.add(self.frame, text="Porównanie Sesji")
+        
+        # Renderery (inicjalizowane w _create_ui)
+        self.chart_renderer = None
+        self.graph_renderer = None
+        self.table_renderer = None
         
         self._create_ui()
         
     def _create_ui(self):
-        # Main Layout: Top Control, Content
+        """Buduje interfejs użytkownika zakładki (Layout: Sidebar + Content)."""
+        # Główny kontener z podziałem poziomym
+        self.paned = ttk.PanedWindow(self.frame, orient=tk.HORIZONTAL)
+        self.paned.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # 1. Control Panel
-        control_panel = ttk.LabelFrame(self.frame, text="Zarządzanie Sesjami")
-        control_panel.pack(fill=tk.X, padx=5, pady=5)
+        # 1. Sidebar (Lewa strona)
+        self.sidebar = ttk.Frame(self.paned, width=300, padding=10)
+        self.paned.add(self.sidebar, weight=0) # weight=0 aby nie rozciągał się nadmiernie
         
-        # Left: Session List
-        list_frame = ttk.Frame(control_panel)
-        list_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5, pady=5)
+        # 2. Content (Prawa strona)
+        self.content_area = ttk.Frame(self.paned, padding=5)
+        self.paned.add(self.content_area, weight=4)
         
-        self.session_tree = ttk.Treeview(list_frame, columns=("idx", "file", "duration"), show="headings", height=4)
+        self._build_sidebar()
+        self._build_content_area()
+        
+    def _build_sidebar(self):
+        """Tworzy zawartość paska bocznego (Notebook)."""
+        # Główny Notebook Sidebaru
+        self.sidebar_notebook = ttk.Notebook(self.sidebar)
+        self.sidebar_notebook.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        # Tab 1: Sesje (Zarządzanie + Akcje)
+        self.tab_sessions = ttk.Frame(self.sidebar_notebook, padding=5)
+        self.sidebar_notebook.add(self.tab_sessions, text="Sesje")
+        self._build_sessions_tab(self.tab_sessions)
+        
+        # Tab 2: Wykresy (Konfiguracja)
+        self.tab_charts_config = ttk.Frame(self.sidebar_notebook, padding=5)
+        self.sidebar_notebook.add(self.tab_charts_config, text="Wykresy")
+        self._build_charts_config(self.tab_charts_config)
+        
+        # Tab 3: Graf (Konfiguracja)
+        self.tab_graph_config = ttk.Frame(self.sidebar_notebook, padding=5)
+        self.sidebar_notebook.add(self.tab_graph_config, text="Graf")
+        self._build_graph_config(self.tab_graph_config)
+        
+        # Tab 4: Dane (Konfiguracja)
+        self.tab_table_config = ttk.Frame(self.sidebar_notebook, padding=5)
+        self.sidebar_notebook.add(self.tab_table_config, text="Dane")
+        self._build_table_config(self.tab_table_config)
+
+    def _build_sessions_tab(self, parent):
+        """Buduje zawartość zakładki 'Sesje'."""
+        # Lista sesji
+        lbl = ttk.Label(parent, text="Dostępne Sesje:", font=FONTS.get("HEADER", ("Arial", 10, "bold")))
+        lbl.pack(anchor=tk.W, pady=(0, 5))
+        
+        self.session_tree = ttk.Treeview(
+            parent, 
+            columns=("idx", "file", "duration"), 
+            show="headings", 
+            height=15
+        )
         self.session_tree.heading("idx", text="#")
         self.session_tree.heading("file", text="Plik")
-        self.session_tree.heading("duration", text="Czas trwania")
-        self.session_tree.column("idx", width=30)
-        self.session_tree.column("file", width=200)
-        self.session_tree.column("duration", width=100)
+        self.session_tree.heading("duration", text="Czas")
         
-        self.session_tree.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.session_tree.column("idx", width=30, anchor=tk.CENTER)
+        self.session_tree.column("file", width=120)
+        self.session_tree.column("duration", width=60, anchor=tk.E)
         
-        btn_box = ttk.Frame(control_panel)
-        btn_box.pack(side=tk.RIGHT, padx=10, fill=tk.Y)
+        self.session_tree.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        ttk.Button(btn_box, text="Dodaj Sesję", command=self._add_session).pack(fill=tk.X, pady=2)
-        ttk.Button(btn_box, text="Usuń Wybraną", command=self._remove_session).pack(fill=tk.X, pady=2)
-        ttk.Button(btn_box, text="Wyczyść Wszystkie", command=self._clear_sessions).pack(fill=tk.X, pady=2)
+        # Przyciski zarządzania
+        btn_frame = ttk.Frame(parent)
+        btn_frame.pack(fill=tk.X, pady=5)
         
-        ttk.Separator(control_panel, orient=tk.VERTICAL).pack(side=tk.RIGHT, fill=tk.Y, padx=10)
+        ttk.Button(btn_frame, text="+", width=3, command=self._add_session).pack(side=tk.LEFT, padx=(0, 2))
+        ttk.Button(btn_frame, text="-", width=3, command=self._remove_session).pack(side=tk.LEFT, padx=2)
+        ttk.Button(btn_frame, text="Wyczyść", command=self._clear_sessions).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(2, 0))
         
-        # Action Buttons
-        act_box = ttk.Frame(control_panel)
-        act_box.pack(side=tk.RIGHT, padx=10)
+        ttk.Separator(parent, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
         
-        ttk.Button(act_box, text="Konfiguruj Mapowanie Wizyt", command=self._open_mapping_dialog).pack(fill=tk.X, pady=2)
-        ttk.Button(act_box, text="PORÓWNAJ", command=self._perform_comparison).pack(fill=tk.X, pady=5)
+        # Akcje
+        ttk.Button(parent, text="🛠 Mapowanie", command=self._open_mapping_dialog).pack(fill=tk.X, pady=5)
         
-        # 2. Content Area (Tabs)
-        self.content_notebook = ttk.Notebook(self.frame)
-        self.content_notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-        # Tab 1: Charts
-        self.charts_frame = ttk.Frame(self.content_notebook)
-        self.content_notebook.add(self.charts_frame, text="Wykresy")
-        
-        # Tab 2: Graph
-        self.graph_frame = ttk.Frame(self.content_notebook)
-        self.content_notebook.add(self.graph_frame, text="Graf Przejść")
-        
-        # Tab 3: Metrics Table
-        self.table_frame = ttk.Frame(self.content_notebook)
-        self.content_notebook.add(self.table_frame, text="Dane Szczegółowe")
-        
-        # Initialize Chart
-        self._init_charts()
-        self._init_graph()
-        
-        # Initial Message
-        self.msg_label = ttk.Label(self.table_frame, 
-                       text="Dodaj co najmniej jedną sesję i kliknij 'Porównaj'.",
-                       font=FONTS["NORMAL"])
-        self.msg_label.pack(expand=True)
-        
-    def _init_charts(self):
-        self.fig = Figure(figsize=(10, 6), dpi=100)
-        self.ax1 = self.fig.add_subplot(121) 
-        self.ax2 = self.fig.add_subplot(122) 
-        self.fig.tight_layout(pad=3.0)
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.charts_frame)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-    def _init_graph(self):
-        self.graph_fig = Figure(figsize=(8, 6), dpi=100)
-        self.ax_graph = self.graph_fig.add_subplot(111)
-        self.graph_canvas = FigureCanvasTkAgg(self.graph_fig, master=self.graph_frame)
-        self.graph_canvas.draw()
-        self.graph_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        # Główny przycisk
+        btn_compare = ttk.Button(parent, text="▶ PORÓWNAJ", command=self._perform_comparison)
+        btn_compare.pack(fill=tk.X, pady=10, ipady=5)
 
+    def _build_charts_config(self, parent):
+        """Konfiguracja dla wykresów."""
+        ttk.Label(parent, text="Wykres 1 (Wizyty):").pack(anchor=tk.W)
+        self.combo_chart1 = ttk.Combobox(parent, state="readonly", values=[
+            "Czas trwania (s)", 
+            "Liczba otwarć książek", 
+            "Kliknięcia w linki"
+        ])
+        self.combo_chart1.current(0)
+        self.combo_chart1.pack(fill=tk.X, pady=(0, 5))
+        self.combo_chart1.bind("<<ComboboxSelected>>", self._on_chart_config_change)
+
+        ttk.Label(parent, text="Wykres 2 (Globalne):").pack(anchor=tk.W)
+        self.combo_chart2 = ttk.Combobox(parent, state="readonly", values=[
+            "Podsumowanie Aktywności",
+            "Czas trwania sesji",
+            "Tempo eksploracji",
+            "Gęstość zdarzeń",
+            "Śr. czas z książką"
+        ])
+        self.combo_chart2.current(0)
+        self.combo_chart2.pack(fill=tk.X, pady=(0, 10))
+        self.combo_chart2.bind("<<ComboboxSelected>>", self._on_chart_config_change)
+        
+    def _build_graph_config(self, parent):
+        """Konfiguracja dla grafu."""
+        ttk.Label(parent, text="Układ węzłów:").pack(anchor=tk.W)
+        self.combo_layout = ttk.Combobox(parent, state="readonly", values=["Spring", "Circular", "Shell", "Kamada-Kawai"])
+        self.combo_layout.current(0)
+        self.combo_layout.pack(fill=tk.X, pady=(0, 5))
+        self.combo_layout.bind("<<ComboboxSelected>>", self._on_graph_config_change)
+        
+        self.var_show_order = tk.BooleanVar(value=True)
+        cb = ttk.Checkbutton(parent, text="Pokaż kolejność przejść", variable=self.var_show_order, command=self._on_graph_config_change)
+        cb.pack(anchor=tk.W, pady=(5, 0))
+        
+    def _build_table_config(self, parent):
+        """Konfiguracja dla tabeli."""
+        # Usunięto kolumnę zakres, brak konfiguracji w tym momencie
+        ttk.Label(parent, text="Styl tabeli został zaktualizowany dla lepszej czytelności.", wraplength=180).pack(anchor=tk.W)
+
+    def _build_content_area(self):
+        """Tworzy obszar zawartości z zakładkami."""
+        # Notebook z zakładkami wizualizacji
+        self.content_notebook = ttk.Notebook(self.content_area)
+        self.content_notebook.pack(fill=tk.BOTH, expand=True)
+        
+        # Zakładka 1: Wykresy
+        charts_frame = ttk.Frame(self.content_notebook)
+        self.content_notebook.add(charts_frame, text=" 📊 Wykresy ")
+        self.chart_renderer = ChartRenderer(charts_frame)
+        
+        # Zakładka 2: Graf
+        graph_frame = ttk.Frame(self.content_notebook)
+        self.content_notebook.add(graph_frame, text=" 🕸 Graf Przejść ")
+        self.graph_renderer = GraphRenderer(graph_frame)
+        
+        # Zakładka 3: Tabela
+        table_frame = ttk.Frame(self.content_notebook)
+        self.content_notebook.add(table_frame, text=" 📋 Dane Szczegółowe ")
+        self.table_renderer = TableRenderer(table_frame)
+        
+        # Wiadomość początkowa
+        self._show_initial_message(table_frame)
+        
+    def _show_initial_message(self, frame):
+        """Wyświetla wiadomość początkową w zakładce tabeli."""
+        msg_label = ttk.Label(
+            frame,
+            text="Dodaj co najmniej jedną sesję i kliknij 'Porównaj'.",
+            font=FONTS.get("NORMAL", ("Arial", 10))
+        )
+        msg_label.pack(expand=True)
+
+    # --- Zarządzanie sesjami ---
+    
     def _add_session(self):
+        """Dodaje sesję z pliku JSON."""
         initial_dir = config.get_default_json_dir()
         path = filedialog.askopenfilename(
             title="Wybierz plik sesji",
             initialdir=initial_dir,
             filetypes=[("Pliki JSON", "*.json"), ("Wszystkie pliki", "*.*")]
         )
+        
         if not path:
             return
             
@@ -289,13 +377,13 @@ class ComparisonTab:
             dm = DataManager()
             data = dm.load_from_file(path)
             raw_sessions = data.get("sessions", [])
+            
             if not raw_sessions:
                 raise ValueError("Brak sesji w pliku")
                 
             session_data = raw_sessions[0]
             metrics = calculate_session_metrics(session_data)
             
-            # Add to list
             filename = os.path.basename(path)
             self.sessions.append({
                 "file": filename,
@@ -304,17 +392,17 @@ class ComparisonTab:
             })
             
             self._refresh_session_list()
-            # Invalidate map
             self.mapped_pairs = None
             
         except Exception as e:
             messagebox.showerror("Błąd", f"Nie udało się wczytać: {e}")
             
     def _remove_session(self):
+        """Usuwa wybraną sesję z listy."""
         sel = self.session_tree.selection()
         if not sel:
             return
-        # Remove by index
+            
         idx = int(self.session_tree.item(sel[0], "values")[0]) - 1
         if 0 <= idx < len(self.sessions):
             self.sessions.pop(idx)
@@ -322,268 +410,97 @@ class ComparisonTab:
             self.mapped_pairs = None
 
     def _clear_sessions(self):
+        """Czyści wszystkie sesje."""
         self.sessions = []
         self._refresh_session_list()
         self.mapped_pairs = None
         
     def _refresh_session_list(self):
+        """Odświeża widok listy sesji."""
         for item in self.session_tree.get_children():
             self.session_tree.delete(item)
+            
         for i, s in enumerate(self.sessions):
             dur = f"{s['metrics']['duration']:.1f}s"
             self.session_tree.insert("", tk.END, values=(i+1, s["file"], dur))
             
+    # --- Mapowanie ---
+    
     def _open_mapping_dialog(self):
+        """Otwiera dialog konfiguracji mapowania wizyt."""
         if not self.sessions:
             messagebox.showwarning("Uwaga", "Brak sesji.")
             return
 
         names = [s["file"] for s in self.sessions]
-        # Pass list of visit dicts to dialog
         visits_list = [s["metrics"].get("visits", []) for s in self.sessions]
         
         RoomMappingDialog(self.frame, names, visits_list, self.mapped_pairs, self._set_mapping)
         
     def _set_mapping(self, mapping):
+        """Ustawia mapowanie wizyt."""
         self.mapped_pairs = mapping
         if self.status_callback:
             self.status_callback(f"Zaktualizowano mapowanie ({len(mapping)} wierszy).")
-            
+
+    def _on_chart_config_change(self, event=None):
+        """Obsługuje zmianę konfiguracji wykresów."""
+        if hasattr(self, "_last_aggregated_data") and self._last_aggregated_data:
+            self._update_charts_only()
+
+    def _on_graph_config_change(self, event=None):
+        """Obsługuje zmianę konfiguracji grafu."""
+        if hasattr(self, "_last_aggregated_data") and self._last_aggregated_data:
+            self._update_graph_only()
+
+    def _on_table_config_change(self):
+        """Obsługuje zmianę konfiguracji tabeli."""
+        if hasattr(self, "_last_aggregated_data") and self._last_aggregated_data:
+            self._update_table_only()
+
+    def _update_charts_only(self):
+        """Aktualizuje tylko renderer wykresów."""
+        config = {
+            "chart1": self.combo_chart1.get(),
+            "chart2": self.combo_chart2.get()
+        }
+        self.chart_renderer.update(self._last_aggregated_data, config)
+
+    def _update_graph_only(self):
+        """Aktualizuje tylko renderer grafu."""
+        config = {
+            "layout": self.combo_layout.get(),
+            "show_order": self.var_show_order.get()
+        }
+        self.graph_renderer.update(self.sessions, self._last_aggregated_data, config)
+
+    def _update_table_only(self):
+        """Aktualizuje tylko renderer tabeli."""
+        self.table_renderer.update(self._last_aggregated_data)
+
+    # --- Porównanie ---
+    
     def _perform_comparison(self):
+        """Wykonuje porównanie i aktualizuje wszystkie wizualizacje."""
         if not self.sessions:
             return
             
-        # Prepare list for backend
-        sessions_input = []
-        for s in self.sessions:
-            sessions_input.append((s["file"], s["metrics"]))
-            
-        agg = aggregate_metrics_multi(sessions_input, room_mapping=self.mapped_pairs)
+        # Przygotowanie danych
+        sessions_input = [(s["file"], s["metrics"]) for s in self.sessions]
+        aggregated_data = aggregate_metrics_multi(sessions_input, room_mapping=self.mapped_pairs)
+        self._last_aggregated_data = aggregated_data
         
-        self._update_charts(agg)
-        self._update_graph(agg)  # Call graph update
-        self._update_table(agg)
+        # Konfiguracje
+        chart_config = {
+            "chart1": self.combo_chart1.get(),
+            "chart2": self.combo_chart2.get()
+        }
+        graph_config = {
+            "layout": self.combo_layout.get(),
+            "show_order": self.var_show_order.get()
+        }
         
-    def _update_graph(self, agg):
-        self.ax_graph.clear()
-        
-        if not self.sessions:
-            return
-            
-        import networkx as nx
-        
-        G = nx.MultiDiGraph()
-        
-        num_sessions = agg["meta"]["count"]
-        # names = agg["meta"]["names"]
-        
-        cmap = matplotlib.cm.get_cmap('tab10')
-        colors = [cmap(i) for i in range(num_sessions)]
-        
-        # Build Edges
-        # Iterate over each session's visits to finding transitions
-        edge_colors = []
-        
-        any_nodes = False
-        
-        for i, s in enumerate(self.sessions):
-            visits = s["metrics"].get("visits", [])
-            color = colors[i % 10]
-            
-            prev_node = None
-            
-            for v in visits:
-                curr_node = v["name"]
-                G.add_node(curr_node)
-                any_nodes = True
-                
-                if prev_node:
-                     # Add edge
-                     # Key is useful to distinguish multiple edges, logic handles MultiDiGraph automatically
-                     # We store color as attribute to retrieve later? 
-                     # Drawing in NetworkX with variable edge colors is a bit manual.
-                     pass
-                     
-                prev_node = curr_node
-                
-        # To draw with colors properly:
-        # We will iterate again and draw edges one by one or collects lists
-        
-        pos = nx.spring_layout(G, seed=42) # Consistent layout
-        if not any_nodes:
-            self.ax_graph.text(0.5, 0.5, "Brak danych do grafu", ha='center')
-            self.graph_canvas.draw()
-            return
-            
-        # Draw all nodes
-        nx.draw_networkx_nodes(G, pos, ax=self.ax_graph, node_color='lightgray', node_size=500)
-        nx.draw_networkx_labels(G, pos, ax=self.ax_graph, font_size=8)
-        
-        # Prepare legend handles manually
-        legend_handles = []
-        from matplotlib.lines import Line2D
-        
-        for i, s in enumerate(self.sessions):
-            visits = s["metrics"].get("visits", [])
-            color = colors[i % 10]
-            name = self.sessions[i]["file"][:20] # truncate if long
-            
-            # Add proxy handle for legend
-            legend_handles.append(Line2D([0], [0], color=color, lw=2, label=name))
-            
-            edges_list = []
-            prev_node = None
-            for v in visits:
-                curr_node = v["name"]
-                if prev_node:
-                    edges_list.append((prev_node, curr_node))
-                prev_node = curr_node
-                
-            if edges_list:
-                # rad = 0.1 + (i * 0.1) # Shift curves
-                nx.draw_networkx_edges(G, pos, ax=self.ax_graph, 
-                                       edgelist=edges_list, 
-                                       edge_color=[color], 
-                                       connectionstyle=f"arc3,rad={0.1 + 0.1*i}",
-                                       arrowstyle='-|>', arrowsize=15)
-                                       
-        self.ax_graph.set_title("Graf Przejść (Kolory = Sesje)")
-        self.ax_graph.legend(handles=legend_handles)
-        # Avoid strict tight_layout which warns if margins are tight
-        self.graph_fig.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.05)
-        self.graph_canvas.draw()
-        
-    def _update_charts(self, agg):
-        self.ax1.clear()
-        self.ax2.clear()
-        
-        num_sessions = agg["meta"]["count"]
-        names = agg["meta"]["names"]
-        cmap = matplotlib.cm.get_cmap('tab10')
-        colors = [cmap(i) for i in range(num_sessions)]
-        
-        # 1. VISITS Duration Chart
-        # Use agg["visits_comparison"]
-        # Note: Keys are row IDs e.g. "row_0_Kitchen vs Salon"
-        # We need to sort them by chronological row index roughly? 
-        # The dict keys insertion order is usually preserved in recent python, so we rely on that or row index.
-        
-        visits_data = agg.get("visits_comparison", {})
-        if not visits_data:
-             # Fallback if empty?
-             pass
-             
-        # Create labels
-        visit_labels = []
-        rows = []
-        for k, v in visits_data.items():
-            rows.append(v)
-            visit_labels.append(v["label"]) # e.g. "1. Kitchen"
-            
-        x = np.arange(len(rows))
-        bar_width = 0.8 / num_sessions
-        
-        for i in range(num_sessions):
-            vals = []
-            for r_data in rows:
-                vals.append(r_data["duration"]["values"][i])
-            
-            offset = (i - num_sessions/2 + 0.5) * bar_width
-            self.ax1.bar(x + offset, vals, bar_width, label=names[i], color=colors[i % 10])
-            
-        self.ax1.set_title("Czas trwania wizyt (s)")
-        self.ax1.set_xticks(x)
-        
-        # Short labels
-        short = [r[:15]+"..." if len(r)>18 else r for r in visit_labels]
-        self.ax1.set_xticklabels(short, rotation=45, ha='right')
-        
-        # 2. Activity Chart (Global Stats)
-        metrics = ["total_books_opened", "total_links_clicked", "unique_rooms_count"]
-        metric_labels = ["Książki (Razem)", "Linki (Razem)", "Unikalne Pokoje"]
-        
-        x2 = np.arange(len(metrics))
-        
-        for i in range(num_sessions):
-            vals = []
-            vals.append(agg["summary"]["total_books_opened"]["values"][i])
-            vals.append(agg["summary"]["total_links_clicked"]["values"][i])
-            vals.append(agg["advanced"]["unique_rooms_count"]["values"][i])
-            
-            offset = (i - num_sessions/2 + 0.5) * bar_width
-            self.ax2.bar(x2 + offset, vals, bar_width, label=names[i], color=colors[i % 10])
-            
-        self.ax2.set_title("Podsumowanie Aktywności")
-        self.ax2.set_xticks(x2)
-        self.ax2.set_xticklabels(metric_labels)
-        self.ax2.legend()
-        
-        self.fig.tight_layout()
-        self.canvas.draw()
-        
-    def _update_table(self, agg):
-        for w in self.table_frame.winfo_children():
-            w.destroy()
-            
-        num_sessions = agg["meta"]["count"]
-        names = agg["meta"]["names"]
-        
-        cols = ["metric"] + [f"s_{i}" for i in range(num_sessions)] + ["spread"]
-        tree = ttk.Treeview(self.table_frame, columns=cols, show="headings")
-        
-        tree.heading("metric", text="Wskaźnik / Wizyta")
-        tree.column("metric", width=250)
-        
-        for i, n in enumerate(names):
-            cid = f"s_{i}"
-            tree.heading(cid, text=n)
-            tree.column(cid, width=80, anchor=tk.CENTER)
-            
-        tree.heading("spread", text="Zakres")
-        tree.column("spread", width=100, anchor=tk.CENTER)
-        
-        scr = ttk.Scrollbar(self.table_frame, orient=tk.VERTICAL, command=tree.yview)
-        tree.configure(yscroll=scr.set)
-        
-        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scr.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # Insert Data
-        # Advanced
-        self._insert_section(tree, agg["advanced"], "ZAAWANSOWANE", ["exploration_pace", "event_density", "avg_book_time"], float_fmt="{:.2f}")
-        
-        # Summary
-        self._insert_section(tree, agg["summary"], "PODSUMOWANIE", ["duration", "total_rooms", "total_books_opened"], float_fmt="{:.1f}")
-        
-        # Visits Sequence
-        tree.insert("", tk.END, values=["-- PRZEBIEG (WIZYTY) --"] + [""]*(num_sessions+1), tags=("header",))
-        tree.tag_configure("header", background="#e1e1e1")
-        
-        visits_data = agg.get("visits_comparison", {})
-        
-        # Iterate over stored keys (usually valid order)
-        for key, data in visits_data.items():
-            label = data["label"]
-            tree.insert("", tk.END, values=[f"[{label}]"] + [""]*(num_sessions+1), tags=("header",))
-            
-            d_vals = [f"{v:.1f}" for v in data["duration"]["values"]]
-            d_spread = f"{data['duration']['spread']:.1f}"
-            tree.insert("", tk.END, values=["  Czas (s)"] + d_vals + [d_spread])
-            
-            b_vals = [f"{v}" for v in data["books_opened"]["values"]]
-            b_spread = f"{data['books_opened']['spread']}"
-            tree.insert("", tk.END, values=["  Książki"] + b_vals + [b_spread])
-            
-    def _insert_section(self, tree, category_data, title, keys, float_fmt="{:.2f}"):
-        tree.insert("", tk.END, values=[title], tags=("header",))
-        for k in keys:
-            if k not in category_data: continue
-            
-            row_data = category_data[k]
-            vals = [float_fmt.format(v) for v in row_data["values"]]
-            try:
-                spr = float_fmt.format(row_data["spread"])
-            except:
-                spr = "-"
-            
-            tree.insert("", tk.END, values=[k] + vals + [spr])
+        # Aktualizacja rendererów
+        self.chart_renderer.update(aggregated_data, chart_config)
+        self.graph_renderer.update(self.sessions, aggregated_data, graph_config)
+        self.table_renderer.update(aggregated_data)
