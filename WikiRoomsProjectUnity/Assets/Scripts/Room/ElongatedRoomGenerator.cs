@@ -9,15 +9,13 @@ using TMPro;
 
 public class ElongatedRoomGenerator : MonoBehaviour
 {
-    public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf;
+    public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf, imageHolder;
     public Transform initialRoomPosition;
+    public Material sampleImageMat; 
     [Header("Room materials")]
     public Material bookshelfMat;
     public Material floorMat;
     public Material wallMat;
-    [Header("Test image")]
-    public Material testImageMat; // przypisz materiał "test-image" w inspectorze
-    public GameObject imageWikiQuad; // przypisz GameObject "ImageWikiQuad" w inspectorze
     [Header("Default materials")]
     public Material defBookcaseMat;
     public Material defFloorMat;
@@ -41,7 +39,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public TextMeshPro articleTitleText; // przypnij TextMeshProUGUI z Canvasu
 
     // cache pobranych tekstur dla bieżącej strony
-    List<Texture2D> cachedImages = null;
+    List<Texture2D> wikiImages;
 
     // struktura odpowiadająca JSON z /images/generator
     [Serializable]
@@ -113,20 +111,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
         // po pobraniu nazwy artykułu (lub gdzieś tam), pobierz obrazy:
         try
         {
-            cachedImages = await GetImagesAsTextures(articleName);
+            wikiImages = await GetImagesAsTextures(articleName);
             // teraz masz listę Texture2D w cachedImages — użyj ich np. do materiałów półek/książek
-
-            // przypisz pierwszy obraz do materiału test-image (jeśli ustawiony)
-            if (cachedImages != null && cachedImages.Count > 0 && testImageMat != null)
-            {
-                Texture2D t = cachedImages[0];
-                t.filterMode = FilterMode.Point; // ostry pixel-art
-                t.wrapMode = TextureWrapMode.Clamp;
-                // przypisz teksturę do materiału (bez skalowania materiału)
-                testImageMat.mainTexture = t;
-                // skaluj GameObject ImageWikiQuad, żeby zachować aspect ratio tekstury (nie skalujemy materiału)
-                SetImageQuadScale(imageWikiQuad, t);
-            }
         }
         catch (Exception ex)
         {
@@ -280,6 +266,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
             {
                 extension = Instantiate(extensionRoom, nextExtensionPoint, Quaternion.identity, transform);
                 extension.name = $"Extension Room {(i / 6) + 1}";
+                if(i/3 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.2f, 2f, 0), new Vector3(0, -90, 0), wikiImages[i/3], extension.transform);
+                if((i/3) + 1 < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.2f, 2f, 0), new Vector3(0, 90, 0), wikiImages[(i/3) + 1], extension.transform);
                 nextExtensionPoint -= offset;
             }
             GameObject bookshelfContainer = new GameObject($"Bookshelf Container {i}");
@@ -429,18 +417,22 @@ public class ElongatedRoomGenerator : MonoBehaviour
             }
 
             var textures = new List<Texture2D>();
-            if (resp?.images == null || resp.images.Count == 0) return textures;
+            if (resp?.images == null || resp?.images.Count == 0) return textures;
+
+            int imagesDownloaded = 0;
 
             foreach (var imgUrl in resp.images)
             {
                 if (string.IsNullOrEmpty(imgUrl)) continue;
 
+
                 using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(imgUrl))
                 {
+                    Debug.Log($"Loading image {imagesDownloaded+1}/{resp.images.Count}");
                     var texOp = texReq.SendWebRequest();
                     while (!texOp.isDone)
                         await Task.Yield();
-
+                    
                     if (texReq.result == UnityWebRequest.Result.Success)
                     {
                         try
@@ -448,6 +440,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
                             Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
                             // opcjonalnie: ustawienie filter mode na Point jeśli chcesz ostry pixel-art
                             // tex.filterMode = FilterMode.Point;
+                            Debug.Log($"{tex.width}, {tex.height}");
                             textures.Add(tex);
                         }
                         catch (Exception e)
@@ -459,6 +452,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
                     {
                         Debug.LogWarning($"Failed to download texture {imgUrl}: {texReq.error}");
                     }
+                    imagesDownloaded++;
                 }
             }
 
@@ -477,17 +471,29 @@ public class ElongatedRoomGenerator : MonoBehaviour
             return;
         }
 
-        float texAspect = (float)tex.width / Mathf.Max(1, tex.height);
-        // Pobierz aktualny localScale
-        Vector3 ls = quad.transform.localScale;
-        Debug.Log($"[SetImageQuadScale] '{quad.name}' przed localScale={ls} (texture {tex.width}x{tex.height})");
+        Debug.Log($"{tex.width}, {tex.height}, {(float)tex.width / tex.height}");
 
-        // Trzymamy wysokość (localScale.y) i dopasowujemy szerokość (localScale.x)
-        // Jeśli Twoje ustawienie sceny ma inną orientację, zamień osie odpowiednio.
+        float texAspect = (float)tex.width / tex.height;
+        // Pobierz aktualny localScale
+        Vector3 ls = new Vector3(2, 2 , 1);
         ls.x = ls.y * texAspect;
-        // Zostawiamy ls.z bez zmian (grubość)
         quad.transform.localScale = ls;
 
         Debug.Log($"[SetImageQuadScale] '{quad.name}' po localScale={quad.transform.localScale}");
+    }
+
+    void SpawnImageHolder(Vector3 pos, Vector3 rotation, Texture2D tex, Transform extension)
+    {
+        GameObject currentImageHolder = Instantiate(imageHolder, Vector3.zero, Quaternion.Euler(rotation));
+        currentImageHolder.transform.parent = extension;
+        currentImageHolder.transform.localPosition = pos;
+        Material currentImageMat = new Material(sampleImageMat);
+        tex.filterMode = FilterMode.Point; // ostry pixel-art
+        tex.wrapMode = TextureWrapMode.Clamp;
+        // przypisz teksturę do materiału (bez skalowania materiału)
+        currentImageMat.mainTexture = tex;
+        currentImageHolder.GetComponent<MeshRenderer>().material = currentImageMat;
+        // skaluj GameObject ImageWikiQuad, żeby zachować aspect ratio tekstury (nie skalujemy materiału)
+        SetImageQuadScale(currentImageHolder, tex);
     }
 }
