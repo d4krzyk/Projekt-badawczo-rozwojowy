@@ -9,6 +9,7 @@ from tkinter import ttk, messagebox
 
 from .hexmap_tab import HexmapTab
 from .session_tab import SessionTab
+from .comparison_tab import ComparisonTab
 
 
 
@@ -52,11 +53,28 @@ class AnalysisApp(tk.Tk):
     
     def _create_tabs(self):
         """Create all analyzer tabs."""
-        # Create hexmap tab
-        self.hexmap_tab = HexmapTab(self.notebook, status_callback=self._update_status)
+        # 1. Group: Single Analysis
+        single_frame = ttk.Frame(self.notebook)
+        self.notebook.add(single_frame, text="Porównaj jedną")
         
-        # Create session tab
-        self.session_tab = SessionTab(self.notebook, status_callback=self._update_status)
+        # Nested notebook for single analysis
+        self.single_notebook = ttk.Notebook(single_frame)
+        self.single_notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Create tabs for single analysis
+        self.session_tab = SessionTab(self.single_notebook, status_callback=self._update_status)
+        self.hexmap_tab = HexmapTab(self.single_notebook, status_callback=self._update_status)
+        
+        # 2. Group: Double Analysis
+        double_frame = ttk.Frame(self.notebook)
+        self.notebook.add(double_frame, text="Porównaj dwie")
+        
+        # Nested notebook for double analysis
+        self.double_notebook = ttk.Notebook(double_frame)
+        self.double_notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # Create comparison tab
+        self.comparison_tab = ComparisonTab(self.double_notebook, status_callback=self._update_status)
     
     def _update_status(self, message):
         """Update status bar with message."""
