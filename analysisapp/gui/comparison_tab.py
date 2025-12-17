@@ -419,13 +419,17 @@ class ComparisonTab:
         nx.draw_networkx_nodes(G, pos, ax=self.ax_graph, node_color='lightgray', node_size=500)
         nx.draw_networkx_labels(G, pos, ax=self.ax_graph, font_size=8)
         
-        # Draw edges for each session separately to handle curves/offsets?
-        # A simple approach for MultiDiGraph is drawing all mostly overlapping, 
-        # or using connectionstyle using arc3, rad=0.1 etc.
+        # Prepare legend handles manually
+        legend_handles = []
+        from matplotlib.lines import Line2D
         
         for i, s in enumerate(self.sessions):
             visits = s["metrics"].get("visits", [])
             color = colors[i % 10]
+            name = self.sessions[i]["file"][:20] # truncate if long
+            
+            # Add proxy handle for legend
+            legend_handles.append(Line2D([0], [0], color=color, lw=2, label=name))
             
             edges_list = []
             prev_node = None
@@ -436,21 +440,17 @@ class ComparisonTab:
                 prev_node = curr_node
                 
             if edges_list:
-                # Use different curvature for each session to avoid overlap?
-                # rad = 0.1 * (i + 1) might look messy.
-                # Let's try constant curvature but maybe lighter alpha
-                # Or just standard draw, assuming users want to see flow.
-                
                 # rad = 0.1 + (i * 0.1) # Shift curves
                 nx.draw_networkx_edges(G, pos, ax=self.ax_graph, 
                                        edgelist=edges_list, 
                                        edge_color=[color], 
                                        connectionstyle=f"arc3,rad={0.1 + 0.1*i}",
-                                       arrowstyle='-|>', arrowsize=15, 
-                                       label=self.sessions[i]["file"])
+                                       arrowstyle='-|>', arrowsize=15)
                                        
         self.ax_graph.set_title("Graf Przejść (Kolory = Sesje)")
-        self.ax_graph.legend()
+        self.ax_graph.legend(handles=legend_handles)
+        # Avoid strict tight_layout which warns if margins are tight
+        self.graph_fig.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.05)
         self.graph_canvas.draw()
         
     def _update_charts(self, agg):
