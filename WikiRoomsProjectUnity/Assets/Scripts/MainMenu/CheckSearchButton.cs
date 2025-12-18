@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class CheckSearchButton : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class CheckSearchButton : MonoBehaviour
     public GameObject nicknameTextField;
     public GameObject articleTextField;
     public Button SearchButton; // jeśli null, zostanie pobrany z tego GameObjectu lub z childów
+    public GameController gameController;
 
     // cache TMP komponentów
     TextMeshProUGUI tmpUGUI;
@@ -47,13 +49,14 @@ public class CheckSearchButton : MonoBehaviour
             messagePlayPanelText.SetActive(true);
             return;
         }
-
+        gameController.ArticleName = article;
         // wszystko ok -> ukryj komunikat i wywołaj akcję startu (onClick przycisku)
         if (tmpUGUI != null) tmpUGUI.text = "";
         else if (tmp3D != null) tmp3D.text = "";
         messagePlayPanelText.SetActive(false);
 
-        
+        SceneManager.LoadScene("WikiRooms");
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("WikiRooms"));
 
         return;
     }

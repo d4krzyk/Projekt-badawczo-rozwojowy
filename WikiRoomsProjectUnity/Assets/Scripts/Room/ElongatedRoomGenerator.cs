@@ -50,6 +50,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
         public float time;
     }
 
+    public void Awake()
+    {
+        GameController gameController = FindAnyObjectByType<GameController>();
+        if(gameController != null) articleName = gameController.ArticleName;
+    }
+
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
         this.articleName = articleName;
