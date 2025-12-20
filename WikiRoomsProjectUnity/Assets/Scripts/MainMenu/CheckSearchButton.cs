@@ -23,7 +23,7 @@ public class CheckSearchButton : MonoBehaviour
 
         if (messagePlayPanelText == null)
         {
-            Debug.LogWarning("[CheckSearchButton] messagePlayPanelText nie przypisany.");
+            Debug.LogWarning("[CheckSearchButton] messagePlayPanelText not assigned.");
             return;
         }
 
@@ -40,9 +40,9 @@ public class CheckSearchButton : MonoBehaviour
         if (!nickOk || !articleOk)
         {
             string msg;
-            if (!nickOk && !articleOk) msg = "Wypełnij wszystkie pola";
-            else if (!nickOk) msg = "Wypełnij pole Nickname";
-            else msg = "Wypełnij pole Article";
+            if (!nickOk && !articleOk) msg = "Fill in all fields";
+            else if (!nickOk) msg = "Nickname is required";
+            else msg = "Article is required";
 
             if (tmpUGUI != null) tmpUGUI.text = msg;
             else if (tmp3D != null) tmp3D.text = msg;
