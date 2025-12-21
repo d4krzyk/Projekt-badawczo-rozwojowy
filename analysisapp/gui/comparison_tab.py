@@ -12,7 +12,8 @@ from ..analyzers.session.comparison import aggregate_metrics_multi
 from .styles import FONTS
 from .comparison import (
     ChartRenderer, GraphRenderer, TableRenderer,
-    RoomMappingDialog, SessionManager, SidebarBuilder
+    RoomMappingDialog, SessionManager, SidebarBuilder,
+    MultiSessionViewer
 )
 
 
@@ -47,6 +48,7 @@ class ComparisonTab:
         self.chart_renderer = None
         self.graph_renderer = None
         self.table_renderer = None
+        self.session_viewer = None
         
         self._create_ui()
         
@@ -108,6 +110,11 @@ class ComparisonTab:
         table_frame = ttk.Frame(content_notebook)
         content_notebook.add(table_frame, text=" 📋 Dane Szczegółowe ")
         self.table_renderer = TableRenderer(table_frame)
+        
+        # Zakładka 4: Porównanie Sesji
+        session_frame = ttk.Frame(content_notebook)
+        content_notebook.add(session_frame, text=" 🔍 Porównanie Sesji ")
+        self.session_viewer = MultiSessionViewer(session_frame)
         
         # Wiadomość początkowa
         msg_label = ttk.Label(
@@ -208,3 +215,4 @@ class ComparisonTab:
         self.chart_renderer.update(aggregated_data, chart_config)
         self.graph_renderer.update(self.sessions, aggregated_data, graph_config)
         self.table_renderer.update(aggregated_data)
+        self.session_viewer.update(self.sessions)

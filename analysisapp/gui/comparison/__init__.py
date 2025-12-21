@@ -10,6 +10,7 @@ from .table_renderer import TableRenderer
 from .dialogs import RoomMappingDialog
 from .session_manager import SessionManager
 from .sidebar_builder import SidebarBuilder
+from .session_viewer import MultiSessionViewer
 
 __all__ = [
     'ChartRenderer', 
@@ -17,5 +18,6 @@ __all__ = [
     'TableRenderer',
     'RoomMappingDialog',
     'SessionManager',
-    'SidebarBuilder'
+    'SidebarBuilder',
+    'MultiSessionViewer'
 ]
