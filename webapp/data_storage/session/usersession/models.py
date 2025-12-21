@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from database.engine import Base
@@ -12,6 +12,7 @@ class UserSession(Base):
     )
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=True)
+    is_web = Column(Boolean, default=False, nullable=False)
 
     data_user = relationship("DataUser", back_populates="user_sessions")
     rooms = relationship("Room", back_populates="user_session", cascade="all, delete-orphan")
