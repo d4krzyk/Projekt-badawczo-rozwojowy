@@ -5,6 +5,7 @@ Handles loading, parsing, and transforming session data.
 """
 
 import os
+import requests
 from ...analyzers.session.core import load_json, parse_time
 
 class DataManager:
@@ -13,6 +14,78 @@ class DataManager:
     def __init__(self):
         self.session_data = None
         self.filename = None
+        self.api_base_url = "http://localhost:80"
+
+    def load_from_api(self, user_name: str = None):
+        """
+        Load session data from API.
+        
+        Args:
+            user_name: Optional user name to filter sessions
+            
+        Returns:
+            dict: Loaded and processed data
+            
+        Raises:
+            Exception: If API call fails
+        """
+        try:
+            if user_name:
+                # Load sessions for specific user
+                response = requests.get(f"{self.api_base_url}/session/{user_name}")
+            else:
+                # Load all sessions grouped by user
+                response = requests.get(f"{self.api_base_url}/session/all")
+            
+            response.raise_for_status()
+            api_data = response.json()
+            
+            # Transform API response to expected format
+            data = self._transform_api_response(api_data, user_name)
+            self._process_data(data)
+            self.session_data = data
+            self.filename = f"API: {user_name or 'all'}"
+            return data
+            
+        except requests.RequestException as e:
+            raise Exception(f"Failed to fetch data from API: {str(e)}")
+
+    def _transform_api_response(self, api_data, user_name=None):
+        """
+        Transform API response to the format expected by the visualizer.
+        
+        Args:
+            api_data: Response from API
+            user_name: User name if filtering by user
+            
+        Returns:
+            dict: Transformed data
+        """
+        if user_name:
+            # Response from /session/{user_name}
+            return {
+                "user_name": api_data.get("user_name", user_name),
+                "sessions": api_data.get("sessions", [])
+            }
+        else:
+            # Response from /session/all - grouped by user
+            # Take first user's sessions for now or combine
+            users = api_data.get("users", [])
+            if not users:
+                return {"user_name": "-", "sessions": []}
+            
+            # Combine all sessions from all users
+            all_sessions = []
+            for user in users:
+                user_name_val = user.get("user_name", "-")
+                for session in user.get("app_sessions", []) + user.get("web_sessions", []):
+                    session["_user_name"] = user_name_val
+                    all_sessions.append(session)
+            
+            return {
+                "user_name": "Wszyscy użytkownicy",
+                "sessions": all_sessions
+            }
 
     def load_from_file(self, path):
         """

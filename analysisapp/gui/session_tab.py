@@ -66,15 +66,34 @@ class SessionTab:
                              command=self.load_data)
         load_btn.pack(side=tk.RIGHT, padx=5)
         
+        api_btn = ttk.Button(control_panel, text="Pobierz z API", 
+                            command=self.load_from_api)
+        api_btn.pack(side=tk.RIGHT, padx=5)
+        
         # Container for session visualizer
         self.content_frame = ttk.Frame(self.frame)
         self.content_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         # Initial message
         self.msg_label = ttk.Label(self.content_frame, 
-                       text="Kliknij 'Wczytaj JSON' aby rozpocząć analizę",
+                       text="Kliknij 'Pobierz z API' lub 'Wczytaj JSON' aby rozpocząć analizę",
                        font=FONTS["NORMAL"])
         self.msg_label.pack(expand=True)
+    
+    def load_from_api(self):
+        """Load session data from API."""
+        try:
+            self.data_manager.load_from_api()
+            self._initialize_visualizer()
+            
+            # Update status
+            if self.status_callback:
+                self.status_callback("Pobrano dane sesji z API")
+            
+        except Exception as e:
+            messagebox.showerror("Błąd", f"Nie udało się pobrać danych z API:\\n{e}")
+            import traceback
+            traceback.print_exc()
     
     def load_data(self):
         """Load and display session data."""
