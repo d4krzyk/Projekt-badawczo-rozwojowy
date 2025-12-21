@@ -40,6 +40,9 @@ def extract_sections_as_nested_list(article_url):
         "External links",
         "Notes",
         "References",
+        "Bibliography",
+        "Sources",
+        "Citations",
     }
 
     stack = deque()
@@ -63,9 +66,43 @@ def extract_sections_as_nested_list(article_url):
         # Wyodrebnij oczyszczony tekst
         return re.sub(r"\s{2,}", " ", tag.get_text(separator=" ", strip=True)).strip()
 
-    started_main_content = False
+    def extract_hatnote(tag):
+        text = clean_text(tag)
+        if not text:
+            return None
+        lowered = text.lower()
+        if lowered.startswith(
+            ("main article:", "see also:", "further information:")
+        ):
+            return text
+        return None
 
-    for tag in content_div.find_all(recursive=True):
+
+    started_main_content = False
+    skip_until_level = None
+
+    for tag in content_div.find_all(["h2", "h3", "h4", "p", "ul", "ol", "div"], recursive=True):
+
+        if skip_until_level is not None:
+            if tag.name in ["h2", "h3", "h4"]:
+                level = int(tag.name[1])
+                if level <= skip_until_level:
+                    skip_until_level = None
+                else:
+                    continue
+            else:
+                continue
+
+        if tag.name == "div" and "hatnote" in tag.get("class", []):
+            hatnote = extract_hatnote(tag)
+            if hatnote:
+                if len(stack) > 1:
+                    stack[-1]["content"] = hatnote + "<br>" + stack[-1]["content"]
+                else:
+                    intro_content = hatnote + "<br>" + intro_content
+            continue
+
+
         if not started_main_content:
             if tag.name == "h2":
                 started_main_content = True
@@ -79,15 +116,13 @@ def extract_sections_as_nested_list(article_url):
             else:
                 continue
 
-        if not hasattr(tag, "name"):
-            continue
-
         if tag.name in ["h2", "h3", "h4"]:
             level = int(tag.name[1])
             headline = tag.find("span", class_="mw-headline")
             title = headline.text.strip() if headline else tag.get_text(strip=True)
 
             if title in skip_sections:
+                skip_until_level = level
                 continue
 
             while stack and stack[-1]["level"] >= level:
@@ -99,7 +134,7 @@ def extract_sections_as_nested_list(article_url):
                 "content": "",
                 "subsections": [],
             }
-            stack[-1].setdefault("subsections", []).append(new_section)
+            stack[-1]["subsections"].append(new_section)
             stack.append(new_section)
             continue
 
@@ -109,7 +144,6 @@ def extract_sections_as_nested_list(article_url):
         if tag.name in ["p", "ul", "ol"] and not tag.find_parent(
             ["table", "div"],
             class_=[
-                "hatnote",
                 "metadata",
                 "ambox",
                 "mbox",
