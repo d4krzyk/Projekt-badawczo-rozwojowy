@@ -50,6 +50,7 @@ public class CheckSearchButton : MonoBehaviour
             return;
         }
         gameController.ArticleName = article;
+        gameController.PlayerNick = nick;
         // wszystko ok -> ukryj komunikat i wywołaj akcję startu (onClick przycisku)
         if (tmpUGUI != null) tmpUGUI.text = "";
         else if (tmp3D != null) tmp3D.text = "";

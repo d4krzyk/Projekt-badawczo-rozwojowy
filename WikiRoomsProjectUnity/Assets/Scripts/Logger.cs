@@ -12,6 +12,7 @@ public class Logger : MonoBehaviour
     List<LinkLog> lastLinkLogs;
     List<BookLog> lastBookLogs;
     string currentPath;
+    string playerNick;
 
     void Start()
     {
@@ -20,6 +21,7 @@ public class Logger : MonoBehaviour
         lastLinkLogs = new List<LinkLog>();
         lastBookLogs = new List<BookLog>();
         currentPath = "";
+        playerNick = FindAnyObjectByType<GameController>().PlayerNick;
     }
 
     public void LogOnRoomExit(string roomName, float enterTime, float exitTime, string previousRoom)
@@ -89,7 +91,7 @@ public class Logger : MonoBehaviour
     public void SendLogs()
     {
         AppLog logs = new AppLog();
-        logs.user_name = "TestUser";
+        logs.user_name = playerNick;
         logs.session_logs = roomLogs;
 
         SendRoomLogToDB(logs);
