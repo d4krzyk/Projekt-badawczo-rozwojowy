@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class CursorController : MonoBehaviour
 {
@@ -32,6 +33,16 @@ public class CursorController : MonoBehaviour
 
     Outline lastOutline; // aktualny outline na obiekcie
 
+    [Header("Hover UI")]
+    public GameObject hoverUI; // przypisz GameObject z GUI (wyłączony domyślnie)
+    public string[] hoverTags = new string[] { "Book", "Image", "PortalBack", "PortalNext" };
+
+    // referencje do tekstu w hoverUI (przypisz w Inspektorze lub zostaną znalezione automatycznie)
+    public TMP_Text hoverTMPText;
+
+    // referencja do RoomsController (przypisz w Inspektorze lub znajdzie automatycznie)
+    public RoomsController roomsController;
+
     void Start()
     {
         if (crosshairImage == null)
@@ -52,6 +63,10 @@ public class CursorController : MonoBehaviour
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 0f; // 2D sound (możesz ustawić 3D jeśli chcesz)
         }
+
+        if (hoverUI != null)
+            hoverUI.SetActive(false);
+
     }
 
     void LateUpdate()
@@ -79,7 +94,14 @@ public class CursorController : MonoBehaviour
             Debug.DrawLine(ray.origin, hit.point, Color.green);
             float distanceFromCamera = Vector3.Distance(mainCamera.transform.position, hit.point);
 
-            if (hit.collider.CompareTag("Book") && distanceFromCamera <= effectiveDistance)
+            string hitTag = hit.collider.tag;
+            bool isHoverTag = false;
+            foreach (var t in hoverTags)
+            {
+                if (hitTag == t) { isHoverTag = true; break; }
+            }
+
+            if (isHoverTag && distanceFromCamera <= effectiveDistance)
             {
                 GameObject hitObj = hit.collider.gameObject;
 
@@ -92,25 +114,75 @@ public class CursorController : MonoBehaviour
                     hoverSoundPlayed = false;
                 }
 
-                // włącz outline na bieżącym obiekcie
-                EnsureAndEnableOutline(hitObj);
-
-                if (!hoverSoundPlayed)
+                // jeśli to Book — pobierz bookName i pokaż w hoverUI
+                if (hitTag == "Book")
                 {
+                    string bookName = null;
+                    var bookComp = hitObj.GetComponent<BookInteraction>();
+                    if (bookComp == null && hitObj.transform.parent != null)
+                        bookComp = hitObj.transform.parent.GetComponent<BookInteraction>();
+
+                    if (bookComp != null)
+                        bookName = bookComp.bookName;
+
+                    // włącz outline i dźwięk (o ile nie Portal — tu jest Book więc dźwięk normalnie)
+                    if (!hoverSoundPlayed)
+                    {
+                        EnsureAndEnableOutline(hitObj);
+                        PlaySound();
+                        hoverSoundPlayed = true;
+                    }
+
+                    SetCrosshair(highlightedCrosshair);
+                    ShowHoverUI(bookName);
+                    return;
+                }
+
+                // jeśli to Portal — pobierz nazwę pokoju z RoomsController i pokaz
+                if (hitTag == "PortalBack" || hitTag == "PortalNext")
+                {
+                    string roomName = null;
+                    if (roomsController != null)
+                    {
+                        if (hitTag == "PortalBack")
+                            roomName = roomsController.GetPreviousRoomName();
+                        else // PortalNext
+                            roomName = roomsController.GetNextRoomName();
+                    }
+
+                    // nie odtwarzaj dźwięku dla portalu
+                    hoverSoundPlayed = true;
+
+                    // włącz outline (opcjonalnie)
+                    EnsureAndEnableOutline(hitObj);
+
+                    SetCrosshair(highlightedCrosshair);
+                    ShowHoverUI(!string.IsNullOrEmpty(roomName) ? "Portal to " + roomName : string.Empty);
+                    return;
+                }
+
+                // graj dźwięk tylko gdy to nie jest Portal (pozostałe tagi)
+                if (!hoverSoundPlayed && hitTag != "PortalBack" && hitTag != "PortalNext")
+                {
+                    // włącz outline na bieżącym obiekcie
+                    EnsureAndEnableOutline(hitObj);
                     PlaySound();
+                    ShowHoverUI(hitObj.name);
                     hoverSoundPlayed = true;
                 }
 
                 SetCrosshair(highlightedCrosshair);
+                ShowHoverUI(null);
                 return;
             }
         }
 
-        // nic nie trafione albo poza zasięgiem/nie książka
+        // nic nie trafione albo poza zasięgiem/nie pasujący tag
         DisableLastOutline();
         lastHoveredObject = null;
         hoverSoundPlayed = false;
         SetCrosshair(normalCrosshair);
+        HideHoverUI();
     }
 
     void SetCrosshair(Sprite sprite)
@@ -171,5 +243,24 @@ public class CursorController : MonoBehaviour
     void setOutlineWidth(Outline outline, float width)
     {
         try { outline.OutlineWidth = width; } catch {}
+    }
+
+    // ShowHoverUI przyjmuje opcjonalną wiadomość (np. bookName)
+    void ShowHoverUI(string message = null)
+    {
+        if (hoverUI == null) return;
+
+        // ustaw tekst jeśli podano (jeśli podano pusty string — wyczyści)
+        if (hoverTMPText != null)
+            hoverTMPText.text = message ?? string.Empty;
+
+        if (!hoverUI.activeSelf) hoverUI.SetActive(true);
+    }
+
+    void HideHoverUI()
+    {
+        if (hoverUI == null) return;
+        if (hoverTMPText != null) hoverTMPText.text = string.Empty;
+        if (hoverUI.activeSelf) hoverUI.SetActive(false);
     }
 }

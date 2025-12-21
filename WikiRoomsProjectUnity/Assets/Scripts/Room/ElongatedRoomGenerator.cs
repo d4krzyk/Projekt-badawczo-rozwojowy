@@ -272,8 +272,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
             {
                 extension = Instantiate(extensionRoom, nextExtensionPoint, Quaternion.identity, transform);
                 extension.name = $"Extension Room {(i / 6) + 1}";
-                if(i/3 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.2f, 2f, 0), new Vector3(0, -90, 0), wikiImages[i/3], extension.transform);
-                if((i/3) + 1 < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.2f, 2f, 0), new Vector3(0, 90, 0), wikiImages[(i/3) + 1], extension.transform);
+                if(i/3 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, 0), new Vector3(0, -90, 0), wikiImages[i/3], extension.transform);
+                if((i/3) + 1 < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, 0), new Vector3(0, 90, 0), wikiImages[(i/3) + 1], extension.transform);
                 nextExtensionPoint -= offset;
             }
             GameObject bookshelfContainer = new GameObject($"Bookshelf Container {i}");

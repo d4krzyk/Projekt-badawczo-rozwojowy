@@ -6,9 +6,10 @@ TagManager:
   tags:
   - Undefined
   - Book
-  - Portal
   - Image
   - MenuOption
+  - PortalBack
+  - PortalNext
   layers:
   - Default
   - TransparentFX

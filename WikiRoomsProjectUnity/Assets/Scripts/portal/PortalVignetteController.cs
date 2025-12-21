@@ -12,7 +12,7 @@ public class PortalVignetteController : MonoBehaviour
     [SerializeField] private float _smoothSpeed = 50.0f;
 
     [Header("Tags")]
-    [SerializeField] private string _portalTag = "Portal";
+    [SerializeField] private string _portalTag = "PortalNext";
     [SerializeField] private string _playerTag = "Player";
 
     [Header("Placement")]

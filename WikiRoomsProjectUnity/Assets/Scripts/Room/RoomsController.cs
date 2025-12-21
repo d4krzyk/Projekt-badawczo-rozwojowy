@@ -117,4 +117,13 @@ public class RoomsController : MonoBehaviour
         elongatedRoom.SetActivePortalNext(true);
     }
 
+    // Zwraca nazwę następnego generatora pokoju (prosta wersja)
+    public string GetNextRoomName()
+    {
+        return secondElongatedRoom != null ? secondElongatedRoom.articleName : null;
+    }
+    public string GetPreviousRoomName()
+    {
+        return currentRoomNode.Previous != null ? currentRoomNode.Previous.Value : null;
+    }
 }
