@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Wikipedia Tracker
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.41
 // @description  Record user activity on Wikipedia and send data to the API
 // @match        https://en.wikipedia.org/*
-// @grant        none
+// @connect      localhost
+// @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
 (function() {
@@ -149,7 +150,7 @@
 
         const data = {
             name: window.location.href,
-            enter_time: startTime,
+            enter_time: startTime.toISOString(),
             exit_time: new Date().toISOString(),
             books: sectionTimes,
             book_links: clickedLinks,
@@ -159,8 +160,10 @@
                 entrySource: entrySource
             },
         };
+        const apiUrl = 'http://localhost:5000/tracker/log';
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
 
-        navigator.sendBeacon('http://localhost:5000/log', JSON.stringify(data));
+        navigator.sendBeacon(apiUrl, blob);
     });
 
 })();

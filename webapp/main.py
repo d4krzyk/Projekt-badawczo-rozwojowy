@@ -3,12 +3,14 @@ from contextlib import asynccontextmanager
 
 # 3rd-Party
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # Project
 import wikipedia_api
 import wikipedia_webscraping
 from wikipedia_webscraping.category import CategoryScraper
 import wikipedia_dumps
+import wikipedia_tracker
 
 # Local
 from router import router as main_router
@@ -36,8 +38,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+# ---------------------------------------------------------
+# CORS
+# ---------------------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 app.include_router(wikipedia_api.router.router_categories)
 app.include_router(wikipedia_api.router.router_images)
 app.include_router(wikipedia_dumps.router.router)
 app.include_router(wikipedia_webscraping.router.router)
+app.include_router(wikipedia_tracker.router.router)
 app.include_router(main_router)
