@@ -8,8 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 # Project
 import wikipedia_api
 import wikipedia_webscraping
-from wikipedia_webscraping.category import CategoryScraper
 import wikipedia_dumps
+import data_storage
+from wikipedia_webscraping.category import CategoryScraper
 import wikipedia_tracker
 
 # Local
@@ -50,6 +51,7 @@ app.add_middleware(
 )
 
 
+app.include_router(data_storage.router.data_storage_router)
 app.include_router(wikipedia_api.router.router_categories)
 app.include_router(wikipedia_api.router.router_images)
 app.include_router(wikipedia_dumps.router.router)
