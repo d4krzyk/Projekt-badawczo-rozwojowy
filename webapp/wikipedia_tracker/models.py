@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import List, Optional, Any
-from sqlalchemy import String, DateTime, ForeignKey, Text, JSON, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import String, DateTime, ForeignKey, JSON, func, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import expression
 from webapp.database.engine import Base
 
 class UserSession(Base):
@@ -11,6 +12,7 @@ class UserSession(Base):
     name: Mapped[str] = mapped_column(String(255))
     start_date: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     end_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=False, server_default=expression.false())
 
     articles: Mapped[List["Article"]] = relationship(back_populates="session", cascade="all, delete-orphan")
 
@@ -18,7 +20,6 @@ class UserSession(Base):
         return f"<UserSession(id={self.id}, name='{self.name}')>"
 
 
-# 3. Model Article
 class Article(Base):
     __tablename__ = "articles"
 

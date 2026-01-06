@@ -33,6 +33,7 @@ class UserSessionBase(BaseModel):
     name: str
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
+    active: bool = False
 
 
 class UserSessionCreate(UserSessionBase):
