@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wikipedia Tracker
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      0.3
 // @description  Record user activity on Wikipedia and send data to the API
 // @match        https://en.wikipedia.org/*
 // @grant        none
