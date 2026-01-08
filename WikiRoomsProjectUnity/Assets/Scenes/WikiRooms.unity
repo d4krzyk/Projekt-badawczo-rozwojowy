@@ -157,6 +157,11 @@ Transform:
   - {fileID: 1217317969}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &12677183 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+  m_PrefabInstance: {fileID: 7313989494526898788}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &14292457
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -374,7 +379,7 @@ MonoBehaviour:
     and <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_Church_and_health_care\">health
     care</link></color> , with a vast network of charities.\r\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 121f2b250c866574085cbff0b118c8af, type: 2}
   m_sharedMaterial: {fileID: 1708306230045072050, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -440,7 +445,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &14453667
@@ -783,6 +788,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: -4216859302048453862, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 1647684315}
+    - targetCorrespondingSourceObject: {fileID: -4216859302048453862, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
       insertIndex: -1
       addedObject: {fileID: 372620679}
     m_AddedComponents:
@@ -838,7 +846,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2694270379615521629, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 26.3
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 2694270379615521629, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1877,6 +1885,9 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -4216859302048453862, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 12677183}
     - targetCorrespondingSourceObject: {fileID: -4216859302048453862, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3881224867012621182}
@@ -3182,7 +3193,7 @@ MonoBehaviour:
     and <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_Church_and_health_care\">health
     care</link></color> , with a vast network of charities.\r\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 121f2b250c866574085cbff0b118c8af, type: 2}
   m_sharedMaterial: {fileID: 1708306230045072050, guid: 61a573df126355b45b26d55dc81a4599, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -3248,7 +3259,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &974258906
@@ -5165,6 +5176,68 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1001 &1647684314
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1335939397}
+    m_Modifications:
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4588923539103452588, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_Name
+      value: InfoboxAura
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+--- !u!4 &1647684315 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+  m_PrefabInstance: {fileID: 1647684314}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1751320008
 GameObject:
   m_ObjectHideFlags: 0
@@ -7586,7 +7659,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2694270379615521629, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 26.3
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 2694270379615521629, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8031,6 +8104,63 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 0.5, z: 2}
   m_Center: {x: 0, y: 0.17, z: 0}
+--- !u!1001 &7313989494526898788
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 894582210}
+    m_Modifications:
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901473889284942239, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4588923539103452588, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
+      propertyPath: m_Name
+      value: InfoboxAura
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 44166c22d220f2d45870e29a4902fc49, type: 3}
 --- !u!1001 &8047050477065486989
 PrefabInstance:
   m_ObjectHideFlags: 0
