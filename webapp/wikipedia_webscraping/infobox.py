@@ -14,6 +14,24 @@ def text_or_link(c):
         return {'class': 'text', 'value': c.string}
 
 
+def data_list(child: bs4.BeautifulSoup, ordered=False):
+    output = []
+    for li in child.find_all('li'):
+        for cont in li.contents:
+            if cont.name:
+                if cont.name == 'a':
+                    output.append(text_or_link(cont))
+                else:
+                    output.append({'class': 'text_list_cont',
+                                  'value': ''.join(cont.stripped_strings)})
+            else:
+                output.append(cont)
+    cl = 'ulist'
+    if ordered:
+        cl = 'olist'
+    return {'class': cl, 'value': output}
+
+
 def extract_above(above_child: bs4.BeautifulSoup):
     above = []
     for c in above_child.contents:
@@ -46,8 +64,27 @@ def extract_image(image_child: bs4.BeautifulSoup):
     return [{'class': 'link', 'href': image_link, 'caption': caption_out}]
 
 
+def rec_extract(soup: bs4.BeautifulSoup, acc=[]):
+    for child in soup.contents:
+        if child.name:
+            if child.name == 'a':
+                acc.append(text_or_link(child))
+            elif child.name == 'ul':
+                acc.append(data_list(child))
+            elif child.name == 'ol':
+                acc.append(data_list(child, ordered=True))
+            elif child.name == 'style':
+                pass
+            else:
+                rec_extract(child, acc)
+        else:
+            acc.append({'class': 'text', 'value': child})
+    return acc
+
+
 def extract_full_data(full_data_child: bs4.BeautifulSoup):
-    return []
+    output = rec_extract(full_data_child, [])
+    return output
 
 
 def extract_label(label_child: bs4.BeautifulSoup):
@@ -55,13 +92,7 @@ def extract_label(label_child: bs4.BeautifulSoup):
 
 
 def extract_data(data_child: bs4.BeautifulSoup):
-    output = []
-    for c in data_child.contents:
-        if c.name:
-            if c.name == 'a':
-                output.append(text_or_link(c))
-        else:
-            output.append({'class': 'text', 'value': c.string})
+    output = rec_extract(data_child, [])
     return output
 
 
