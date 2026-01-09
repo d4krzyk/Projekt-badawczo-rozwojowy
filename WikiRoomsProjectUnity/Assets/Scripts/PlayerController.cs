@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
     public float interactDistance = 2f;
     public Transform cameraTransform;
     public GameObject BookUI;
+    
+    public GameObject InfoBoxUI;
     public MarkdownRenderer leftPage;
     public MarkdownRenderer rightPage;
     public BookController bookController;
@@ -161,16 +163,19 @@ public class PlayerController : MonoBehaviour
         {
             if (isReading)
             {
-                // odtwórz dźwięk zamknięcia książki
+                // odtwórz dźwięk zamknięcia książki / infoboxa
                 if (bookAudioSource != null && closeBookClip != null)
                     bookAudioSource.PlayOneShot(closeBookClip, bookSoundVolume);
 
                 isReading = false;
                 if (BookUI != null) BookUI.SetActive(false);
+                if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
                 currentBook?.OnInteraction();
+                currentBook = null;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
-                logger.LogOnBookClose(currentBook.bookArticleLink, openBookTime, Time.time);
+                if (currentBook != null && logger != null)
+                    logger.LogOnBookClose(currentBook.bookArticleLink, openBookTime, Time.time);
                 return;
             }
 
@@ -179,7 +184,7 @@ public class PlayerController : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
             {
                 IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-                if (interactable != null)
+                if (hit.collider.CompareTag("Book") && interactable != null)
                 {
                     // jeśli to książka - odtwórz dźwięk otwarcia i przejdź do trybu czytania
                     var book = interactable as BookInteraction;
@@ -192,7 +197,8 @@ public class PlayerController : MonoBehaviour
                         currentBook = book;
                         leftPage.Source = currentBook.content;
                         rightPage.Source = currentBook.content;
-                        BookUI.SetActive(true);
+                        if (BookUI != null) BookUI.SetActive(true);
+                        if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
                         bookController.ResetPages();
                         isReading = true;
                         Cursor.lockState = CursorLockMode.None;
@@ -201,6 +207,25 @@ public class PlayerController : MonoBehaviour
                         return;
                     }
                     interactable.OnInteraction();
+                }
+                else if(hit.collider.CompareTag("InfoBox"))
+                {
+                    // obsługa InfoBox: wykryj po tagu "InfoBox" lub komponencie InfoBoxInteraction
+                    var infoComp = hit.collider.GetComponent<InfoBoxInteraction>();
+                    if (infoComp != null || hit.collider.CompareTag("InfoBox"))
+                    {
+                        if (bookAudioSource != null && openBookClip != null)
+                            bookAudioSource.PlayOneShot(openBookClip, bookSoundVolume);
+
+                        if (InfoBoxUI != null) InfoBoxUI.SetActive(true);
+                        if (BookUI != null) BookUI.SetActive(false);
+                        currentBook = null;
+                        isReading = true;
+                        Cursor.lockState = CursorLockMode.None;
+                        Cursor.visible = true;
+                        openBookTime = Time.time;
+                        return;
+                    }
                 }
             }
 

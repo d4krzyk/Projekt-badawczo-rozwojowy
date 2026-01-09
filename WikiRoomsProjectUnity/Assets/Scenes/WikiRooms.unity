@@ -974,6 +974,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3325952366270173671, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 372620682}
+    - targetCorrespondingSourceObject: {fileID: 3325952366270173671, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 372620683}
   m_SourcePrefab: {fileID: 100100000, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
 --- !u!1 &266669220
 GameObject:
@@ -1281,6 +1284,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 3, z: 2}
   m_Center: {x: 0, y: 1.68, z: 0}
+--- !u!114 &372620683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 372620678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 812e70a159c6eda41bbf38945bccb1b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfoBoxInteraction
+  content: 
+  toggleRendererOnInteract: 1
 --- !u!1 &374087998
 GameObject:
   m_ObjectHideFlags: 0
@@ -1911,6 +1928,7 @@ MonoBehaviour:
   interactDistance: 2
   cameraTransform: {fileID: 963194228}
   BookUI: {fileID: 509049445}
+  InfoBoxUI: {fileID: 229320036}
   leftPage: {fileID: 14453668}
   rightPage: {fileID: 974258906}
   bookController: {fileID: 1312706476}
@@ -3960,7 +3978,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &977859398
 Transform:
   m_ObjectHideFlags: 0
@@ -3985,7 +4003,7 @@ VFXRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 977859397}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -4865,8 +4883,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 5.000001, y: 0}
-  m_SizeDelta: {x: -20.000002, y: 2853.87}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -20, y: 2853.87}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1287170053
 MonoBehaviour:
@@ -9150,6 +9168,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3325952366270173671, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3881224867012621186}
+    - targetCorrespondingSourceObject: {fileID: 3325952366270173671, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3881224867012621187}
   m_SourcePrefab: {fileID: 100100000, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
 --- !u!4 &3881224867012621182 stripped
 Transform:
@@ -9214,6 +9235,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 3, z: 2}
   m_Center: {x: 0, y: 1.68, z: 0}
+--- !u!114 &3881224867012621187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3881224867012621183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 812e70a159c6eda41bbf38945bccb1b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InfoBoxInteraction
+  content: 
+  toggleRendererOnInteract: 1
 --- !u!4 &6605233807946993753 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3740675008352502071, guid: f317520e52301314fa15a57dcc606a73, type: 3}

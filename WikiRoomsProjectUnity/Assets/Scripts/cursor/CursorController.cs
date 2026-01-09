@@ -36,7 +36,7 @@ public class CursorController : MonoBehaviour
 
     [Header("Hover UI")]
     public GameObject hoverUI; // przypisz GameObject z GUI (wyłączony domyślnie)
-    public string[] hoverTags = new string[] { "Book", "Image", "PortalBack", "PortalNext" };
+    public string[] hoverTags = new string[] { "Book", "Image", "PortalBack", "PortalNext", "InfoBox" };
 
     // referencje do tekstu w hoverUI (przypisz w Inspektorze lub zostaną znalezione automatycznie)
     public TMP_Text hoverTMPText;
@@ -161,16 +161,23 @@ public class CursorController : MonoBehaviour
                     ShowHoverUI(!string.IsNullOrEmpty(displayRoomName) ? "Portal to " + displayRoomName : string.Empty);
                     return;
                 }
+
+                // InfoBox: pokaż zawartość (jeśli dostępna) i odtwórz dźwięk hover
                 if (hitTag == "InfoBox")
                 {
-                    string currentArticleName = null;
-                    if (roomsController != null && roomsController.elongatedRoom != null)
-                        currentArticleName = roomsController.elongatedRoom.articleName;
+                    var infoComp = hitObj.GetComponent<InfoBoxInteraction>();
+                    if (!hoverSoundPlayed)
+                    {
+                        EnsureAndEnableOutline(hitObj);
+                        PlaySound();
+                        hoverSoundPlayed = true;
+                    }
 
                     SetCrosshair(highlightedCrosshair);
-                    ShowHoverUI(!string.IsNullOrEmpty(currentArticleName) ? "Info about " + currentArticleName : string.Empty);
+                    ShowHoverUI(!string.IsNullOrEmpty(roomsController.elongatedRoom.articleName) ? "Info about " + roomsController.elongatedRoom.articleName : string.Empty);
                     return;
                 }
+
                 // graj dźwięk tylko gdy to nie jest Portal (pozostałe tagi)
                 if (!hoverSoundPlayed && hitTag != "PortalBack" && hitTag != "PortalNext")
                 {
@@ -272,5 +279,15 @@ public class CursorController : MonoBehaviour
         if (hoverUI == null) return;
         if (hoverTMPText != null) hoverTMPText.text = string.Empty;
         if (hoverUI.activeSelf) hoverUI.SetActive(false);
+    }
+
+    // Zwraca IInteractable obecnie najechanego obiektu (null jeśli brak)
+    public IInteractable GetCurrentInteractable()
+    {
+        if (lastHoveredObject == null) return null;
+        var interactable = lastHoveredObject.GetComponent<IInteractable>();
+        if (interactable == null && lastHoveredObject.transform.parent != null)
+            interactable = lastHoveredObject.transform.parent.GetComponent<IInteractable>();
+        return interactable;
     }
 }
