@@ -127,6 +127,25 @@ public class ElongatedRoomGenerator : MonoBehaviour
             Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
         }
 
+        string infoboxJson = await GetInfoboxAsync(articleName);
+        if (string.IsNullOrEmpty(infoboxJson))
+        {
+            Debug.LogError("Failed to retrieve infobox data.");
+        }
+        else
+        {
+            WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
+            foreach (var section in infoboxData.infobox)
+            {
+                Debug.Log("---- INFOBOX ----");
+
+                foreach (var item in section)
+                {
+                    InfoboxParser.DebugPrintItem(item);
+                }
+            }
+        }
+
         SpawnExtensionsWithBookselfs();
         Debug.Log($"Loaded {articleName} successfully.");
     }
@@ -183,6 +202,32 @@ public class ElongatedRoomGenerator : MonoBehaviour
             else
             {
                 Debug.LogWarning($"Request error (textures): {request.error}");
+                return null;
+            }
+        }
+    }
+
+    public async Task<string> GetInfoboxAsync(string article)
+    {
+        string encodedArticle = UnityWebRequest.EscapeURL(article);
+        string url = $"http://localhost/scraping/infobox?page_name={encodedArticle}";
+
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.SetRequestHeader("accept", "application/json");
+
+            var operation = request.SendWebRequest();
+
+            while (!operation.isDone)
+                await Task.Yield();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                return request.downloadHandler.text;
+            }
+            else
+            {
+                Debug.LogError("Request error: " + request.error);
                 return null;
             }
         }
