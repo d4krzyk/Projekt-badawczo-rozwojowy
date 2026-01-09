@@ -58,13 +58,15 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
+        string displayArticleName = Uri.UnescapeDataString(articleName);   
+                    // nie odtwarzaj dźwięku dla portalu
         this.articleName = articleName;
         this.roomsController = roomsController;
 
         // Ustaw tytuł w UI od razu po otrzymaniu nazwy
         if (articleTitleText != null)
         {
-            articleTitleText.text = this.articleName;
+            articleTitleText.text = displayArticleName;
         }
 
         SetDefaultMaterials();
