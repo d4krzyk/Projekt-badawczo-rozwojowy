@@ -622,7 +622,7 @@ MonoBehaviour:
   clickSound: {fileID: 8300000, guid: f296c2ea885ace441acac23d821758f1, type: 3}
   clickVolume: 0.25
   userTransform: {fileID: 621679087}
---- !u!1 &92562949
+--- !u!1 &93000138
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -630,34 +630,73 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 92562950}
+  - component: {fileID: 93000139}
+  - component: {fileID: 93000141}
+  - component: {fileID: 93000140}
   m_Layer: 5
-  m_Name: Sliding Area
+  m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &92562950
+--- !u!224 &93000139
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 92562949}
+  m_GameObject: {fileID: 93000138}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1932310378}
-  m_Father: {fileID: 1321512205}
+  m_Children: []
+  m_Father: {fileID: 2064257420}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: -20}
+  m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &93000140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93000138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &93000141
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93000138}
+  m_CullTransparentMesh: 1
 --- !u!1 &111752409
 GameObject:
   m_ObjectHideFlags: 0
@@ -879,7 +918,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &229320037
 RectTransform:
   m_ObjectHideFlags: 0
@@ -901,6 +940,132 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &252418404
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 252418405}
+  - component: {fileID: 252418408}
+  - component: {fileID: 252418407}
+  - component: {fileID: 252418406}
+  m_Layer: 5
+  m_Name: Scrollbar Vertical
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &252418405
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 252418404}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2064257420}
+  m_Father: {fileID: 1513373465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 20, y: 0}
+  m_Pivot: {x: 1, y: 1}
+--- !u!114 &252418406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 252418404}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a4db7a114972834c8e4117be1d82ba3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Scrollbar
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 93000140}
+  m_HandleRect: {fileID: 93000139}
+  m_Direction: 2
+  m_Value: 1
+  m_Size: 0.19529511
+  m_NumberOfSteps: 0
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &252418407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 252418404}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &252418408
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 252418404}
+  m_CullTransparentMesh: 1
 --- !u!1001 &255434772
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -978,96 +1143,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 372620683}
   m_SourcePrefab: {fileID: 100100000, guid: 3a648032cc9efcf4da2506237edce6fc, type: 3}
---- !u!1 &266669220
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 266669221}
-  - component: {fileID: 266669224}
-  - component: {fileID: 266669223}
-  - component: {fileID: 266669222}
-  m_Layer: 5
-  m_Name: Viewport
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &266669221
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 266669220}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1287170052}
-  m_Father: {fileID: 1636922141}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -15, y: -15}
-  m_Pivot: {x: 0, y: 1}
---- !u!114 &266669222
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 266669220}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Mask
-  m_ShowMaskGraphic: 1
---- !u!114 &266669223
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 266669220}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &266669224
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 266669220}
-  m_CullTransparentMesh: 1
 --- !u!1 &282895782 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
@@ -1297,7 +1372,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InfoBoxInteraction
   content: 
-  toggleRendererOnInteract: 1
 --- !u!1 &374087998
 GameObject:
   m_ObjectHideFlags: 0
@@ -1400,7 +1474,7 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!1 &388569164
+--- !u!1 &379884882
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1408,10 +1482,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 388569165}
-  - component: {fileID: 388569168}
-  - component: {fileID: 388569167}
-  - component: {fileID: 388569166}
+  - component: {fileID: 379884883}
+  - component: {fileID: 379884886}
+  - component: {fileID: 379884885}
+  - component: {fileID: 379884884}
   m_Layer: 5
   m_Name: Scrollbar Horizontal
   m_TagString: Untagged
@@ -1419,33 +1493,33 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &388569165
+--- !u!224 &379884883
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 388569164}
+  m_GameObject: {fileID: 379884882}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 834401329}
-  m_Father: {fileID: 1636922141}
+  - {fileID: 1032412450}
+  m_Father: {fileID: 1513373465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -15, y: 20}
+  m_SizeDelta: {x: 0, y: 20}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &388569166
+--- !u!114 &379884884
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 388569164}
+  m_GameObject: {fileID: 379884882}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2a4db7a114972834c8e4117be1d82ba3, type: 3}
@@ -1479,8 +1553,8 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 666540115}
-  m_HandleRect: {fileID: 666540114}
+  m_TargetGraphic: {fileID: 1624315314}
+  m_HandleRect: {fileID: 1624315313}
   m_Direction: 0
   m_Value: 0
   m_Size: 1
@@ -1488,13 +1562,13 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &388569167
+--- !u!114 &379884885
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 388569164}
+  m_GameObject: {fileID: 379884882}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
@@ -1518,13 +1592,13 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &388569168
+--- !u!222 &379884886
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 388569164}
+  m_GameObject: {fileID: 379884882}
   m_CullTransparentMesh: 1
 --- !u!1 &507772571
 GameObject:
@@ -2008,81 +2082,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PS1CameraSnap
   pixelSize: 0.0020833334
---- !u!1 &666540113
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 666540114}
-  - component: {fileID: 666540116}
-  - component: {fileID: 666540115}
-  m_Layer: 5
-  m_Name: Handle
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &666540114
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 666540113}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 834401329}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: 20}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &666540115
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 666540113}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &666540116
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 666540113}
-  m_CullTransparentMesh: 1
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -2248,7 +2247,7 @@ Transform:
   - {fileID: 366481380}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &834401328
+--- !u!1 &757276616
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2256,34 +2255,88 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 834401329}
+  - component: {fileID: 757276617}
+  - component: {fileID: 757276620}
+  - component: {fileID: 757276619}
+  - component: {fileID: 757276618}
   m_Layer: 5
-  m_Name: Sliding Area
+  m_Name: Viewport
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &834401329
+--- !u!224 &757276617
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 834401328}
+  m_GameObject: {fileID: 757276616}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 666540114}
-  m_Father: {fileID: 388569165}
+  - {fileID: 1169686108}
+  m_Father: {fileID: 1513373465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: -20}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &757276618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 757276616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Mask
+  m_ShowMaskGraphic: 0
+--- !u!114 &757276619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 757276616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &757276620
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 757276616}
+  m_CullTransparentMesh: 1
 --- !u!1 &868214402
 GameObject:
   m_ObjectHideFlags: 0
@@ -4325,6 +4378,42 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 3
   m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!1 &1032412449
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1032412450}
+  m_Layer: 5
+  m_Name: Sliding Area
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1032412450
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1032412449}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1624315313}
+  m_Father: {fileID: 379884883}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -20, y: -20}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1033771090
 GameObject:
   m_ObjectHideFlags: 0
@@ -4500,6 +4589,295 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1169686107
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1169686108}
+  - component: {fileID: 1169686110}
+  - component: {fileID: 1169686109}
+  - component: {fileID: 1169686115}
+  - component: {fileID: 1169686114}
+  - component: {fileID: 1169686113}
+  - component: {fileID: 1169686112}
+  - component: {fileID: 1169686111}
+  m_Layer: 5
+  m_Name: Content
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1169686108
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169686107}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 757276617}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -20.5, y: 0}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &1169686109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169686107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
+--- !u!114 &1169686110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169686107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 1
+  m_Spacing: 1
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
+--- !u!114 &1169686111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169686107}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2928b81a964cb374ebd8d4c33c96bd84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickSound: {fileID: 8300000, guid: f296c2ea885ace441acac23d821758f1, type: 3}
+  clickVolume: 0.25
+  userTransform: {fileID: 621679087}
+--- !u!114 &1169686112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169686107}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55388d382d2fe7346bcea11e5bcc20bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LinkNormalColor:
+    serializedVersion: 2
+    rgba: 4293533021
+  LinkHoveredColor:
+    serializedVersion: 2
+    rgba: 4294609599
+  LinkClickColor:
+    serializedVersion: 2
+    rgba: 4287513701
+--- !u!114 &1169686113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169686107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb87846e43a704469d9be7ef4faa09a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _Source: gsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdf
+  RenderSettings:
+    Bold:
+      RenderBold: 1
+    Italics:
+      RenderItalics: 1
+    Strikethrough:
+      RenderStrikethrough: 1
+    Monospace:
+      RenderMonospace: 1
+      UseCustomFont: 1
+      FontAssetPathRelativeToResources: Noto/Noto Mono/NotoMono-Regular
+      DrawOverlay: 1
+      OverlayColor: {r: 0, g: 0, b: 0, a: 0.23529412}
+      OverlayPaddingPixels: 25
+      ManuallySetCharacterSpacing: 0
+      CharacterSpacing: 0.69
+      AddSeparationSpacing: 1
+      SeparationSpacing: 0.3
+    Lists:
+      RenderUnorderedLists: 1
+      RenderOrderedLists: 1
+      UnorderedListBullet: "\u2022"
+      OrderedListNumberSuffix: .
+      VerticalOffset: 0.76
+      BulletOffsetPixels: 100
+      ContentSeparationPixels: 20
+    Links:
+      RenderLinks: 1
+      RenderAutoLinks: 1
+      LinkColor: {r: 0.3647059, g: 0.11372549, b: 0.91764706, a: 1}
+    Headers:
+      RenderPoundSignHeaders: 1
+      RenderLineHeaders: 1
+      Levels:
+      - Size: 2
+        Bold: 1
+        Underline: 1
+        Case: 0
+        VerticalSpacing: 0.45
+      - Size: 1.7
+        Bold: 1
+        Underline: 1
+        Case: 0
+        VerticalSpacing: 0.3
+      - Size: 1.5
+        Bold: 1
+        Underline: 0
+        Case: 0
+        VerticalSpacing: 0
+      - Size: 1.3
+        Bold: 1
+        Underline: 0
+        Case: 0
+        VerticalSpacing: 0
+    Superscript:
+      RenderSuperscript: 0
+      RenderChainSuperscript: 1
+--- !u!114 &1169686114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169686107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 'gsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdfgsdfsdf
+
+'
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 121f2b250c866574085cbff0b118c8af, type: 2}
+  m_sharedMaterial: {fileID: -998858850190951579, guid: 121f2b250c866574085cbff0b118c8af, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 23
+  m_fontSizeBase: 16
+  m_fontWeight: 400
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 23
+  m_fontSizeMax: 30
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.106
+  m_overflowMode: 5
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1169686115
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169686107}
+  m_CullTransparentMesh: 1
 --- !u!1 &1212071581
 GameObject:
   m_ObjectHideFlags: 0
@@ -4844,417 +5222,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1287170051
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1287170052}
-  - component: {fileID: 1287170059}
-  - component: {fileID: 1287170058}
-  - component: {fileID: 1287170057}
-  - component: {fileID: 1287170056}
-  - component: {fileID: 1287170055}
-  - component: {fileID: 1287170054}
-  - component: {fileID: 1287170053}
-  m_Layer: 5
-  m_Name: Page
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1287170052
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287170051}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 266669221}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: 2853.87}
-  m_Pivot: {x: 0.5, y: 1}
---- !u!114 &1287170053
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287170051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2928b81a964cb374ebd8d4c33c96bd84, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clickSound: {fileID: 8300000, guid: f296c2ea885ace441acac23d821758f1, type: 3}
-  clickVolume: 0.25
-  userTransform: {fileID: 621679087}
---- !u!114 &1287170054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287170051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55388d382d2fe7346bcea11e5bcc20bd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  LinkNormalColor:
-    serializedVersion: 2
-    rgba: 4293533021
-  LinkHoveredColor:
-    serializedVersion: 2
-    rgba: 4294609599
-  LinkClickColor:
-    serializedVersion: 2
-    rgba: 4287513701
---- !u!114 &1287170055
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287170051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_text: "The pope is the bishop of Rome and the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Head_of_the_Church#Catholic_Church\">visible
-    head</link></color> of the worldwide <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_Church\">Catholic
-    Church</link></color> . He is also known as the supreme pontiff , Roman pontiff
-    , or sovereign pontiff . From the 8th century until 1870, the pope was the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Sovereign\">sovereign</link></color>
-    or <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Head_of_state\">head
-    of state</link></color> of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Papal_States\">Papal
-    States</link></color> , and since 1929 of the much smaller <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Vatican_City\">Vatican
-    City</link></color> state. From a Catholic viewpoint, the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Primacy_of_the_bishop_of_Rome\">primacy
-    of the bishop of Rome</link></color> is largely derived from his role as the
-    <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Apostolic_successor\">apostolic
-    successor</link></color> to <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Saint_Peter\">Saint
-    Peter</link></color> , to whom <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Petrine_primacy\">primacy</link></color>
-    was conferred by <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Jesus\">Jesus</link></color>
-    , who gave Peter the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Keys_of_Heaven\">Keys
-    of Heaven</link></color> and the powers of \"binding and loosing\", naming him
-    as the \"rock\" upon which the Church would be built. The current pope is <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Leo_XIV\">Leo
-    XIV</link></color> , who was elected on 8 May 2025 on the second day of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/2025_papal_conclave\">2025
-    papal conclave</link></color> .nnAlthough his office is called the papacy , the
-    <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Ecclesiastical_jurisdiction\">jurisdiction</link></color>
-    of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Episcopal_see\">episcopal
-    see</link></color> is called the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Holy_See\">Holy
-    See</link></color> . The word see comes from the Latin for 'seat' or 'chair'
-    ( sede , referring in particular to the one on which the newly elected pope sits
-    during the enthronement ceremony). It is the Holy See that is the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Sovereign_entity\">sovereign
-    entity</link></color> under <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/International_law\">international
-    law</link></color> headquartered in the distinctively independent Vatican City,
-    a <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/City-state\">city-state</link></color>
-    which forms a geographical <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Enclave\">enclave</link></color>
-    within the conurbation of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Rome\">Rome</link></color>
-    , established by the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Lateran_Treaty\">Lateran
-    Treaty</link></color> in 1929 between <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Fascist_Italy\">Fascist
-    Italy</link></color> and the Holy See to ensure its <color=#5D1DEAFF><link=\"https://en.wiktionary.org/wiki/temporal\">temporal</link></color>
-    and spiritual independence. The Holy See is recognized by its adherence at various
-    levels to international organizations and by means of its diplomatic relations
-    and political accords with many independent states.nnAccording to <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_tradition\">Catholic
-    tradition</link></color> , the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Apostolic_see\">apostolic
-    see</link></color> of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Diocese_of_Rome\">Rome</link></color>
-    was founded by <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Saint_Peter\">Saint
-    Peter</link></color> and <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Saint_Paul\">Saint
-    Paul</link></color> in the first century. The papacy is one of the most enduring
-    institutions in the world and has had a prominent part in <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Human_history\">human
-    history</link></color> . In ancient times, the popes helped spread Christianity
-    and intervened to find resolutions in various doctrinal disputes. In the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Middle_Ages\">Middle
-    Ages</link></color> , they played a role of secular importance in Western Europe,
-    often acting as arbitrators between Christian monarchs. In addition to the expansion
-    of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Christian_theology\">Christian
-    faith and doctrine</link></color> , modern popes are involved in <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Ecumenism\">ecumenism</link></color>
-    and <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Interfaith_dialogue\">interfaith
-    dialogue</link></color> , <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_charities\">charitable
-    work</link></color> , and the defence of human rights.nnOver time, the papacy
-    accrued <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Temporal_power_of_the_Holy_See\">broad
-    secular and political influence</link></color> , eventually rivalling those of
-    territorial rulers. In recent centuries, the temporal authority of the papacy
-    has declined and the office is now largely focused on religious matters. By contrast,
-    papal claims of spiritual authority have been increasingly firmly expressed over
-    time, culminating in 1870 with the proclamation of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_dogma\">dogma</link></color>
-    of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Papal_infallibility\">papal
-    infallibility</link></color> for rare occasions when the pope speaks <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Ex_cathedra\">ex
-    cathedra</link></color> \u2014literally 'from the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Chair_of_Saint_Peter\">chair
-    (of Saint Peter)</link></color> '\u2014to issue a formal definition of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Dogma\">faith</link></color>
-    or morals. The pope is considered one of the world's most powerful people due
-    to the extensive diplomatic, cultural, and spiritual influence of his position
-    on both 1.3 billion Catholics and those outside the Catholic faith, and because
-    he heads the world's largest non-government provider of <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_school\">education</link></color>
-    and <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Catholic_Church_and_health_care\">health
-    care</link></color> , with a vast network of charities.\r\n"
-  m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 121f2b250c866574085cbff0b118c8af, type: 2}
-  m_sharedMaterial: {fileID: -998858850190951579, guid: 121f2b250c866574085cbff0b118c8af, type: 2}
-  m_fontSharedMaterials: []
-  m_fontMaterial: {fileID: 0}
-  m_fontMaterials: []
-  m_fontColor32:
-    serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
-  m_enableVertexGradient: 0
-  m_colorMode: 3
-  m_fontColorGradient:
-    topLeft: {r: 1, g: 1, b: 1, a: 1}
-    topRight: {r: 1, g: 1, b: 1, a: 1}
-    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
-    bottomRight: {r: 1, g: 1, b: 1, a: 1}
-  m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
-  m_tintAllSprites: 0
-  m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: -1183493901
-  m_overrideHtmlColors: 0
-  m_faceColor:
-    serializedVersion: 2
-    rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 16
-  m_fontWeight: 400
-  m_enableAutoSizing: 1
-  m_fontSizeMin: 23
-  m_fontSizeMax: 30
-  m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
-  m_textAlignment: 65535
-  m_characterSpacing: 0
-  m_wordSpacing: 0
-  m_lineSpacing: 0
-  m_lineSpacingMax: 0
-  m_paragraphSpacing: 0
-  m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
-  m_wordWrappingRatios: 0.106
-  m_overflowMode: 5
-  m_linkedTextComponent: {fileID: 0}
-  parentLinkedComponent: {fileID: 0}
-  m_enableKerning: 1
-  m_ActiveFontFeatures: 6e72656b
-  m_enableExtraPadding: 0
-  checkPaddingRequired: 0
-  m_isRichText: 1
-  m_EmojiFallbackSupport: 1
-  m_parseCtrlCharacters: 1
-  m_isOrthographic: 1
-  m_isCullingEnabled: 0
-  m_horizontalMapping: 0
-  m_verticalMapping: 0
-  m_uvLineOffset: 0
-  m_geometrySortingOrder: 0
-  m_IsTextObjectScaleStatic: 0
-  m_VertexBufferAutoSizeReduction: 0
-  m_useMaxVisibleDescender: 1
-  m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_isUsingLegacyAnimationComponent: 0
-  m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_baseMaterial: {fileID: 0}
-  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1287170056
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287170051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fcb87846e43a704469d9be7ef4faa09a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _Source: "The pope is the bishop of Rome and the [visible head](https://en.wikipedia.org/wiki/Head_of_the_Church#Catholic_Church)
-    of the worldwide [Catholic Church](https://en.wikipedia.org/wiki/Catholic_Church)
-    . He is also known as the supreme pontiff , Roman pontiff , or sovereign pontiff
-    . From the 8th century until 1870, the pope was the [sovereign](https://en.wikipedia.org/wiki/Sovereign)
-    or [head of state](https://en.wikipedia.org/wiki/Head_of_state) of the [Papal
-    States](https://en.wikipedia.org/wiki/Papal_States) , and since 1929 of the much
-    smaller [Vatican City](https://en.wikipedia.org/wiki/Vatican_City) state. From
-    a Catholic viewpoint, the [primacy of the bishop of Rome](https://en.wikipedia.org/wiki/Primacy_of_the_bishop_of_Rome)
-    is largely derived from his role as the [apostolic successor](https://en.wikipedia.org/wiki/Apostolic_successor)
-    to [Saint Peter](https://en.wikipedia.org/wiki/Saint_Peter) , to whom [primacy](https://en.wikipedia.org/wiki/Petrine_primacy)
-    was conferred by [Jesus](https://en.wikipedia.org/wiki/Jesus) , who gave Peter
-    the [Keys of Heaven](https://en.wikipedia.org/wiki/Keys_of_Heaven) and the powers
-    of \\\"binding and loosing\\\", naming him as the \\\"rock\\\" upon which the
-    Church would be built. The current pope is [Leo XIV](https://en.wikipedia.org/wiki/Leo_XIV)
-    , who was elected on 8 May 2025 on the second day of the [2025 papal conclave](https://en.wikipedia.org/wiki/2025_papal_conclave)
-    .\\n\\nAlthough his office is called the papacy , the [jurisdiction](https://en.wikipedia.org/wiki/Ecclesiastical_jurisdiction)
-    of the [episcopal see](https://en.wikipedia.org/wiki/Episcopal_see) is called
-    the [Holy See](https://en.wikipedia.org/wiki/Holy_See) . The word see comes from
-    the Latin for 'seat' or 'chair' ( sede , referring in particular to the one on
-    which the newly elected pope sits during the enthronement ceremony). It is the
-    Holy See that is the [sovereign entity](https://en.wikipedia.org/wiki/Sovereign_entity)
-    under [international law](https://en.wikipedia.org/wiki/International_law) headquartered
-    in the distinctively independent Vatican City, a [city-state](https://en.wikipedia.org/wiki/City-state)
-    which forms a geographical [enclave](https://en.wikipedia.org/wiki/Enclave) within
-    the conurbation of [Rome](https://en.wikipedia.org/wiki/Rome) , established by
-    the [Lateran Treaty](https://en.wikipedia.org/wiki/Lateran_Treaty) in 1929 between
-    [Fascist Italy](https://en.wikipedia.org/wiki/Fascist_Italy) and the Holy See
-    to ensure its [temporal](https://en.wiktionary.org/wiki/temporal) and spiritual
-    independence. The Holy See is recognized by its adherence at various levels to
-    international organizations and by means of its diplomatic relations and political
-    accords with many independent states.\\n\\nAccording to [Catholic tradition](https://en.wikipedia.org/wiki/Catholic_tradition)
-    , the [apostolic see](https://en.wikipedia.org/wiki/Apostolic_see) of [Rome](https://en.wikipedia.org/wiki/Diocese_of_Rome)
-    was founded by [Saint Peter](https://en.wikipedia.org/wiki/Saint_Peter) and [Saint
-    Paul](https://en.wikipedia.org/wiki/Saint_Paul) in the first century. The papacy
-    is one of the most enduring institutions in the world and has had a prominent
-    part in [human history](https://en.wikipedia.org/wiki/Human_history) . In ancient
-    times, the popes helped spread Christianity and intervened to find resolutions
-    in various doctrinal disputes. In the [Middle Ages](https://en.wikipedia.org/wiki/Middle_Ages)
-    , they played a role of secular importance in Western Europe, often acting as
-    arbitrators between Christian monarchs. In addition to the expansion of [Christian
-    faith and doctrine](https://en.wikipedia.org/wiki/Christian_theology) , modern
-    popes are involved in [ecumenism](https://en.wikipedia.org/wiki/Ecumenism) and
-    [interfaith dialogue](https://en.wikipedia.org/wiki/Interfaith_dialogue) , [charitable
-    work](https://en.wikipedia.org/wiki/Catholic_charities) , and the defence of
-    human rights.\\n\\nOver time, the papacy accrued [broad secular and political
-    influence](https://en.wikipedia.org/wiki/Temporal_power_of_the_Holy_See) , eventually
-    rivalling those of territorial rulers. In recent centuries, the temporal authority
-    of the papacy has declined and the office is now largely focused on religious
-    matters. By contrast, papal claims of spiritual authority have been increasingly
-    firmly expressed over time, culminating in 1870 with the proclamation of the
-    [dogma](https://en.wikipedia.org/wiki/Catholic_dogma) of [papal infallibility](https://en.wikipedia.org/wiki/Papal_infallibility)
-    for rare occasions when the pope speaks [ex cathedra](https://en.wikipedia.org/wiki/Ex_cathedra)
-    \u2014literally 'from the [chair (of Saint Peter)](https://en.wikipedia.org/wiki/Chair_of_Saint_Peter)
-    '\u2014to issue a formal definition of [faith](https://en.wikipedia.org/wiki/Dogma)
-    or morals. The pope is considered one of the world's most powerful people due
-    to the extensive diplomatic, cultural, and spiritual influence of his position
-    on both 1.3 billion Catholics and those outside the Catholic faith, and because
-    he heads the world's largest non-government provider of [education](https://en.wikipedia.org/wiki/Catholic_school)
-    and [health care](https://en.wikipedia.org/wiki/Catholic_Church_and_health_care)
-    , with a vast network of charities."
-  RenderSettings:
-    Bold:
-      RenderBold: 1
-    Italics:
-      RenderItalics: 1
-    Strikethrough:
-      RenderStrikethrough: 1
-    Monospace:
-      RenderMonospace: 1
-      UseCustomFont: 1
-      FontAssetPathRelativeToResources: Noto/Noto Mono/NotoMono-Regular
-      DrawOverlay: 1
-      OverlayColor: {r: 0, g: 0, b: 0, a: 0.23529412}
-      OverlayPaddingPixels: 25
-      ManuallySetCharacterSpacing: 0
-      CharacterSpacing: 0.69
-      AddSeparationSpacing: 1
-      SeparationSpacing: 0.3
-    Lists:
-      RenderUnorderedLists: 1
-      RenderOrderedLists: 1
-      UnorderedListBullet: "\u2022"
-      OrderedListNumberSuffix: .
-      VerticalOffset: 0.76
-      BulletOffsetPixels: 100
-      ContentSeparationPixels: 20
-    Links:
-      RenderLinks: 1
-      RenderAutoLinks: 1
-      LinkColor: {r: 0.3647059, g: 0.11372549, b: 0.91764706, a: 1}
-    Headers:
-      RenderPoundSignHeaders: 1
-      RenderLineHeaders: 1
-      Levels:
-      - Size: 2
-        Bold: 1
-        Underline: 1
-        Case: 0
-        VerticalSpacing: 0.45
-      - Size: 1.7
-        Bold: 1
-        Underline: 1
-        Case: 0
-        VerticalSpacing: 0.3
-      - Size: 1.5
-        Bold: 1
-        Underline: 0
-        Case: 0
-        VerticalSpacing: 0
-      - Size: 1.3
-        Bold: 1
-        Underline: 0
-        Case: 0
-        VerticalSpacing: 0
-    Superscript:
-      RenderSuperscript: 0
-      RenderChainSuperscript: 1
---- !u!222 &1287170057
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287170051}
-  m_CullTransparentMesh: 1
---- !u!114 &1287170058
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287170051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
-  m_HorizontalFit: 0
-  m_VerticalFit: 2
---- !u!114 &1287170059
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1287170051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 1
-  m_Spacing: 4
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
 --- !u!1 &1312706472
 GameObject:
   m_ObjectHideFlags: 0
@@ -5347,132 +5314,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leftPage: {fileID: 14453666}
   rightPage: {fileID: 974258905}
---- !u!1 &1321512204
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1321512205}
-  - component: {fileID: 1321512208}
-  - component: {fileID: 1321512207}
-  - component: {fileID: 1321512206}
-  m_Layer: 5
-  m_Name: Scrollbar Vertical
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1321512205
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1321512204}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 92562950}
-  m_Father: {fileID: 1636922141}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: -15}
-  m_Pivot: {x: 1, y: 1}
---- !u!114 &1321512206
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1321512204}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a4db7a114972834c8e4117be1d82ba3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Scrollbar
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1932310379}
-  m_HandleRect: {fileID: 1932310378}
-  m_Direction: 2
-  m_Value: 0
-  m_Size: 1
-  m_NumberOfSteps: 0
-  m_OnValueChanged:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1321512207
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1321512204}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1321512208
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1321512204}
-  m_CullTransparentMesh: 1
 --- !u!1 &1335939396 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
@@ -6016,6 +5857,115 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1513373464
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1513373465}
+  - component: {fileID: 1513373468}
+  - component: {fileID: 1513373467}
+  - component: {fileID: 1513373466}
+  m_Layer: 5
+  m_Name: Scroll View
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1513373465
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1513373464}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 757276617}
+  - {fileID: 379884883}
+  - {fileID: 252418405}
+  m_Father: {fileID: 2107771348}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 650, y: 850}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1513373466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1513373464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ScrollRect
+  m_Content: {fileID: 1169686108}
+  m_Horizontal: 0
+  m_Vertical: 1
+  m_MovementType: 2
+  m_Elasticity: 0.1
+  m_Inertia: 1
+  m_DecelerationRate: 0.135
+  m_ScrollSensitivity: 1
+  m_Viewport: {fileID: 757276617}
+  m_HorizontalScrollbar: {fileID: 379884884}
+  m_VerticalScrollbar: {fileID: 252418406}
+  m_HorizontalScrollbarVisibility: 2
+  m_VerticalScrollbarVisibility: 2
+  m_HorizontalScrollbarSpacing: -3
+  m_VerticalScrollbarSpacing: -3
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1513373467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1513373464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1513373468
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1513373464}
+  m_CullTransparentMesh: 1
 --- !u!1 &1552860393
 GameObject:
   m_ObjectHideFlags: 0
@@ -6344,7 +6294,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &1636922140
+--- !u!1 &1624315312
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6352,90 +6302,56 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1636922141}
-  - component: {fileID: 1636922144}
-  - component: {fileID: 1636922143}
-  - component: {fileID: 1636922142}
+  - component: {fileID: 1624315313}
+  - component: {fileID: 1624315315}
+  - component: {fileID: 1624315314}
   m_Layer: 5
-  m_Name: Scroll View
+  m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &1636922141
+--- !u!224 &1624315313
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1636922140}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_GameObject: {fileID: 1624315312}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 266669221}
-  - {fileID: 388569165}
-  - {fileID: 1321512205}
-  m_Father: {fileID: 2107771348}
+  m_Children: []
+  m_Father: {fileID: 1032412450}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 655, y: 850}
+  m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1636922142
+--- !u!114 &1624315314
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1636922140}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ScrollRect
-  m_Content: {fileID: 0}
-  m_Horizontal: 1
-  m_Vertical: 1
-  m_MovementType: 2
-  m_Elasticity: 0.1
-  m_Inertia: 1
-  m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 10
-  m_Viewport: {fileID: 266669221}
-  m_HorizontalScrollbar: {fileID: 388569166}
-  m_VerticalScrollbar: {fileID: 1321512206}
-  m_HorizontalScrollbarVisibility: 2
-  m_VerticalScrollbarVisibility: 2
-  m_HorizontalScrollbarSpacing: -5
-  m_VerticalScrollbarSpacing: -5
-  m_OnValueChanged:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1636922143
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1636922140}
+  m_GameObject: {fileID: 1624315312}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -6445,13 +6361,13 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!222 &1636922144
+--- !u!222 &1624315315
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1636922140}
+  m_GameObject: {fileID: 1624315312}
   m_CullTransparentMesh: 1
 --- !u!1001 &1647684314
 PrefabInstance:
@@ -7367,81 +7283,6 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1899608622}
-  m_CullTransparentMesh: 1
---- !u!1 &1932310377
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1932310378}
-  - component: {fileID: 1932310380}
-  - component: {fileID: 1932310379}
-  m_Layer: 5
-  m_Name: Handle
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1932310378
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1932310377}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 92562950}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: 20}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1932310379
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1932310377}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1932310380
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1932310377}
   m_CullTransparentMesh: 1
 --- !u!1 &1958911163 stripped
 GameObject:
@@ -8749,6 +8590,42 @@ MonoBehaviour:
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
+--- !u!1 &2064257419
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2064257420}
+  m_Layer: 5
+  m_Name: Sliding Area
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2064257420
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2064257419}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 93000139}
+  m_Father: {fileID: 252418405}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -20, y: -20}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2101044394
 GameObject:
   m_ObjectHideFlags: 0
@@ -8931,7 +8808,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1636922141}
+  - {fileID: 1513373465}
   m_Father: {fileID: 1369545538}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -9248,7 +9125,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InfoBoxInteraction
   content: 
-  toggleRendererOnInteract: 1
 --- !u!4 &6605233807946993753 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3740675008352502071, guid: f317520e52301314fa15a57dcc606a73, type: 3}
