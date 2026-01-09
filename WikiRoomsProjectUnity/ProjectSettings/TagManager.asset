@@ -10,6 +10,8 @@ TagManager:
   - MenuOption
   - PortalBack
   - PortalNext
+  - Portal
+  - InfoBox
   layers:
   - Default
   - TransparentFX

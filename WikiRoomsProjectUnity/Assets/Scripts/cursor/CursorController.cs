@@ -161,7 +161,16 @@ public class CursorController : MonoBehaviour
                     ShowHoverUI(!string.IsNullOrEmpty(displayRoomName) ? "Portal to " + displayRoomName : string.Empty);
                     return;
                 }
+                if (hitTag == "InfoBox")
+                {
+                    string currentArticleName = null;
+                    if (roomsController != null && roomsController.elongatedRoom != null)
+                        currentArticleName = roomsController.elongatedRoom.articleName;
 
+                    SetCrosshair(highlightedCrosshair);
+                    ShowHoverUI(!string.IsNullOrEmpty(currentArticleName) ? "Info about " + currentArticleName : string.Empty);
+                    return;
+                }
                 // graj dźwięk tylko gdy to nie jest Portal (pozostałe tagi)
                 if (!hoverSoundPlayed && hitTag != "PortalBack" && hitTag != "PortalNext")
                 {
