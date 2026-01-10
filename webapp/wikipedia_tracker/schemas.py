@@ -16,31 +16,31 @@ class ArticleBase(BaseModel):
 
 
 class ArticleCreate(ArticleBase):
-    user_session_id: int
+    wiki_user_session_id: int
 
 
 class ArticleResponse(ArticleBase):
     id: int
     created_at: datetime
-    user_session_id: int
+    wiki_user_session_id: int
 
     class Config:
         from_attributes = True
 
 
 
-class UserSessionBase(BaseModel):
+class WikipediaUserSessionBase(BaseModel):
     name: str
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     active: bool = False
 
 
-class UserSessionCreate(UserSessionBase):
+class WikipediaUserSessionCreate(WikipediaUserSessionBase):
     pass
 
 
-class UserSessionResponse(UserSessionBase):
+class WikipediaUserSessionResponse(WikipediaUserSessionBase):
     id: int
     start_date: datetime
 

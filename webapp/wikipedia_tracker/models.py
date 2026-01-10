@@ -3,10 +3,10 @@ from typing import List, Optional, Any
 from sqlalchemy import String, DateTime, ForeignKey, JSON, func, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import expression
-from webapp.database.engine import Base
+from database.engine import Base
 
-class UserSession(Base):
-    __tablename__ = "user_sessions"
+class WikipediaUserSession(Base):
+    __tablename__ = "wiki_user_sessions"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
@@ -17,7 +17,7 @@ class UserSession(Base):
     articles: Mapped[List["Article"]] = relationship(back_populates="session", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"<UserSession(id={self.id}, name='{self.name}')>"
+        return f"<WikipediaUserSession(id={self.id}, name='{self.name}')>"
 
 
 class Article(Base):
@@ -38,9 +38,9 @@ class Article(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    user_session_id: Mapped[int] = mapped_column(ForeignKey("user_sessions.id"))
+    wiki_user_session_id: Mapped[int] = mapped_column(ForeignKey("wiki_user_sessions.id"))
 
-    session: Mapped["UserSession"] = relationship(back_populates="articles")
+    session: Mapped["WikipediaUserSession"] = relationship(back_populates="articles")
 
     def __repr__(self) -> str:
         return f"<Article(id={self.id}, name='{self.name}')>"

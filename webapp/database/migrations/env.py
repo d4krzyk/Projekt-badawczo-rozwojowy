@@ -30,6 +30,8 @@ from data_storage.session.room.models import Room
 from data_storage.session.book.models import Book
 from data_storage.session.event.models import BookSessionEvent
 from data_storage.session.link.models import BookLink
+from wikipedia_tracker.models import Article
+from wikipedia_tracker.models import WikipediaUserSession
 
 target_metadata = Base.metadata
 

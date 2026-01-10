@@ -1,15 +1,23 @@
 // ==UserScript==
 // @name         Wikipedia Tracker
 // @namespace    http://tampermonkey.net/
-// @version      0.41
+// @version      0.5
 // @description  Record user activity on Wikipedia and send data to the API
 // @match        https://en.wikipedia.org/*
 // @connect      localhost
 // @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
 // ==/UserScript==
 
 (function() {
     'use strict';
+
+    /* ------------------------------
+       KONFIGURACJA API
+    --------------------------------*/
+    const API_BASE = 'http://localhost/tracker';
+    const API_SESSIONS = `${API_BASE}/create-session`;
+    const API_LOG = `${API_BASE}/log`;
 
     /* ------------------------------
        FUNKCJE WYKRYWANIA ŹRÓDŁA WEJŚCIA
@@ -40,7 +48,7 @@
 
 
     /* ------------------------------
-       ŚLEDZENIE KLIKNIĘTYCH LINKÓW (NOWE)
+       ŚLEDZENIE KLIKNIĘTYCH LINKÓW
     --------------------------------*/
 
     const clickedLinks = [];
@@ -160,10 +168,45 @@
                 entrySource: entrySource
             },
         };
-        const apiUrl = 'http://localhost:5000/tracker/log';
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
 
-        navigator.sendBeacon(apiUrl, blob);
+        navigator.sendBeacon(API_LOG, blob);
     });
 
+    /* ------------------------------
+       TWORZENIE SESJI Z KONSOLI
+    --------------------------------*/
+
+    function createSessionLogic(sessionName) {
+         if (!sessionName) {
+            console.error("❌ Musisz podać nazwę sesji! Np: start('MojaSesja')");
+            return;
+        }
+
+        console.log(`⏳ Wysyłam żądanie utworzenia sesji: "${sessionName}"...`);
+
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: API_SESSIONS,
+            data: sessionName,
+            headers: {
+                "Content-Type": "text/plain"
+            },
+            onload: function(response) {
+                if (response.status >= 200 && response.status < 300) {
+                    const data = JSON.parse(response.responseText);
+                    console.log(`%c✅ Sukces! Sesja "${sessionName}" utworzona`, "color: green; font-weight: bold;");
+                } else {
+                    console.error("❌ Błąd serwera:", response.status, response.responseText);
+                }
+            },
+            onerror: function(err) {
+                console.error("❌ Błąd połączenia z backendem.", err);
+            }
+        });
+    }
+
+    unsafeWindow.start = createSessionLogic;
+
+    console.log("%cWikipedia Tracker gotowy. Wpisz start('Nazwa') aby zakończyć poprzednią sesję i rozpocząć nową.", "color: green");
 })();
