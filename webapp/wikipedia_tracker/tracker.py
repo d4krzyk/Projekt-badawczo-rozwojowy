@@ -2,7 +2,7 @@
 
 # Standard Library
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, List
 
@@ -89,14 +89,20 @@ def get_tracker_data(db: Session, ids_list: Optional[List[int]] = None, names_li
         sorted_articles = sorted(session.articles, key=lambda x: x.start if x.start else datetime.min)
 
         for article in sorted_articles:
-
             book_logs = []
             if article.books:
                 for book_entry in article.books:
                     b_name = book_entry.get('name', 'Unknown')
+                    if b_name == 'See also':
+                        continue
                     events = book_entry.get('session_events', [])
 
                     for event in events:
+                        if event.get('open_time') and event.get('close_time'):
+                            start = datetime.strptime(event.get('open_time'), '%Y-%m-%dT%H:%M:%S.%f%z')
+                            end = datetime.strptime(event.get('close_time'), '%Y-%m-%dT%H:%M:%S.%f%z')
+                            if end - start < timedelta(seconds=3):
+                                continue
                         book_logs.append({
                             'bookName': b_name,
                             'openTime': get_seconds_diff(session_start, event.get('open_time')),

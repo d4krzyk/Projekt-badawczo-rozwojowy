@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wikipedia Tracker
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.52
 // @description  Record user activity on Wikipedia and send data to the API
 // @match        https://en.wikipedia.org/*
 // @connect      localhost
@@ -111,7 +111,7 @@
                             close_time: new Date().toISOString(),
                         }],
                     });
-                    console.log('old section:', currentSection, duration);
+                    console.log('old section:', currentSection, duration, '|| new section:', section);
                 }
             }
             currentSection = section;
@@ -134,7 +134,7 @@
         }
     }, {
         root: null,
-        rootMargin: '0px',
+        rootMargin: '0px 0px -200px 0px',
         threshold: [0.5]
     });
 
