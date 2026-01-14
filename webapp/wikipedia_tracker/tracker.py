@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from .models import WikipediaUserSession
 from .repository import ArticleRepository
 from .repository import WikipediaUserSessionRepository
+from wikipedia_webscraping.utils import article_name_by_url
 
 DATA_JSON_FILE = Path('wikipedia_tracker/user_data.jsonl')
 
@@ -37,7 +38,7 @@ def save_data_to_db(data: dict, user_session_id, db: Session):
     repo = ArticleRepository(db)
     new_article = repo.create(
         wiki_user_session_id=user_session_id,
-        name=data['name'],
+        name=article_name_by_url(data['name']),
         url=data['name'],
         start=data['enter_time'],
         end=data['exit_time'],
@@ -114,7 +115,7 @@ def get_tracker_data(db: Session, ids_list: Optional[List[int]] = None, names_li
             exit_t = get_seconds_diff(session_start, article.end) if article.end else enter_t
 
             session_logs.append({
-                'roomName': article.url,
+                'roomName': article.name,
                 'enterTime': enter_t,
                 'exitTime': exit_t,
                 'bookLogs': book_logs,
