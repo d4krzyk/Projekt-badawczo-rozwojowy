@@ -26,6 +26,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public Logger logger;
     public GameObject portalNext;
     public GameObject portalPrevious;
+    public InfoboxGenerator infoboxGenerator;
 
     [HideInInspector] public float EnterTime;
     [HideInInspector] public float ExitTime;
@@ -135,15 +136,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         else
         {
             WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
-            foreach (var section in infoboxData.infobox)
-            {
-                Debug.Log("---- INFOBOX ----");
-
-                foreach (var item in section)
-                {
-                    InfoboxParser.DebugPrintItem(item);
-                }
-            }
+            infoboxGenerator.PopulateUI(infoboxData);
         }
 
         SpawnExtensionsWithBookselfs();
