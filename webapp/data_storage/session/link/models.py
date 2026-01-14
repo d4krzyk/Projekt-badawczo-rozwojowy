@@ -7,7 +7,7 @@ from database.engine import Base
 class BookLink(Base):
     __tablename__ = "book_links"
     id = Column(Integer, primary_key=True)
-    link = Column(String, unique=True, nullable=False)
+    link = Column(String, nullable=False)
     click_time = Column(DateTime, nullable=True)
 
     book_id = Column(
