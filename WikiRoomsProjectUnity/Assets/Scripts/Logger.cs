@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using UnityEngine.Networking;
 using System.Threading.Tasks;
+using System.Text;
 
 public class Logger : MonoBehaviour
 {
@@ -43,15 +44,24 @@ public class Logger : MonoBehaviour
         currentPath = "";
     }
 
-    async void SendRoomLogToDB(AppLog logs)
+    async void SendRoomLogToDB(AppLog logs, bool xWeb = false)
     {
         string jsonData = JsonConvert.SerializeObject(logs);
-        string url = "http://localhost/session";
+        Debug.Log($"Sending JSON: {jsonData}");
+        string url = "http://localhost/session/"; // <-- trailing slash avoids 307
 
-        using (UnityWebRequest request = UnityWebRequest.Post(url, jsonData, "application/json"))
+        using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
         {
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("x-web", xWeb ? "true" : "false");
+
             var operation = request.SendWebRequest();
             while (!operation.isDone) await Task.Yield();
+
+            Debug.Log($"Response code: {request.responseCode}; Body: {request.downloadHandler.text}");
 
             if (request.result == UnityWebRequest.Result.Success)
             {
@@ -94,6 +104,6 @@ public class Logger : MonoBehaviour
         logs.user_name = playerNick;
         logs.session_logs = roomLogs;
 
-        SendRoomLogToDB(logs);
+        SendRoomLogToDB(logs, false); // ustaw true/false wg potrzeby
     }
 }
