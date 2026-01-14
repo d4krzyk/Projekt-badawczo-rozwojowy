@@ -68,11 +68,14 @@ def get_seconds_diff(start_ref: datetime, target_time) -> float:
     return delta.total_seconds()
 
 
-def get_tracker_data(db: Session, ids_list: Optional[List[int]] = None):
+def get_tracker_data(db: Session, ids_list: Optional[List[int]] = None, names_list: Optional[List[str]] = None):
     query = db.query(WikipediaUserSession)
 
     if ids_list:
         query = query.filter(WikipediaUserSession.id.in_(ids_list))
+
+    if names_list:
+        query = query.filter(WikipediaUserSession.name.in_(names_list))
 
     sessions = query.all()
 

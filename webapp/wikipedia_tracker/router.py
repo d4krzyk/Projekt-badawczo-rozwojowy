@@ -47,6 +47,7 @@ async def log_data(request: Request, db: Session = Depends(get_db)):
 @router.get('/get_data')
 def get_data(
         session_ids: Optional[str] = Query(None, description="ID sesji oddzielone przecinkami, np. 1,2,5"),
+        names: Optional[str] = Query(None, description="Nazwy użytkowników, rozdzielone przecinkami."),
         db: Session = Depends(get_db)
 ):
     ids_list = []
@@ -55,7 +56,10 @@ def get_data(
             ids_list = [int(id_str.strip()) for id_str in session_ids.split(',') if id_str.strip()]
         except ValueError:
             raise HTTPException(status_code=400, detail='Parametr session_ids musi zawierać tylko liczby oddzielone przecinkami.')
-    data = get_tracker_data(db, ids_list)
+    names_list = []
+    if names:
+        names_list = [name.strip() for name in names.split(',')]
+    data = get_tracker_data(db, ids_list, names_list)
     return {'status': 'OK', 'data': data}
 
 
