@@ -136,7 +136,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         else
         {
             WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
-            infoboxGenerator.PopulateUI(infoboxData);
+            await infoboxGenerator.PopulateUI(infoboxData);
         }
 
         SpawnExtensionsWithBookselfs();
@@ -470,8 +470,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
             foreach (var imgUrl in resp.images)
             {
                 if (string.IsNullOrEmpty(imgUrl)) continue;
-
-
                 using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(imgUrl))
                 {
                     Debug.Log($"Loading image {imagesDownloaded+1}/{resp.images.Count}");
