@@ -47,10 +47,12 @@ public class InfoboxGenerator : MonoBehaviour
             labelObject.transform.SetParent(transform, false);
             LabelController labelController = labelObject.GetComponent<LabelController>();
             labelController.SetLabelText(labelStr);
+            string labelValueContent = "";
             foreach (var value in item.value)
             {
-                labelController.AddLabelValue(HandleValueRaw(value));
+                labelValueContent += HandleValueRaw(value);
             }
+            labelController.AddLabelValue(labelValueContent);
         }
         foreach (var value in item.value)
         {
