@@ -101,6 +101,11 @@ public class InfoboxGenerator : MonoBehaviour
         if (valueRaw == null) return "";
         switch (valueRaw.@class)
         {
+            case "text_list_cont":
+                if (valueRaw.value == null) return "";
+                if (valueRaw.value is string text_list_cont) return $"{text_list_cont}\n";
+                Debug.LogWarning($"Expected string value for text class, instead got {valueRaw.value.GetType()}");
+                break;
             case "text":
                 if (valueRaw.value == null) return "";
                 if (valueRaw.value is string textValue) return textValue;
@@ -110,6 +115,28 @@ public class InfoboxGenerator : MonoBehaviour
                 if (!string.IsNullOrEmpty(valueRaw.text)) return $"[{valueRaw.text}]({valueRaw.href})";
                 Debug.LogWarning($"Expected correct text for link class");
                 break;
+            case "ulist":
+                if (valueRaw.value == null) return "";
+                string result = "";
+                if (valueRaw.value is List<object> listValue)
+                {
+                    foreach (var item in listValue)
+                    {
+                        if(item is string str)
+                        {
+                            result += $"{str} ";
+                        }
+                        else if(item is ValueRaw vRaw)
+                        {
+                            result += $"{HandleValueRaw(vRaw)} ";
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Unknown ulist item type: {item.GetType()}");
+                        }
+                    }
+                }
+                return result;
             default:
                 Debug.LogWarning($"Unknown value class: {valueRaw.@class}");
                 break;
