@@ -178,6 +178,43 @@ public class CursorController : MonoBehaviour
                     return;
                 }
 
+                // jeśli to Image — pokaż caption (jeśli dostępne)
+                if (hitTag == "Image")
+                {
+                    string caption = null;
+                    var imgComp = hitObj.GetComponent<ImageInteraction>();
+                    if (imgComp == null && hitObj.transform.parent != null)
+                        imgComp = hitObj.transform.parent.GetComponent<ImageInteraction>();
+
+                    caption = imgComp?.caption;
+
+                    // nie pokazuj hoverUI gdy caption jest null/empty lub "[no caption]"
+                    if (string.IsNullOrEmpty(caption) || caption.Trim().Equals("[no caption]", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // włącz outline i dźwięk (opcjonalnie)
+                        if (!hoverSoundPlayed)
+                        {
+                            EnsureAndEnableOutline(hitObj);
+                            PlaySound();
+                            hoverSoundPlayed = true;
+                        }
+                        SetCrosshair(highlightedCrosshair);
+                        HideHoverUI();
+                        return;
+                    }
+
+                    if (!hoverSoundPlayed)
+                    {
+                        EnsureAndEnableOutline(hitObj);
+                        PlaySound();
+                        hoverSoundPlayed = true;
+                    }
+
+                    SetCrosshair(highlightedCrosshair);
+                    ShowHoverUI(caption);
+                    return;
+                }
+
                 // graj dźwięk tylko gdy to nie jest Portal (pozostałe tagi)
                 if (!hoverSoundPlayed && hitTag != "PortalBack" && hitTag != "PortalNext")
                 {

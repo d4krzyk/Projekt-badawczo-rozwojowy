@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 using TMPro; 
@@ -41,16 +42,38 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     // cache pobranych tekstur dla bieżącej strony
     List<Texture2D> wikiImages;
-
+    List<string> wikiImageCaptions;
+    
     // struktura odpowiadająca JSON z /images/generator
     [Serializable]
     class ImagesResponse
     {
         public string page_name;
-        public List<string> images;
+        public JToken images; // może być tablicą albo obiektem zawierającym pole "images"
         public float time;
+
+        public List<Dictionary<string, string>> GetImagesList()
+        {
+            if (images == null) return null;
+            if (images.Type == JTokenType.Array)
+                return images.ToObject<List<Dictionary<string, string>>>();
+            if (images.Type == JTokenType.Object)
+            {
+                var inner = images["images"];
+                if (inner != null && inner.Type == JTokenType.Array)
+                    return inner.ToObject<List<Dictionary<string, string>>>();
+            }
+            return null;
+        }
     }
 
+    // wynik pobierania obrazów
+    public class ImagesResult
+    {
+        public List<Texture2D> textures;
+        public List<string> captions;
+    }
+    
     public void Awake()
     {
         GameController gameController = FindAnyObjectByType<GameController>();
@@ -59,10 +82,16 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
-        string displayArticleName = Uri.UnescapeDataString(articleName);   
-                    // nie odtwarzaj dźwięku dla portalu
+        string displayArticleName = Uri.UnescapeDataString(articleName);
+        // nie odtwarzaj dźwięku dla portalu
         this.articleName = articleName;
-        this.roomsController = roomsController;
+
+        // zabezpiecz roomsController (jeśli przekazany null, spróbuj znaleźć w scenie)
+        this.roomsController = roomsController ?? FindAnyObjectByType<RoomsController>();
+        if (this.roomsController == null)
+        {
+            Debug.LogWarning("RoomsController is null; proceeding without cache.");
+        }
 
         // Ustaw tytuł w UI od razu po otrzymaniu nazwy
         if (articleTitleText != null)
@@ -78,7 +107,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
         // Pobieranie artykułu
         Debug.Log($"Waiting for {articleName} article data...");
-        ArticleStructure cachedArticle = roomsController.GetCachedArticle(articleName);
+        ArticleStructure cachedArticle = null;
+        if (this.roomsController != null)
+        {
+            cachedArticle = this.roomsController.GetCachedArticle(articleName);
+        }
+
         if (cachedArticle != null)
         {
             Debug.Log("Using cached article data.");
@@ -93,11 +127,18 @@ public class ElongatedRoomGenerator : MonoBehaviour
                 return;
             }
             ArticleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
-            roomsController.CacheArticle(articleName, ArticleData);
+            if (ArticleData == null)
+            {
+                Debug.LogError("Article deserialization returned null.");
+                return;
+            }
+            if (this.roomsController != null)
+                this.roomsController.CacheArticle(articleName, ArticleData);
         }
 
-        // Pobieranie tekstur i updateuj materiały
-        Debug.Log($"Waiting for {ArticleData.category} textures...");
+        // Bezpieczne użycie category
+        string category = string.IsNullOrEmpty(ArticleData?.category) ? "default" : ArticleData.category;
+        Debug.Log($"Waiting for {category} textures...");
         TexturesStructure cachedTextures = roomsController.GetCachedTextures(articleName);
         if (cachedTextures != null)
         {
@@ -120,12 +161,16 @@ public class ElongatedRoomGenerator : MonoBehaviour
         // po pobraniu nazwy artykułu (lub gdzieś tam), pobierz obrazy:
         try
         {
-            wikiImages = await GetImagesAsTextures(articleName);
-            // teraz masz listę Texture2D w cachedImages — użyj ich np. do materiałów półek/książek
+            var imagesResult = await GetImagesAsTextures(articleName);
+            wikiImages = imagesResult?.textures ?? new List<Texture2D>();
+            wikiImageCaptions = imagesResult?.captions ?? new List<string>();
+            // teraz masz listę Texture2D w wikiImages oraz odpowiadające markdowny w wikiImageCaptions
         }
         catch (Exception ex)
         {
             Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
+            wikiImages = new List<Texture2D>();
+            wikiImageCaptions = new List<string>();
         }
 
         string infoboxJson = await GetInfoboxAsync(articleName);
@@ -312,8 +357,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
             {
                 extension = Instantiate(extensionRoom, nextExtensionPoint, Quaternion.identity, transform);
                 extension.name = $"Extension Room {(i / 6) + 1}";
-                if(i/3 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, 0), new Vector3(0, -90, 0), wikiImages[i/3], extension.transform);
-                if((i/3) + 1 < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, 0), new Vector3(0, 90, 0), wikiImages[(i/3) + 1], extension.transform);
+                if(i/3 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, 0), new Vector3(0, -90, 0), wikiImages[i/3], (i/3) < wikiImageCaptions.Count ? wikiImageCaptions[i/3] : null, extension.transform);
+                if((i/3) + 1 < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, 0), new Vector3(0, 90, 0), wikiImages[(i/3) + 1], ((i/3) + 1) < wikiImageCaptions.Count ? wikiImageCaptions[(i/3) + 1] : null, extension.transform);
                 nextExtensionPoint -= offset;
             }
             GameObject bookshelfContainer = new GameObject($"Bookshelf Container {i}");
@@ -432,10 +477,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
         portalPrevious.SetActive(isActive);
     }
 
-    // Pobiera listę URL-i z API i zwraca listę Texture2D
-    public async Task<List<Texture2D>> GetImagesAsTextures(string pageName)
+    // Pobiera listę URL-i z API i zwraca listę Texture2D oraz odpowiadające im opisy markdown
+    public async Task<ImagesResult> GetImagesAsTextures(string pageName)
     {
-        if (string.IsNullOrEmpty(pageName)) return new List<Texture2D>();
+        if (string.IsNullOrEmpty(pageName)) return new ImagesResult { textures = new List<Texture2D>(), captions = new List<string>() };
 
         string url = $"http://localhost/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
         using (UnityWebRequest request = UnityWebRequest.Get(url))
@@ -447,7 +492,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning($"GetImages list failed: {request.error}");
-                return new List<Texture2D>();
+                return new ImagesResult { textures = new List<Texture2D>(), captions = new List<string>() };
             }
 
             string json = request.downloadHandler.text;
@@ -459,33 +504,39 @@ public class ElongatedRoomGenerator : MonoBehaviour
             catch (Exception e)
             {
                 Debug.LogWarning($"JSON parse error: {e.Message}");
-                return new List<Texture2D>();
+                return new ImagesResult { textures = new List<Texture2D>(), captions = new List<string>() };
             }
 
             var textures = new List<Texture2D>();
-            if (resp?.images == null || resp?.images.Count == 0) return textures;
+            var captions = new List<string>();
+            var imagesList = resp?.GetImagesList();
+            if (imagesList == null || imagesList.Count == 0) return new ImagesResult { textures = textures, captions = captions };
 
             int imagesDownloaded = 0;
 
-            foreach (var imgUrl in resp.images)
+            foreach (var imgObj in imagesList)
             {
+                if (imgObj == null || imgObj.Count == 0) continue;
+                var kvp = imgObj.First();
+                string imgUrl = kvp.Key;
+                string caption = kvp.Value ?? "[no caption]";
+
                 if (string.IsNullOrEmpty(imgUrl)) continue;
                 using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(imgUrl))
                 {
-                    Debug.Log($"Loading image {imagesDownloaded+1}/{resp.images.Count}");
+                    Debug.Log($"Loading image {imagesDownloaded+1}/{imagesList.Count}");
                     var texOp = texReq.SendWebRequest();
                     while (!texOp.isDone)
                         await Task.Yield();
-                    
+
                     if (texReq.result == UnityWebRequest.Result.Success)
                     {
                         try
                         {
                             Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
-                            // opcjonalnie: ustawienie filter mode na Point jeśli chcesz ostry pixel-art
-                            // tex.filterMode = FilterMode.Point;
                             Debug.Log($"{tex.width}, {tex.height}");
                             textures.Add(tex);
+                            captions.Add(caption);
                         }
                         catch (Exception e)
                         {
@@ -500,7 +551,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
                 }
             }
 
-            return textures;
+            return new ImagesResult { textures = textures, captions = captions };
         }
     }
 
@@ -526,7 +577,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         Debug.Log($"[SetImageQuadScale] '{quad.name}' po localScale={quad.transform.localScale}");
     }
 
-    void SpawnImageHolder(Vector3 pos, Vector3 rotation, Texture2D tex, Transform extension)
+    void SpawnImageHolder(Vector3 pos, Vector3 rotation, Texture2D tex, string caption, Transform extension)
     {
         GameObject currentImageHolder = Instantiate(imageHolder, Vector3.zero, Quaternion.Euler(rotation));
         currentImageHolder.transform.parent = extension;
@@ -537,6 +588,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
         // przypisz teksturę do materiału (bez skalowania materiału)
         currentImageMat.mainTexture = tex;
         currentImageHolder.GetComponent<MeshRenderer>().material = currentImageMat;
+
+        // przypisz caption do komponentu
+        var imgComp = currentImageHolder.GetComponent<ImageInteraction>();
+        if (imgComp == null) imgComp = currentImageHolder.AddComponent<ImageInteraction>();
+        imgComp.caption = caption ?? string.Empty;
+
         // skaluj GameObject ImageWikiQuad, żeby zachować aspect ratio tekstury (nie skalujemy materiału)
         SetImageQuadScale(currentImageHolder, tex);
     }
