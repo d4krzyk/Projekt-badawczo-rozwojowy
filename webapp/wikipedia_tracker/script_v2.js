@@ -43,7 +43,7 @@
     let sectionTimes = [];
 
     /* ------------------------------
-       UTILSY
+       UTILS
     --------------------------------*/
     function nowISO() {
         return new Date().toISOString();
