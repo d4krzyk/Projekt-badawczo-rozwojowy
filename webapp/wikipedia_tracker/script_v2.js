@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.0
+// @version      2.0.1
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
 // @connect      localhost
@@ -71,7 +71,7 @@
         'submit',
         (event) => {
             if (event.target.innerText.includes('Graj')) {
-                console.log(`%c WikiTracker: start gry`, "color: green; font-weight: bold;");
+                console.log(`%cWikiTracker: start gry`, "color: green; font-weight: bold;");
 
                 session = {
                     active: true,
@@ -237,11 +237,14 @@
     --------------------------------*/
     function logLinkInteraction(event) {
         if (!session.active) return;
-        if (!currentPage) return;
+
         const link = event.target.closest('a');
         if (!link || !link.href) return;
 
-        currentPage.book_links.push({
+        const lastRoom = session.rooms[session.rooms.length - 1];
+        if (!lastRoom) return;
+
+        lastRoom.book_links.push({
             link: link.href,
             click_time: nowISO(),
         });
@@ -281,7 +284,7 @@
                 const text = dialog.innerText || '';
 
                 if (text.includes('Zagraj ponownie')) {
-                    console.log(`%c WikiTracker: wykryto koniec gry`, "color: orange; font-weight: bold;");
+                    console.log(`%cWikiTracker: wykryto koniec gry`, "color: orange; font-weight: bold;");
                     gameEnded = true;
                     endSession('game_finished_modal');
                     return;
@@ -390,14 +393,11 @@
         const modal = btn.closest('div[role="dialog"][data-state="open"]');
         if (!modal) return;
 
-        console.log(`%c WikiTracker: gracz poddał się`, "color: orangered; font-weight: bold;");
+        console.log(`%cWikiTracker: gracz poddał się`, "color: orangered; font-weight: bold;");
 
         gameEnded = true;
         endSession('surrender_modal_button');
     });
-
-
-
 
     function endSession(reason = 'unknown') {
         if (!session.active) return;
