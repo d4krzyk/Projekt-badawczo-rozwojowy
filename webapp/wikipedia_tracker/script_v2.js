@@ -425,6 +425,8 @@
         );*/
     }
 
+    unsafeWindow.finishSession = endSession;
+
     /* ------------------------------
        UŻYTKOWNIK
     --------------------------------*/
@@ -439,6 +441,25 @@
     }
 
     unsafeWindow.setName = setName;
-    unsafeWindow.finishSession = endSession;
 
+    /* ------------------------------
+       UKRYWANIE UI
+    --------------------------------*/
+
+    function hideUI() {
+        const elements = document.querySelectorAll('.flex.h-full.w-full.flex-col.items-center.justify-start.gap-8');
+        elements.forEach(el => {
+            el.style.display = 'none';
+        })
+    }
+
+    function showUI() {
+        const elements = document.querySelectorAll('.flex.h-full.w-full.flex-col.items-center.justify-start.gap-8');
+        elements.forEach(el => {
+            el.style.display = 'flex';
+        })
+    }
+
+    unsafeWindow.hideUI = hideUI;
+    unsafeWindow.showUI = showUI;
 })();
