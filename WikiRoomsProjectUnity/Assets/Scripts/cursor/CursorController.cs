@@ -44,6 +44,10 @@ public class CursorController : MonoBehaviour
     // referencja do RoomsController (przypisz w Inspektorze lub znajdzie automatycznie)
     public RoomsController roomsController;
 
+    // Hover UI Interactivity - pozwala na klikanie w tekst w hover UI gdy wciśnięty jest Ctrl
+    private bool isHoverUIInteractive = false; // flaga czy hover UI jest w trybie interaktywnym
+    private GameObject currentImageObject = null; // przechowuje aktualnie najechany Image do sprawdzenia Ctrl
+
     void Start()
     {
         if (crosshairImage == null)
@@ -68,6 +72,70 @@ public class CursorController : MonoBehaviour
         if (hoverUI != null)
             hoverUI.SetActive(false);
 
+    }
+
+    void Update()
+    {
+        // Sprawdź czy Ctrl jest wciśnięty, a Image jest najechany
+        if (currentImageObject != null && Input.GetKey(KeyCode.LeftControl))
+        {
+            // Włącz tryb interaktywny dla hover UI
+            if (!isHoverUIInteractive)
+            {
+                isHoverUIInteractive = true;
+                // Pokaż kursor i zablokuj jego ruchy
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+                // Zablokuj ruch gracza
+                if (playerController != null)
+                    playerController.movementLocked = true;
+                Debug.Log("[CursorController] Hover UI is now interactive (Ctrl pressed)");
+            }
+
+            // Obsługuj kliknięcie w hover UI gdy Ctrl jest wciśnięty
+            if (Input.GetMouseButtonDown(0)) // lewy klik
+            {
+                HandleHoverUIClick();
+            }
+        }
+        else
+        {
+            // Wyłącz tryb interaktywny jeśli Ctrl nie jest wciśnięty
+            if (isHoverUIInteractive)
+            {
+                isHoverUIInteractive = false;
+                // Ukryj kursor i zablokuj go
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+                // Odblokuj ruch gracza
+                if (playerController != null)
+                    playerController.movementLocked = false;
+                Debug.Log("[CursorController] Hover UI interactive mode disabled");
+            }
+        }
+    }
+
+    void HandleHoverUIClick()
+    {
+        if (!isHoverUIInteractive || hoverUI == null || !hoverUI.activeSelf)
+            return;
+
+        // Sprawdź czy klik trafił w tekst w hover UI
+        if (hoverTMPText != null)
+        {
+            // Sprawdź czy są linki w tekście i czy klik trafił w jeden z nich
+            int linkIndex = TMP_TextUtilities.FindIntersectingLink(hoverTMPText, Input.mousePosition, null);
+            if (linkIndex > -1)
+            {
+                // Został kliknięty link
+                TMP_LinkInfo linkInfo = hoverTMPText.textInfo.linkInfo[linkIndex];
+                string linkId = linkInfo.GetLinkID();
+                Debug.Log($"[CursorController] Clicked link in hover UI: {linkId}");
+
+                // Tutaj można dodać logikę obsługi kliknięcia na link
+                // Na przykład: otworzyć powiązaną stronę, zmienić pokój, itd.
+            }
+        }
     }
 
     void LateUpdate()
@@ -187,6 +255,9 @@ public class CursorController : MonoBehaviour
                         imgComp = hitObj.transform.parent.GetComponent<ImageInteraction>();
 
                     caption = imgComp?.caption;
+                    
+                    // Zapamiętaj aktualny Image object (do sprawdzenia Ctrl w Update)
+                    currentImageObject = hitObj;
 
                     // nie pokazuj hoverUI gdy caption jest null/empty lub "[no caption]"
                     if (string.IsNullOrEmpty(caption) || caption.Trim().Equals("[no caption]", StringComparison.OrdinalIgnoreCase))
@@ -200,6 +271,7 @@ public class CursorController : MonoBehaviour
                         }
                         SetCrosshair(highlightedCrosshair);
                         HideHoverUI();
+                        currentImageObject = null; // wyczyść gdy brak caption
                         return;
                     }
 
@@ -235,6 +307,8 @@ public class CursorController : MonoBehaviour
         DisableLastOutline();
         lastHoveredObject = null;
         hoverSoundPlayed = false;
+        currentImageObject = null; // wyczyść Image object gdy nic nie jest najechane
+        isHoverUIInteractive = false; // wyłącz tryb interaktywny
         SetCrosshair(normalCrosshair);
         HideHoverUI();
     }
@@ -326,5 +400,11 @@ public class CursorController : MonoBehaviour
         if (interactable == null && lastHoveredObject.transform.parent != null)
             interactable = lastHoveredObject.transform.parent.GetComponent<IInteractable>();
         return interactable;
+    }
+
+    // Zwraca czy hover UI jest w trybie interaktywnym (Ctrl wciśnięty dla Image)
+    public bool IsHoverUIInteractive()
+    {
+        return isHoverUIInteractive;
     }
 }
