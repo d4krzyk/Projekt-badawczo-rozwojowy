@@ -57,7 +57,7 @@ def extract_header(header_child: bs4.BeautifulSoup):
 
 def extract_image(image_child: bs4.BeautifulSoup):
     image_link = image_child.find_all(
-        class_='mw-file-description')[0].get('href', '')
+        class_='mw-file-element')[0].get('src', '')
     caption = image_child.find_all(class_='infobox-caption')
 
     caption_out = []
