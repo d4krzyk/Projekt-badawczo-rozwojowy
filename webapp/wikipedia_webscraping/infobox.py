@@ -1,7 +1,5 @@
 import requests
 import bs4
-import typing
-import re
 from utils import get_headers
 
 html_url = 'https://en.wikipedia.org/api/rest_v1/page/html/'
@@ -32,20 +30,25 @@ def data_list(child: bs4.BeautifulSoup, ordered=False):
     return {'class': cl, 'value': output}
 
 
-def extract_above(above_child: bs4.BeautifulSoup):
-    above = []
-    for c in above_child.contents:
+def extract_above_below(above_below_child: bs4.BeautifulSoup):
+    above_below = []
+    for c in above_below_child.contents:
         if c.name == 'div' and next(c.stripped_strings, None):
-            above.append({'class': 'text', 'value': next(c.stripped_strings)})
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
         elif c.name == 'i' and next(c.stripped_strings, None):
-            above.append({'class': 'text', 'value': next(c.stripped_strings)})
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
         elif c.name == 'b' and next(c.stripped_strings, None):
-            above.append({'class': 'text', 'value': next(c.stripped_strings)})
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
         elif c.name == 'span' and next(c.stripped_strings, None):
-            above.append({'class': 'text', 'value': next(c.stripped_strings)})
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
         elif not c.name and next(c.stripped_strings, None):
-            above.append({'class': 'text', 'value': next(c.stripped_strings)})
-    return above
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
+    return above_below
 
 
 def extract_header(header_child: bs4.BeautifulSoup):
@@ -54,7 +57,7 @@ def extract_header(header_child: bs4.BeautifulSoup):
 
 def extract_image(image_child: bs4.BeautifulSoup):
     image_link = image_child.find_all(
-        class_='mw-file-description')[0].get('href', '')
+        class_='mw-file-element')[0].get('src', '')
     caption = image_child.find_all(class_='infobox-caption')
 
     caption_out = []
@@ -75,6 +78,8 @@ def rec_extract(soup: bs4.BeautifulSoup, acc=[]):
                 acc.append(data_list(child, ordered=True))
             elif child.name == 'style':
                 pass
+            elif child.name == 'br':
+                acc.append({'class': 'text', 'value': '\n'})
             else:
                 rec_extract(child, acc)
         else:
@@ -98,7 +103,7 @@ def extract_data(data_child: bs4.BeautifulSoup):
 
 def extract_infobox(infobox_soup):
     infobox_values = []
-    for tr in infobox_soup.find_all('tr'):
+    for tr in infobox_soup.find('tbody').find_all('tr', recursive=False):
         infobox_value = {}
         for child in tr.children:
             child_class = child.get('class', [])
@@ -110,7 +115,10 @@ def extract_infobox(infobox_soup):
 
             if child_class == 'infobox-above':
                 infobox_value['class'] = 'above'
-                infobox_value['value'] = extract_above(child)
+                infobox_value['value'] = extract_above_below(child)
+            elif child_class == 'infobox-below':
+                infobox_value['class'] = 'below'
+                infobox_value['value'] = extract_above_below(child)
             elif child_class == 'infobox-subheader':
                 continue
             elif child_class == 'infobox-header':
