@@ -382,6 +382,37 @@
         return mergedRooms;
     }
 
+    function mapRoomsToSessionLogs(rooms, sessionStartISO) {
+        const sessionStartMs = Date.parse(sessionStartISO);
+
+        return rooms.map(room => {
+            const enterMs = Date.parse(room.enter_time);
+            const exitMs = Date.parse(room.exit_time);
+
+            return {
+                roomName: room.name,
+                enterTime: (enterMs - sessionStartMs) / 1000,
+                exitTime: (exitMs - sessionStartMs) / 1000,
+                bookLogs: (room.books || []).flatMap(book =>
+                    (book.session_events || []).map(ev => ({
+                        bookName: book.name,
+                        openTime:
+                            (Date.parse(ev.open_time) - sessionStartMs) / 1000,
+                        closeTime:
+                            (Date.parse(ev.close_time) - sessionStartMs) / 1000,
+                    }))
+                ),
+
+                linkLogs: (room.book_links || []).map(link => ({
+                    linkName: link.link,
+                    clickTime:
+                        (Date.parse(link.click_time) - sessionStartMs) / 1000,
+                })),
+            };
+        });
+    }
+
+
     document.addEventListener('click', (e) => {
         if (!session.active || gameEnded) return;
 
@@ -409,25 +440,26 @@
         session.active = false;
         session.reason = reason;
 
-        const data = {
-            user_name: username,
-            session_logs: [session],
-        }
-
         session.rooms = mergeDuplicateRooms(
             session.rooms.filter(
                 room => Array.isArray(room.books) && room.books.length > 0
             )
         );
 
+        const data = {
+            user_name: username,
+            session_logs: mapRoomsToSessionLogs(session.rooms, session.start_time),
+        };
+
         console.log('Wysyłam sesję:', data);
 
-        fetch(API_LOG + '?x_web=true', {
+        fetch(API_LOG, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Web': 'true'
             },
-            body: JSON.stringify(session),
+            body: JSON.stringify(data),
             keepalive: true
         });
     }
