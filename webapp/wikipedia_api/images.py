@@ -5,6 +5,7 @@ import re
 import argparse
 from bs4 import BeautifulSoup
 from urllib.parse import unquote
+import unicodedata
 
 images_generator_url = 'https://en.wikipedia.org/w/api.php?action=query&formatversion=2&format=json&generator=images&gimlimit=200&prop=pageimages&pithumbsize=1280&pilicense=free&titles='
 
@@ -15,7 +16,37 @@ EXCLUDED_SUBSTRINGS = {
     "wikipedia/en/thumb",
     "Wikisource-logo.svg",
     "Wiki_letter_w_cropped.svg",
+    "Wikimedia-logo.svg",
+    "Wikipedia-logo",
+
+    "Flag_of_",
+    "_flag.svg",
+    "_Flag.svg",
+
+    "Coat_of_arms_of_",
+    "Coat_of_Arms_of_",
+    "Emblem_of_",
+    "Seal_of_",
+
+    "icon.svg",
+    "Icon.svg",
+    "pictogram",
+    "symbol.svg",
+
+    "Location_map",
+    "BlankMap",
+    "Locator_map",
 }
+
+EXCLUDED_CONTAINERS = [
+    "table.infobox",
+    "table.sidebar",
+    "div.navbox",
+    "div.vertical-navbox",
+    "div.metadata",
+    "table.ambox",
+    "div.mw-references-wrap",
+]
 
 def format_output(page_name: str, images: dict) -> dict:
     return {
@@ -31,6 +62,12 @@ def is_valid_image_url(url: str) -> bool:
         return False
 
     return not any(bad in url for bad in EXCLUDED_SUBSTRINGS)
+
+def is_valid_container(tag) -> bool:
+    for selector in EXCLUDED_CONTAINERS:
+        if tag.find_parent(selector):
+            return True
+    return False
 
 def get_soup(url):
     response = requests.get(url, headers=get_headers())
@@ -70,6 +107,79 @@ def normalize_commons_url(url: str) -> str | None:
 
     return url
 
+def normalize_filename(name: str) -> str:
+    if not name:
+        return ""
+
+    name = unquote(name)
+
+    name = unicodedata.normalize("NFKD", name)
+    name = "".join(c for c in name if not unicodedata.combining(c))
+
+    name = (
+        name.replace("ü", "ue").replace("Ü", "Ue")
+            .replace("ö", "oe").replace("Ö", "Oe")
+            .replace("ä", "ae").replace("Ä", "Ae")
+    )
+
+    name = re.sub(r"-\d+(?=\.[^.]+$)", "", name)
+
+    return name.lower()
+
+def resolve_file_pageids(file_titles: list[str]) -> dict[str, int]:
+    if not file_titles:
+        return {}
+
+    titles_param = "|".join(f"File:{t}" for t in file_titles)
+
+    response = requests.get(
+        "https://commons.wikimedia.org/w/api.php",
+        params={
+            "action": "query",
+            "format": "json",
+            "formatversion": 2,
+            "titles": titles_param,
+        },
+        headers=get_headers()
+    )
+
+    pages = response.json()["query"]["pages"]
+
+    return {
+        canonical_file_title(page["title"]): page["pageid"]
+        for page in pages
+        if "pageid" in page
+    }
+
+def fetch_thumbnails_by_pageid(pageids: list[int]) -> dict[int, str]:
+    if not pageids:
+        return {}
+
+    ids_param = "|".join(map(str, pageids))
+
+    response = requests.get(
+        "https://commons.wikimedia.org/w/api.php",
+        params={
+            "action": "query",
+            "format": "json",
+            "formatversion": 2,
+            "pageids": ids_param,
+            "prop": "pageimages",
+            "pithumbsize": 1280,
+        },
+        headers=get_headers()
+    )
+
+    pages = response.json()["query"]["pages"]
+
+    result = {}
+    for page in pages:
+        thumb = page.get("thumbnail", {}).get("source")
+        if thumb:
+            result[page["pageid"]] = thumb
+
+    return result
+
 def extract_commons_filename(url: str) -> str | None:
     if not url:
         return None
@@ -86,6 +196,16 @@ def extract_commons_filename(url: str) -> str | None:
     parts = url.split("/")
     return unquote(parts[-1]) if parts else None
 
+def canonical_file_title(title: str) -> str:
+    if not title:
+        return ""
+
+    title = title.replace(" ", "_")
+    if title.startswith("File:"):
+        title = title.split("File:", 1)[1]
+
+    return title
+
 def extract_image_captions(article_url: str) -> dict:
     soup = get_soup(article_url)
     content_div = soup.select_one("div#mw-content-text")
@@ -95,15 +215,22 @@ def extract_image_captions(article_url: str) -> dict:
     captions = {}
 
     def handle(img, caption):
-        src = img.get("src")
-        if not src:
-            return
-        if src.startswith("//"):
-            src = "https:" + src
 
-        filename = extract_commons_filename(src)
-        if filename:
-            captions[filename] = clean_caption(caption)
+        if is_valid_container(img):
+            return
+
+        file_link = img.find_parent("a")
+        if not file_link:
+            return
+
+        href = file_link.get("href", "")
+        if not href.startswith("/wiki/File:"):
+            return
+
+        filename = href.split("File:", 1)[1]
+        file_title = canonical_file_title(filename)
+
+        captions[file_title] = clean_caption(caption)
 
     for figure in content_div.find_all("figure"):
         img = figure.find("img")
@@ -114,6 +241,12 @@ def extract_image_captions(article_url: str) -> dict:
     for thumb in content_div.find_all("div", class_="thumb"):
         img = thumb.find("img")
         cap = thumb.find("div", class_="thumbcaption")
+        if img and cap:
+            handle(img, cap)
+
+    for gallery in content_div.find_all("div", class_="gallerybox"):
+        img = gallery.find("img")
+        cap = gallery.find("div", class_="gallerytext")
         if img and cap:
             handle(img, cap)
 
@@ -154,6 +287,8 @@ def images_one_by_one(page_name: str) -> dict:
             continue
 
         filename = extract_commons_filename(url)
+        filename = normalize_filename(filename)
+
         caption = captions.get(filename)
 
         result[url] = format_image_caption(caption)
@@ -163,23 +298,25 @@ def images_one_by_one(page_name: str) -> dict:
 
 def images_generator(page_name: str) -> dict:
     article_url = f"https://en.wikipedia.org/wiki/{page_name}"
-    captions = extract_image_captions(article_url)
 
-    json_content = requests.get(
-        images_generator_url + page_name,
-        headers=get_headers()
-    ).content
+    captions = extract_image_captions(article_url)
+    if not captions:
+        return format_output(page_name, {})
+
+    file_to_pageid = resolve_file_pageids(list(captions.keys()))
+
+    pageid_to_thumb = fetch_thumbnails_by_pageid(list(file_to_pageid.values()))
 
     result = {}
 
-    for page in json.loads(json_content)["query"]["pages"]:
-        url = page.get("thumbnail", {}).get("source")
-        if not url or not is_valid_image_url(url):
+    for file_title, pageid in file_to_pageid.items():
+        url = pageid_to_thumb.get(pageid)
+        if not url:
             continue
 
-        filename = extract_commons_filename(url)
-        caption = captions.get(filename)
+        if not is_valid_image_url(url):
+            continue
 
-        result[url] = format_image_caption(caption)
+        result[url] = captions[file_title]
 
     return format_output(page_name, result)
