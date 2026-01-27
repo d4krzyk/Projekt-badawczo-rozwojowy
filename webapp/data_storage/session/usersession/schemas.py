@@ -8,10 +8,25 @@ class SessionInfo(BaseModel):
     id: int
     start_time: datetime
     end_time: datetime | None
+    is_web: bool
     rooms: list[RoomInfo]
 
     class Config:
         from_attributes = True
+
+
+class SessionInfoWithUser(SessionInfo):
+    user_name: str
+
+
+class UserGroupedSessions(BaseModel):
+    user_name: str
+    app_sessions: list[SessionInfo]
+    web_sessions: list[SessionInfo]
+
+
+class AllSessionsGroupedResponse(BaseModel):
+    users: list[UserGroupedSessions]
 
 
 class FullSessionRequest(BaseModel):
