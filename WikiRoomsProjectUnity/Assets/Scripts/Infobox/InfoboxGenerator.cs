@@ -72,13 +72,15 @@ public class InfoboxGenerator : MonoBehaviour
             case "image":
                 instantiatedObject = Instantiate(imagePrefab);
                 Image image = instantiatedObject.GetComponent<Image>();
-                Debug.LogWarning("Zdjecia nie maja prawidlowych linkow ");
                 string url = item.value[0].href;
+                url = $"https:{url}";
+                Debug.Log($"Downloading image from URL: {url}");
                 Sprite imageSprite = await GetImageFromURL(url);
                 if (imageSprite != null)
                 {
                     image.sprite = imageSprite;
                 }
+                instantiatedObject.transform.SetParent(this.transform, false);
                 instantiatedObject = Instantiate(captionPrefab);
                 stringContent = HandleCaption(item.value[0].caption);
                 break;
@@ -165,24 +167,39 @@ public class InfoboxGenerator : MonoBehaviour
         return "";
     }
 
-    string HandleCaption(List<object> caption)
+    string HandleCaption(object caption)
     {
-        if (caption == null || caption.Count == 0) return "";
         string result = "";
-        foreach (var item in caption)
+        if (caption is List<object> captionList)
+        {    
+            if (captionList == null || captionList.Count == 0) return "";
+            foreach (var item in captionList)
+            {
+                if (item is string str)
+                {
+                    result += str;
+                }
+                else if (item is ValueRaw valueRaw)
+                {
+                    result += HandleValueRaw(valueRaw);
+                }
+                else
+                {
+                    Debug.LogWarning($"Unknown caption item type: {item.GetType()}");
+                }
+            }
+        }
+        else if (caption is string captionStr)
         {
-            if (item is string str)
-            {
-                result += str;
-            }
-            else if (item is ValueRaw valueRaw)
-            {
-                result += HandleValueRaw(valueRaw);
-            }
-            else
-            {
-                Debug.LogWarning($"Unknown caption item type: {item.GetType()}");
-            }
+            result = captionStr;
+        }
+        else if (caption is ValueRaw captionValueRaw)
+        {
+            result = HandleValueRaw(captionValueRaw);
+        }
+        else
+        {
+            Debug.LogWarning($"Unknown caption type: {caption.GetType()}");
         }
         return result;
     }

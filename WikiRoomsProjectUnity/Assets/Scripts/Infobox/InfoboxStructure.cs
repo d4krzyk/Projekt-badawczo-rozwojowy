@@ -30,5 +30,6 @@ public class ValueRaw {
 
     public string text;
     public string href;
-    public List<object> caption;
+    [JsonConverter(typeof(ValueFlexibleConverter))]
+    public object caption;
 }
