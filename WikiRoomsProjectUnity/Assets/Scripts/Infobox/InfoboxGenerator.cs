@@ -93,7 +93,17 @@ public class InfoboxGenerator : MonoBehaviour
         }
         if (instantiatedObject == null) return;
         instantiatedObject.transform.SetParent(this.transform, false);
-        MarkdownRenderer mRenderer = instantiatedObject.GetComponent<MarkdownRenderer>();
+        MarkdownRenderer mRenderer = null;
+        if (item.@class == "header" || item.@class == "above")
+        {
+            // header ma TMP głębiej (Background -> TMP)
+            mRenderer = instantiatedObject.GetComponentInChildren<MarkdownRenderer>();
+        }
+        else
+        {
+            // reszta prefabów ma renderer na root
+            mRenderer = instantiatedObject.GetComponent<MarkdownRenderer>();
+        }
         if (mRenderer == null) return;
         mRenderer.Source = stringContent;
     }
