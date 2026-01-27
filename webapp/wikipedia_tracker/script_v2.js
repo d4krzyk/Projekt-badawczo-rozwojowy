@@ -14,7 +14,7 @@
     /* ------------------------------
        KONFIGURACJA
     --------------------------------*/
-    const API_LOG = 'http://localhost/tracker/log';
+    const API_LOG = 'http://localhost/session/';
 
     /* ------------------------------
        UŻYTKOWNIK
@@ -83,6 +83,7 @@
                 trackPageEnter();
                 currentSection = 'Introduction';
                 sectionStartTime = new Date();
+                hideUI();
             }
         },
         true
@@ -407,7 +408,11 @@
         session.end_time = nowISO();
         session.active = false;
         session.reason = reason;
-        session.user_name = username;
+
+        const data = {
+            user_name: username,
+            session_logs: [session],
+        }
 
         session.rooms = mergeDuplicateRooms(
             session.rooms.filter(
@@ -415,14 +420,16 @@
             )
         );
 
-        console.log('Wysyłam sesję:', session);
+        console.log('Wysyłam sesję:', data);
 
-        /*navigator.sendBeacon(
-            API_LOG,
-            new Blob([JSON.stringify(session)], {
-                type: 'application/json',
-            })
-        );*/
+        fetch(API_LOG + '?x_web=true', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(session),
+            keepalive: true
+        });
     }
 
     unsafeWindow.finishSession = endSession;
