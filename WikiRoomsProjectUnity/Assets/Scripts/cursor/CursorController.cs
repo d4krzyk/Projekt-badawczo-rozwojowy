@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using LogicUI.FancyTextRendering;
 
 public class CursorController : MonoBehaviour
 {
@@ -39,7 +40,7 @@ public class CursorController : MonoBehaviour
     public string[] hoverTags = new string[] { "Book", "Image", "PortalBack", "PortalNext", "InfoBox" };
 
     // referencje do tekstu w hoverUI (przypisz w Inspektorze lub zostaną znalezione automatycznie)
-    public TMP_Text hoverTMPText;
+    public MarkdownRenderer hoverText;
 
     // referencja do RoomsController (przypisz w Inspektorze lub znajdzie automatycznie)
     public RoomsController roomsController;
@@ -91,12 +92,6 @@ public class CursorController : MonoBehaviour
                     playerController.movementLocked = true;
                 Debug.Log("[CursorController] Hover UI is now interactive (Ctrl pressed)");
             }
-
-            // Obsługuj kliknięcie w hover UI gdy Ctrl jest wciśnięty
-            if (Input.GetMouseButtonDown(0)) // lewy klik
-            {
-                HandleHoverUIClick();
-            }
         }
         else
         {
@@ -115,28 +110,6 @@ public class CursorController : MonoBehaviour
         }
     }
 
-    void HandleHoverUIClick()
-    {
-        if (!isHoverUIInteractive || hoverUI == null || !hoverUI.activeSelf)
-            return;
-
-        // Sprawdź czy klik trafił w tekst w hover UI
-        if (hoverTMPText != null)
-        {
-            // Sprawdź czy są linki w tekście i czy klik trafił w jeden z nich
-            int linkIndex = TMP_TextUtilities.FindIntersectingLink(hoverTMPText, Input.mousePosition, null);
-            if (linkIndex > -1)
-            {
-                // Został kliknięty link
-                TMP_LinkInfo linkInfo = hoverTMPText.textInfo.linkInfo[linkIndex];
-                string linkId = linkInfo.GetLinkID();
-                Debug.Log($"[CursorController] Clicked link in hover UI: {linkId}");
-
-                // Tutaj można dodać logikę obsługi kliknięcia na link
-                // Na przykład: otworzyć powiązaną stronę, zmienić pokój, itd.
-            }
-        }
-    }
 
     void LateUpdate()
     {
@@ -308,7 +281,7 @@ public class CursorController : MonoBehaviour
         lastHoveredObject = null;
         hoverSoundPlayed = false;
         currentImageObject = null; // wyczyść Image object gdy nic nie jest najechane
-        isHoverUIInteractive = false; // wyłącz tryb interaktywny
+        // isHoverUIInteractive = false; // wyłącz tryb interaktywny
         SetCrosshair(normalCrosshair);
         HideHoverUI();
     }
@@ -379,8 +352,8 @@ public class CursorController : MonoBehaviour
         if (hoverUI == null) return;
 
         // ustaw tekst jeśli podano (jeśli podano pusty string — wyczyści)
-        if (hoverTMPText != null)
-            hoverTMPText.text = message ?? string.Empty;
+        if (hoverText != null)
+            hoverText.Source = message ?? string.Empty;
 
         if (!hoverUI.activeSelf) hoverUI.SetActive(true);
     }
@@ -388,7 +361,7 @@ public class CursorController : MonoBehaviour
     void HideHoverUI()
     {
         if (hoverUI == null) return;
-        if (hoverTMPText != null) hoverTMPText.text = string.Empty;
+        if (hoverText != null) hoverText.Source = string.Empty;
         if (hoverUI.activeSelf) hoverUI.SetActive(false);
     }
 

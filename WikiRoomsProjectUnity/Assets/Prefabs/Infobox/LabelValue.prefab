@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 4388588017867727780}
   - component: {fileID: 1377367888990017887}
   - component: {fileID: 6781945560965261800}
+  - component: {fileID: -6049155933118108807}
+  - component: {fileID: 4948299812329241668}
   m_Layer: 5
   m_Name: LabelValue
   m_TagString: Untagged
@@ -224,3 +226,39 @@ MonoBehaviour:
     Superscript:
       RenderSuperscript: 0
       RenderChainSuperscript: 1
+--- !u!114 &-6049155933118108807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8060002497142891649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55388d382d2fe7346bcea11e5bcc20bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LinkNormalColor:
+    serializedVersion: 2
+    rgba: 4293533021
+  LinkHoveredColor:
+    serializedVersion: 2
+    rgba: 4294609599
+  LinkClickColor:
+    serializedVersion: 2
+    rgba: 4287513701
+--- !u!114 &4948299812329241668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8060002497142891649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2928b81a964cb374ebd8d4c33c96bd84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickSound: {fileID: 8300000, guid: f296c2ea885ace441acac23d821758f1, type: 3}
+  clickVolume: 0.25
+  userTransform: {fileID: 0}

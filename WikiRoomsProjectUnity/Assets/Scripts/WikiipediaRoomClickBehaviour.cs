@@ -84,7 +84,6 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
             if (c == '(') openParantheses++;
             else if (c == ')') openParantheses--;
         }
-        Debug.Log(openParantheses);
         for(int i = 0; i < openParantheses; i++)
         {
             newLink += ')';
