@@ -15,7 +15,37 @@ EXCLUDED_SUBSTRINGS = {
     "wikipedia/en/thumb",
     "Wikisource-logo.svg",
     "Wiki_letter_w_cropped.svg",
+    "Wikimedia-logo.svg",
+    "Wikipedia-logo",
+
+    "Flag_of_",
+    "_flag.svg",
+    "_Flag.svg",
+
+    "Coat_of_arms_of_",
+    "Coat_of_Arms_of_",
+    "Emblem_of_",
+    "Seal_of_",
+
+    "icon.svg",
+    "Icon.svg",
+    "pictogram",
+    "symbol.svg",
+
+    "Location_map",
+    "BlankMap",
+    "Locator_map",
 }
+
+EXCLUDED_CONTAINERS = [
+    "table.infobox",
+    "table.sidebar",
+    "div.navbox",
+    "div.vertical-navbox",
+    "div.metadata",
+    "table.ambox",
+    "div.mw-references-wrap",
+]
 
 def format_output(page_name: str, images: dict) -> dict:
     return {
@@ -31,6 +61,12 @@ def is_valid_image_url(url: str) -> bool:
         return False
 
     return not any(bad in url for bad in EXCLUDED_SUBSTRINGS)
+
+def is_valid_container(tag) -> bool:
+    for selector in EXCLUDED_CONTAINERS:
+        if tag.find_parent(selector):
+            return True
+    return False
 
 def get_soup(url):
     response = requests.get(url, headers=get_headers())
@@ -95,6 +131,10 @@ def extract_image_captions(article_url: str) -> dict:
     captions = {}
 
     def handle(img, caption):
+
+        if is_valid_container(img):
+            return
+
         src = img.get("src")
         if not src:
             return
