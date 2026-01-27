@@ -19,7 +19,7 @@
     /* ------------------------------
        UŻYTKOWNIK
     --------------------------------*/
-    let username = null;
+    let username = '';
 
     /* ------------------------------
        STAN SESJI
@@ -72,6 +72,8 @@
         (event) => {
             if (event.target.innerText.includes('Graj')) {
                 console.log(`%cWikiTracker: start gry`, "color: green; font-weight: bold;");
+
+                gameEnded = false;
 
                 session = {
                     active: true,
@@ -411,7 +413,6 @@
             };
         });
     }
-
 
     document.addEventListener('click', (e) => {
         if (!session.active || gameEnded) return;
