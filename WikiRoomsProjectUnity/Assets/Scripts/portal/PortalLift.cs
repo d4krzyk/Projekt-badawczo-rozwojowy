@@ -44,6 +44,7 @@ public class PortalLift : MonoBehaviour
 
     [Header("Teleport")]
     public Transform teleportPoint;
+    public Transform mainCamera;
     public RoomsController gameController;
     public bool teleportAfterSequence = true;
 
@@ -412,7 +413,7 @@ public class PortalLift : MonoBehaviour
         LockMovement(false);
 
         if (playerController?.cameraTransform)
-            playerController.cameraTransform.localRotation = Quaternion.identity;
+            playerController.cameraTransform.localRotation = Quaternion.Euler(0, 0, 0);
 
         if (portalAudioSource)
             portalAudioSource.pitch = previousAudioPitch;
@@ -432,10 +433,23 @@ public class PortalLift : MonoBehaviour
         {
             if (!gameController.SwapRoomsNext()) return;
         }
-        if (playerRb) playerRb.transform.position = teleportPoint.position;
-        else if (player) player.position = teleportPoint.position;
+        if (playerRb)
+        {
+            playerRb.transform.position = teleportPoint.position;
+            playerRb.transform.rotation = Quaternion.Euler(0, 180, 0);
+        }
+        else if (player) 
+        {
+            player.position = teleportPoint.position;
+            player.rotation = Quaternion.Euler(0,180, 0);
+        }
 
-
+        // Wyzeuj kamerę i zresetuj yaw/pitch gracza
+        if (playerController)
+            playerController.ForceLook(180f, 0f);
+        else if (mainCamera)
+            mainCamera.localRotation = Quaternion.Euler(0, 0, 0);
+        
         // Odblokuj ponownie po zmianie pokoju
         triggerLocked = false;
     }

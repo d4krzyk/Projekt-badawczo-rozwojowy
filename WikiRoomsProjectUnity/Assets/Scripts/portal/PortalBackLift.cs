@@ -40,6 +40,8 @@ public class PortalBackLift : MonoBehaviour
         // natychmiastowo wyzeruj rotację gracza i kamery
         player.rotation = Quaternion.Euler(0f, 0f, 0f);
         CameraObject.rotation = Quaternion.Euler(0f, 0f, 0f);
+        if (playerController)
+            playerController.ForceLook(0f, 0f);
 
 
         moveElapsed = 0f;

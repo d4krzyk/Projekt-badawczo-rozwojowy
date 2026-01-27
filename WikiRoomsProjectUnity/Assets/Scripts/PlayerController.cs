@@ -152,6 +152,17 @@ public class PlayerController : MonoBehaviour
                 cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
             }
         }
+
+    }
+
+    // Wymusza określony yaw/pitch (używane przy teleportacji)
+    public void ForceLook(float newYawDeg, float newPitchDeg)
+    {
+        yaw = newYawDeg;
+        xRotation = Mathf.Clamp(newPitchDeg, -90f, 90f);
+        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+        if (cameraTransform)
+            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
     void HandleInteraction()

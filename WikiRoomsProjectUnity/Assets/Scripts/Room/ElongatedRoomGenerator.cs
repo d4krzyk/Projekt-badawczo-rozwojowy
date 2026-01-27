@@ -357,6 +357,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             {
                 extension = Instantiate(extensionRoom, nextExtensionPoint, Quaternion.identity, transform);
                 extension.name = $"Extension Room {(i / 6) + 1}";
+                
                 if(i < wikiImages.Count/2) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, roomSize.y/4), new Vector3(0, -90, 0), wikiImages[i], i < wikiImageCaptions.Count ? wikiImageCaptions[i] : null, extension.transform);
                 if(i + 1 < wikiImages.Count/2) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, -roomSize.y/4), new Vector3(0, -90, 0), wikiImages[i+1], (i+1)< wikiImageCaptions.Count ? wikiImageCaptions[i+1] : null, extension.transform);
                 if((wikiImages.Count - (i + 1)) >= wikiImages.Count/2) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, roomSize.y/4), new Vector3(0, 90, 0), wikiImages[wikiImages.Count - (i + 1)], (wikiImages.Count - (i + 1)) < wikiImageCaptions.Count ? wikiImageCaptions[wikiImages.Count - (i + 1)] : null, extension.transform);
