@@ -1,3 +1,0 @@
-"""
-Session GUI components package.
-"""
