@@ -28,6 +28,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public GameObject portalNext;
     public GameObject portalPrevious;
     public InfoboxGenerator infoboxGenerator;
+    public BackendConfig backendConfig;
 
     [HideInInspector] public float EnterTime;
     [HideInInspector] public float ExitTime;
@@ -41,6 +42,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public TextMeshPro articleTitleText; // przypnij TextMeshProUGUI z Canvasu
 
     List<GameObject> spawnedExtensions = new List<GameObject>();
+    string auth_header;
     
     // struktura odpowiadająca JSON z /images/generator
     [Serializable]
@@ -80,6 +82,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
+        auth_header = "Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(backendConfig.username + ":" + backendConfig.password));
         string displayArticleName = Uri.UnescapeDataString(articleName);
         // nie odtwarzaj dźwięku dla portalu
         this.articleName = articleName;
@@ -308,11 +311,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public async Task<string> GetArticleAsync(string article)
     {
         string encodedArticle = UnityWebRequest.EscapeURL(article);
-        string url = $"http://localhost/article?article={encodedArticle}&category_strategy=api";
+        string url = $"{backendConfig.baseURL}/article?article={encodedArticle}&category_strategy=api";
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
             request.SetRequestHeader("accept", "application/json");
+            request.SetRequestHeader("Authorization", auth_header);
 
             var operation = request.SendWebRequest();
 
@@ -356,11 +360,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public async Task<string> GetInfoboxAsync(string article)
     {
         string encodedArticle = UnityWebRequest.EscapeURL(article);
-        string url = $"http://localhost/scraping/infobox?page_name={encodedArticle}";
+        string url = $"{backendConfig.baseURL}/scraping/infobox?page_name={encodedArticle}";
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
             request.SetRequestHeader("accept", "application/json");
+            request.SetRequestHeader("Authorization", auth_header);
 
             var operation = request.SendWebRequest();
 
@@ -597,12 +602,13 @@ public class ElongatedRoomGenerator : MonoBehaviour
         var textures = new List<Texture2D>();
         var captions = new List<string>();
 
-        string url = $"http://localhost/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
+        string url = $"{backendConfig.baseURL}/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
         imagesList = await GetImagesListAsync(pageName);
         if (imagesList == null || imagesList.Count == 0) return new ImagesResult { textures = textures, captions = captions };
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
+            request.SetRequestHeader("Authorization", auth_header);
             int imagesDownloaded = 0;
 
             foreach (var imgObj in imagesList)
@@ -649,9 +655,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
     private async Task<List<Dictionary<string, string>>> GetImagesListAsync(string pageName)
     {
         List<Dictionary<string, string>> imagesList = new List<Dictionary<string, string>>();
-        string url = $"http://localhost/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
+        string url = $"{backendConfig.baseURL}/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
+            request.SetRequestHeader("Authorization", auth_header);
             var op = request.SendWebRequest();
             while (!op.isDone)
                 await Task.Yield();

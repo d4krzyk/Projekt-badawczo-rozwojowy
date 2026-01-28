@@ -8545,6 +8545,7 @@ MonoBehaviour:
   portalNext: {fileID: 1958911163}
   portalPrevious: {fileID: 1751320008}
   infoboxGenerator: {fileID: 1169686116}
+  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
@@ -8632,6 +8633,7 @@ MonoBehaviour:
   portalNext: {fileID: 410983050840802480}
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1169686116}
+  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
