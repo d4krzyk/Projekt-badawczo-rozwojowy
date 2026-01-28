@@ -206,16 +206,15 @@ def canonical_file_title(title: str) -> str:
 
     return title
 
-def extract_image_captions(article_url: str) -> dict:
+def extract_image_captions(article_url: str) -> list[dict]:
     soup = get_soup(article_url)
     content_div = soup.select_one("div#mw-content-text")
     if not content_div:
-        return {}
+        return []
 
-    captions = {}
+    ordered = []
 
     def handle(img, caption):
-
         if is_valid_container(img):
             return
 
@@ -227,10 +226,17 @@ def extract_image_captions(article_url: str) -> dict:
         if not href.startswith("/wiki/File:"):
             return
 
-        filename = href.split("File:", 1)[1]
+        filename = unquote(href.split("File:", 1)[1])
         file_title = canonical_file_title(filename)
 
-        captions[file_title] = clean_caption(caption)
+        canonical = canonical_file_title(filename)
+        normalized = normalize_filename(filename)
+
+        ordered.append({
+            "canonical": canonical_file_title(filename),
+            "normalized": normalize_filename(filename),
+            "caption": clean_caption(caption)
+        })
 
     for figure in content_div.find_all("figure"):
         img = figure.find("img")
@@ -250,7 +256,7 @@ def extract_image_captions(article_url: str) -> dict:
         if img and cap:
             handle(img, cap)
 
-    return captions
+    return ordered
 
 def format_image_caption(caption: str | None) -> str:
     return caption if caption else "[no caption]"
@@ -299,17 +305,25 @@ def images_one_by_one(page_name: str) -> dict:
 def images_generator(page_name: str) -> dict:
     article_url = f"https://en.wikipedia.org/wiki/{page_name}"
 
-    captions = extract_image_captions(article_url)
-    if not captions:
+    ordered = extract_image_captions(article_url)
+    if not ordered:
         return format_output(page_name, {})
 
-    file_to_pageid = resolve_file_pageids(list(captions.keys()))
+    canonical_titles = [item["canonical"] for item in ordered]
 
+    file_to_pageid = resolve_file_pageids(canonical_titles)
     pageid_to_thumb = fetch_thumbnails_by_pageid(list(file_to_pageid.values()))
 
-    result = {}
+    images = []
 
-    for file_title, pageid in file_to_pageid.items():
+    for item in ordered:
+        canonical = item["canonical"]
+        caption = item["caption"]
+
+        pageid = file_to_pageid.get(canonical)
+        if not pageid:
+            continue
+
         url = pageid_to_thumb.get(pageid)
         if not url:
             continue
@@ -317,6 +331,9 @@ def images_generator(page_name: str) -> dict:
         if not is_valid_image_url(url):
             continue
 
-        result[url] = captions[file_title]
+        images.append({url: caption})
 
-    return format_output(page_name, result)
+    return {
+        "page_name": page_name.lower(),
+        "images": images
+    }
