@@ -182,11 +182,11 @@ public class PlayerController : MonoBehaviour
                 if (BookUI != null) BookUI.SetActive(false);
                 if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
                 currentBook?.OnInteraction();
-                currentBook = null;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
                 if (currentBook != null && logger != null)
                     logger.LogOnBookClose(currentBook.bookArticleLink, openBookTime, Time.time);
+                currentBook = null;
                 return;
             }
 
