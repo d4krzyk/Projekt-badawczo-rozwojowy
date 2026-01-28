@@ -8626,7 +8626,7 @@ MonoBehaviour:
   defBookcaseMat: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
   defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
-  articleName: Pope John Paul II
+  articleName: Pope
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
   portalNext: {fileID: 410983050840802480}

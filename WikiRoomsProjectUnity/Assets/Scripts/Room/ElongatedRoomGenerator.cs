@@ -450,6 +450,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             {
                 foreach (var s in subsection.subsections.Reverse()) sections.Push(s);
             }
+            if (subsection.subsections == null && subsection.content == null) i--;
             i++;
             if (addedBooks == maxBooksPerBookshelf) return i;
         }
