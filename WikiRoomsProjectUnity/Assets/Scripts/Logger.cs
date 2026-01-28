@@ -8,12 +8,14 @@ using System.Text;
 
 public class Logger : MonoBehaviour
 {
+    public BackendConfig backendConfig;
     string sessionId;
     List<RoomLog> roomLogs;
     List<LinkLog> lastLinkLogs;
     List<BookLog> lastBookLogs;
     string currentPath;
     string playerNick;
+    string auth_header;
 
     void Start()
     {
@@ -22,7 +24,9 @@ public class Logger : MonoBehaviour
         lastLinkLogs = new List<LinkLog>();
         lastBookLogs = new List<BookLog>();
         currentPath = "";
-        playerNick = FindAnyObjectByType<GameController>().PlayerNick;
+        if (FindAnyObjectByType<GameController>() != null) playerNick = FindAnyObjectByType<GameController>().PlayerNick;
+        else playerNick = "test_user";
+        auth_header = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(backendConfig.username + ":" + backendConfig.password));
     }
 
     public void LogOnRoomExit(string roomName, float enterTime, float exitTime, string previousRoom)
@@ -48,7 +52,7 @@ public class Logger : MonoBehaviour
     {
         string jsonData = JsonConvert.SerializeObject(logs);
         Debug.Log($"Sending JSON: {jsonData}");
-        string url = "http://localhost/session/"; // <-- trailing slash avoids 307
+        string url = $"{backendConfig.baseURL}/session/"; // <-- trailing slash avoids 307
 
         using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
         {
@@ -57,6 +61,7 @@ public class Logger : MonoBehaviour
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
             request.SetRequestHeader("x-web", xWeb ? "true" : "false");
+            request.SetRequestHeader("Authorization", auth_header);
 
             var operation = request.SendWebRequest();
             while (!operation.isDone) await Task.Yield();

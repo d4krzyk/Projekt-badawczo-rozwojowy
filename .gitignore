@@ -29,3 +29,5 @@ venv
 *.mdb.meta
 stable-diffusion-webui
 *.safetensors
+WikiRoomsProjectUnity/Assets/BackendConfig.asset
+WikiRoomsProjectUnity/Assets/BackendConfig.asset.meta
