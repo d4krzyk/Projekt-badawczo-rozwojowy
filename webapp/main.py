@@ -1,8 +1,9 @@
 # Standard Library
 from contextlib import asynccontextmanager
+import subprocess
 
 # 3rd-Party
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 # Project
 import wikipedia_api
@@ -17,6 +18,7 @@ from router import router as main_router
 # ENABLE_DUMPS = True
 ENABLE_DUMPS = False
 ENABLE_CACHE = True
+
 
 # Lifespan
 @asynccontextmanager
@@ -35,7 +37,27 @@ async def lifespan(app: FastAPI):
         app.state.cache = cache
     yield
 
+
 app = FastAPI(lifespan=lifespan)
+
+
+@app.post("/alembic/upgrade")
+async def alembic_upgrade():
+    try:
+        result = subprocess.run(
+            ["alembic", "upgrade", "head"], capture_output=True, text=True, check=False
+        )
+        if result.returncode != 0:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Alembic failed: {result.stderr}\nOutput: {result.stdout}",
+            )
+        return {"message": "Alembic upgrade head successful", "output": result.stdout}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 app.include_router(data_storage.router.data_storage_router)
 app.include_router(wikipedia_api.router.router_categories)
