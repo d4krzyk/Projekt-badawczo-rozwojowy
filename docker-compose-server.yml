@@ -1,0 +1,54 @@
+services:
+  wikirooms-api:
+    build: ./webapp
+    container_name: fastapi_backend
+    env_file:
+      - .env
+    volumes:
+      - ./webapp:/app
+    depends_on:
+      - wikirooms-db
+    networks:
+      - proxy-net
+      - wikirooms-network
+    command: uvicorn main:app --host 0.0.0.0 --port 80 --reload
+
+  wikirooms-db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${ADMIN_USER}
+      POSTGRES_PASSWORD: ${ADMIN_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./webapp/database/postgres_data:/var/lib/postgresql/data
+    networks:
+      - wikirooms-network
+
+  wikirooms-pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      - wikirooms-db
+    networks:
+      - proxy-net
+      - wikirooms-network
+
+networks:
+  proxy-net:
+    external: true
+    name: proxy-net
+
+  wikirooms-network:
+    driver: bridge
+    internal: true
+    name: wikirooms-network
