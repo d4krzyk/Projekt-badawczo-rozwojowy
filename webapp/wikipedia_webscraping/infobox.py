@@ -1,73 +1,161 @@
 import requests
 import bs4
-import typing
-import re
 from utils import get_headers
-
-NON_BREAKING_ELEMENTS = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'button',
-                         'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe',
-                         'img', 'input', 'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output',
-                         'picture', 'progress', 'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span',
-                         'strong', 'sub', 'sup', 'svg', 'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr']
 
 html_url = 'https://en.wikipedia.org/api/rest_v1/page/html/'
 
 
-def get_text(tag: bs4.Tag) -> str:
-
-    def _get_text(tag: bs4.Tag) -> typing.Generator:
-        for child in tag.children:
-            if isinstance(child, bs4.Tag):
-                is_block_element = child.name not in NON_BREAKING_ELEMENTS
-                if is_block_element:
-                    yield "\n"
-                yield from ["\n"] if child.name == "br" else _get_text(child)
-                if is_block_element:
-                    yield "\n"
-            elif isinstance(child, bs4.NavigableString):
-                yield child.string
-
-    return "".join(_get_text(tag))
+def text_or_link(c):
+    if c.name == 'a':
+        return {'class': 'link', 'text': c.string, 'href': c.get('href', '')}
+    else:
+        return {'class': 'text', 'value': c.string}
 
 
-def extract_infobox(page_name: str) -> {}:
-    def extract_data(soup):
-        found_li = soup.find_all('li')
-
-        if found_li:
-            output = []
-            for li in found_li:
-                data = "".join(re.sub(r"\n+", '\n',
-                                      re.sub(r"\[[^\[^\]]+\]", '',
-                                             get_text(li).strip(), flags=re.A), flags=re.A)).split("\n")
-                if len(data) == 1:
-                    output.append(data[0])
+def data_list(child: bs4.BeautifulSoup, ordered=False):
+    output = []
+    for li in child.find_all('li'):
+        for cont in li.contents:
+            if cont.name:
+                if cont.name == 'a':
+                    output.append(text_or_link(cont))
                 else:
-                    output.append(data)
-            return output
+                    output.append({'class': 'text_list_cont',
+                                  'value': ''.join(cont.stripped_strings)})
+            else:
+                output.append(cont)
+    cl = 'ulist'
+    if ordered:
+        cl = 'olist'
+    return {'class': cl, 'value': output}
 
-        if len(soup.contents) > 1:
-            text = re.sub(r"\[[^\[\]]+\]", '',
-                          ''.join(get_text(soup).strip()), flags=re.A)
-            text = re.sub(r"\n+", '\n', text, flags=re.A).split("\n")
 
-            return text
+def extract_above_below(above_below_child: bs4.BeautifulSoup):
+    above_below = []
+    for c in above_below_child.contents:
+        if c.name == 'div' and next(c.stripped_strings, None):
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
+        elif c.name == 'i' and next(c.stripped_strings, None):
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
+        elif c.name == 'b' and next(c.stripped_strings, None):
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
+        elif c.name == 'span' and next(c.stripped_strings, None):
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
+        elif not c.name and next(c.stripped_strings, None):
+            above_below.append(
+                {'class': 'text', 'value': next(c.stripped_strings)})
+    return above_below
 
-        return soup.string
 
-    output = {}
-    html_content = requests.get(
-        html_url + page_name,
-        headers=get_headers()
-    ).content
-    soup = bs4.BeautifulSoup(html_content, features='html.parser')
-    table = soup.find('table', class_='infobox')
+def extract_header(header_child: bs4.BeautifulSoup):
+    return [{'class': 'text', 'value': header_child.string}]
 
-    for row in table.find_all('tr'):
-        label = row.find(class_="infobox-label")
-        data = row.find(class_="infobox-data")
 
-        if label:
-            output[label.string] = extract_data(data)
+def extract_image(image_child: bs4.BeautifulSoup):
+    image_link = image_child.find_all(
+        class_='mw-file-element')[0].get('src', '')
+    caption = image_child.find_all(class_='infobox-caption')
 
+    caption_out = []
+    if caption:
+        for c in caption[0].contents:
+            caption_out.append(text_or_link(c))
+    return [{'class': 'link', 'href': image_link, 'caption': caption_out}]
+
+
+def rec_extract(soup: bs4.BeautifulSoup, acc=[]):
+    for child in soup.contents:
+        if child.name:
+            if child.name == 'a':
+                acc.append(text_or_link(child))
+            elif child.name == 'ul':
+                acc.append(data_list(child))
+            elif child.name == 'ol':
+                acc.append(data_list(child, ordered=True))
+            elif child.name == 'style':
+                pass
+            elif child.name == 'br':
+                acc.append({'class': 'text', 'value': '\n'})
+            else:
+                rec_extract(child, acc)
+        else:
+            acc.append({'class': 'text', 'value': child})
+    return acc
+
+
+def extract_full_data(full_data_child: bs4.BeautifulSoup):
+    output = rec_extract(full_data_child, [])
     return output
+
+
+def extract_label(label_child: bs4.BeautifulSoup):
+    return {'class': 'text', 'value': label_child.string}
+
+
+def extract_data(data_child: bs4.BeautifulSoup):
+    output = rec_extract(data_child, [])
+    return output
+
+
+def extract_infobox(infobox_soup):
+    infobox_values = []
+    for tr in infobox_soup.find('tbody').find_all('tr', recursive=False):
+        infobox_value = {}
+        for child in tr.children:
+            child_class = child.get('class', [])
+
+            if len(child_class) == 0:
+                continue
+
+            child_class = child_class[0]
+
+            if child_class == 'infobox-above':
+                infobox_value['class'] = 'above'
+                infobox_value['value'] = extract_above_below(child)
+            elif child_class == 'infobox-below':
+                infobox_value['class'] = 'below'
+                infobox_value['value'] = extract_above_below(child)
+            elif child_class == 'infobox-subheader':
+                continue
+            elif child_class == 'infobox-header':
+                infobox_value['class'] = 'header'
+                infobox_value['value'] = extract_header(child)
+            elif child_class == 'infobox-image':
+                infobox_value['class'] = 'image'
+                infobox_value['value'] = extract_image(child)
+            elif child_class == 'infobox-full-data':
+                infobox_value['class'] = 'full-data'
+                infobox_value['value'] = extract_full_data(child)
+            elif child_class == 'infobox-label':
+                infobox_value['label'] = extract_label(child)
+            elif child_class == 'infobox-data':
+                infobox_value['class'] = 'data'
+                infobox_value['value'] = extract_data(child)
+            else:
+                print(child_class)
+
+        if len(infobox_value) != 0:
+            infobox_values.append(infobox_value)
+
+    return infobox_values
+
+
+def find_infoboxes(content):
+    soup = bs4.BeautifulSoup(content, features='html.parser')
+    infoboxes = soup.find_all(class_='infobox')
+    infoboxse_parsed = []
+    for infobox in infoboxes:
+        infoboxse_parsed.append(extract_infobox(infobox))
+
+    return infoboxse_parsed
+
+
+def extract_infoboxes(page_name):
+    html_content = requests.get(
+        html_url + page_name, headers=get_headers()).content
+
+    return find_infoboxes(html_content)

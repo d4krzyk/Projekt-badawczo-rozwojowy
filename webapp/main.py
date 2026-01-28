@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 import subprocess
 
 # 3rd-Party
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 
 # Project
@@ -11,6 +12,7 @@ import wikipedia_webscraping
 import wikipedia_dumps
 import data_storage
 from wikipedia_webscraping.category import CategoryScraper
+import wikipedia_tracker
 
 # Local
 from router import router as main_router
@@ -64,9 +66,22 @@ async def alembic_upgrade():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ---------------------------------------------------------
+# CORS
+# ---------------------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 app.include_router(data_storage.router.data_storage_router)
 app.include_router(wikipedia_api.router.router_categories)
 app.include_router(wikipedia_api.router.router_images)
 app.include_router(wikipedia_dumps.router.router)
 app.include_router(wikipedia_webscraping.router.router)
+app.include_router(wikipedia_tracker.router.router)
 app.include_router(main_router)
