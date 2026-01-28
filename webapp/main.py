@@ -41,6 +41,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "WikiRooms API is running"}
+
+
 @app.post("/alembic/upgrade")
 async def alembic_upgrade():
     try:
@@ -57,11 +62,6 @@ async def alembic_upgrade():
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/")
-async def root():
-    return {"status": "ok", "message": "WikiRooms API is running"}
 
 
 app.include_router(data_storage.router.data_storage_router)

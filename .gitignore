@@ -13,3 +13,4 @@ postgres_data
 venv
 .idea
 .vscode
+.agent
