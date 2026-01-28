@@ -12,3 +12,4 @@ __pycache__
 postgres_data
 venv
 .idea
+.vscode
