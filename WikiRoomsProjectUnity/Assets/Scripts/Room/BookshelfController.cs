@@ -263,7 +263,7 @@ public class BookshelfController : MonoBehaviour
 
         GameObject signObj = Instantiate(Sign);
         signObj.transform.SetParent(parent, false);
-        signObj.transform.localPosition = new Vector3(-0.42f, 1f, 0.66f);
+        signObj.transform.localPosition = new Vector3(0f, 2.6f, 0f);
         signObj.transform.localRotation = Quaternion.Euler(0f, -270f, 90f);
         signObj.transform.localScale = Vector3.one;
 

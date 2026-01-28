@@ -4450,7 +4450,6 @@ GameObject:
   - component: {fileID: 977859401}
   - component: {fileID: 977859403}
   - component: {fileID: 977859404}
-  - component: {fileID: 977859405}
   m_Layer: 0
   m_Name: PortalBack
   m_TagString: PortalBack
@@ -4572,7 +4571,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TeleportController
   player: {fileID: 621679087}
   teleportPoint: {fileID: 1212071582}
-  mainCamera: {fileID: 0}
+  mainCamera: {fileID: 963194228}
   gameController: {fileID: 335614232}
 --- !u!65 &977859402
 BoxCollider:
@@ -4715,22 +4714,6 @@ AudioReverbFilter:
   m_LFReference: 250
   m_ReflectionsDelay: 0
   m_ReverbPreset: 3
---- !u!114 &977859405
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 977859397}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ffdf6465e78c1e54fba7864e3dafe939, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PortalBackLift
-  centerMoveDuration: 2
-  suckRotateSpeedDegPerSec: 360
-  portalVFX: {fileID: 977859398}
-  CameraObject: {fileID: 963194228}
 --- !u!1 &1027364053
 GameObject:
   m_ObjectHideFlags: 0
@@ -8545,7 +8528,7 @@ MonoBehaviour:
   portalNext: {fileID: 1958911163}
   portalPrevious: {fileID: 1751320008}
   infoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
+  backendConfig: {fileID: 11400000, guid: a995a153d9f962144920a0f8a02e4cca, type: 2}
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
@@ -8633,7 +8616,7 @@ MonoBehaviour:
   portalNext: {fileID: 410983050840802480}
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
+  backendConfig: {fileID: 11400000, guid: a995a153d9f962144920a0f8a02e4cca, type: 2}
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 

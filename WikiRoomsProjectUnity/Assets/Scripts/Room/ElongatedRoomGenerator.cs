@@ -304,7 +304,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     {
         spawnRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat, defFloorMat });
         extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
-        extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
+        extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat});
         bookshelf.GetComponent<MeshRenderer>().sharedMaterial = defBookcaseMat;
     }
 
@@ -417,7 +417,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
         spawnRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat, floorMat });
         extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
-        extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
+        extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat});
         bookshelf.GetComponent<MeshRenderer>().sharedMaterial = bookshelfMat;
     }
 
