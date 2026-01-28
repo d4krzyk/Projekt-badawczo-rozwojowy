@@ -59,6 +59,11 @@ async def alembic_upgrade():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "WikiRooms API is running"}
+
+
 app.include_router(data_storage.router.data_storage_router)
 app.include_router(wikipedia_api.router.router_categories)
 app.include_router(wikipedia_api.router.router_images)
