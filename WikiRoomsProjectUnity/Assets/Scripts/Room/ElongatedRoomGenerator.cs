@@ -40,9 +40,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     [Header("Article title in Room")]
     public TextMeshPro articleTitleText; // przypnij TextMeshProUGUI z Canvasu
 
-    // cache pobranych tekstur dla bieżącej strony
-    List<Texture2D> wikiImages;
-    List<string> wikiImageCaptions;
+    List<GameObject> spawnedExtensions = new List<GameObject>();
     
     // struktura odpowiadająca JSON z /images/generator
     [Serializable]
@@ -106,37 +104,142 @@ public class ElongatedRoomGenerator : MonoBehaviour
         Debug.Log($"Loading {articleName}...");
 
         // Pobieranie artykułu
-        Debug.Log($"Waiting for {articleName} article data...");
-        ArticleStructure cachedArticle = null;
-        if (this.roomsController != null)
+        bool flowControl = await HandleArticle(articleName);
+        if (!flowControl) return;
+
+        // Bezpieczne użycie category
+        Task textureTask = HandleTextures(articleName, roomsController);
+        Task infoboxTask = HandleInfobox(articleName);
+        await Task.WhenAll(textureTask, infoboxTask);
+
+        SpawnExtensionsWithBookselfs();
+        await HandleImagesOneAtATime(articleName);
+        Debug.Log($"Loaded {articleName} successfully.");
+    }
+
+    private async Task HandleImagesAllAtOnce(string articleName)
+    {
+        List<Texture2D> wikiImages;
+        List<string> wikiImageCaptions;
+        try
         {
-            cachedArticle = this.roomsController.GetCachedArticle(articleName);
+            var imagesResult = await GetImagesAsTextures(articleName);
+            wikiImages = imagesResult?.textures ?? new List<Texture2D>();
+            wikiImageCaptions = imagesResult?.captions ?? new List<string>();
+            // teraz masz listę Texture2D w wikiImages oraz odpowiadające markdowny w wikiImageCaptions
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
+            wikiImages = new List<Texture2D>();
+            wikiImageCaptions = new List<string>();
+        }
+        for (int i = 0; i < spawnedExtensions.Count; i++)
+        {
+            GameObject extension = spawnedExtensions[i];
+            Vector3 roomBounds = extension.GetComponent<Renderer>().bounds.size;
+            Vector2 roomSize = new Vector2(roomBounds.x, roomBounds.z);
+
+            Vector3[] imagePositions = new Vector3[]
+            {
+                new Vector3(roomSize.x / 2 - 0.05f, 2f, roomSize.y / 4),
+                new Vector3(-roomSize.x / 2 + 0.05f, 2f, roomSize.y / 4),
+                new Vector3(roomSize.x / 2 - 0.05f, 2f, -roomSize.y / 4),
+                new Vector3(-roomSize.x / 2 + 0.05f, 2f, -roomSize.y / 4)
+            };
+
+            Vector3[] imageRotations = new Vector3[]
+            {
+                new Vector3(0, 90, 0),
+                new Vector3(0, -90, 0),
+                new Vector3(0, 90, 0),
+                new Vector3(0, -90, 0)
+            };
+
+            for (int j = 0; j < 4; j++)
+            {
+                int imageIndex = i * 4 + j;
+                if (imageIndex < wikiImages.Count)
+                {
+                    SpawnImageHolder(imagePositions[j], imageRotations[j], wikiImages[imageIndex],
+                        imageIndex < wikiImageCaptions.Count ? wikiImageCaptions[imageIndex] : null,
+                        extension.transform);
+                }
+            }
         }
 
-        if (cachedArticle != null)
+    }
+
+    private async Task HandleImagesOneAtATime(string articleName)
+    {
+        var imagesLinks = new List<Dictionary<string, string>>();
+        try
         {
-            Debug.Log("Using cached article data.");
-            ArticleData = cachedArticle;
+            imagesLinks = await GetImagesListAsync(articleName);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
+        }
+
+        int imageIndex = 0;
+
+        foreach(var imgObj in imagesLinks)
+        {
+            if (imageIndex >= spawnedExtensions.Count * 4) break; // maksymalna liczba obrazów do umieszczenia
+            if (imgObj == null || imgObj.Count == 0) continue;
+            var kvp = imgObj.First();
+            string imgUrl = kvp.Key;
+            string caption = kvp.Value ?? "[no caption]";
+
+            Texture2D tex = await GetImageAsTexture(imgUrl);
+            if (tex == null) continue;
+            
+            
+            GameObject extension = spawnedExtensions[imageIndex / 4];
+            Vector3 roomBounds = extension.GetComponent<Renderer>().bounds.size;
+            Vector2 roomSize = new Vector2(roomBounds.x, roomBounds.z);
+
+            Vector3[] imagePositions = new Vector3[]
+            {
+                new Vector3(roomSize.x / 2 - 0.05f, 2f, roomSize.y / 4),
+                new Vector3(-roomSize.x / 2 + 0.05f, 2f, roomSize.y / 4),
+                new Vector3(roomSize.x / 2 - 0.05f, 2f, -roomSize.y / 4),
+                new Vector3(-roomSize.x / 2 + 0.05f, 2f, -roomSize.y / 4)
+            };
+
+            Vector3[] imageRotations = new Vector3[]
+            {
+                new Vector3(0, 90, 0),
+                new Vector3(0, -90, 0),
+                new Vector3(0, 90, 0),
+                new Vector3(0, -90, 0)
+            };
+
+            int j = imageIndex % 4;
+            SpawnImageHolder(imagePositions[j], imageRotations[j], tex, caption, extension.transform);
+            imageIndex++;
+        }
+
+    }
+
+
+    private async Task HandleInfobox(string articleName)
+    {
+        string infoboxJson = await GetInfoboxAsync(articleName);
+        if (string.IsNullOrEmpty(infoboxJson))
+        {
+            Debug.LogError("Failed to retrieve infobox data.");
         }
         else
         {
-            string json = await GetArticleAsync(articleName);
-            if (string.IsNullOrEmpty(json))
-            {
-                Debug.LogError("Failed to retrieve article data.");
-                return;
-            }
-            ArticleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
-            if (ArticleData == null)
-            {
-                Debug.LogError("Article deserialization returned null.");
-                return;
-            }
-            if (this.roomsController != null)
-                this.roomsController.CacheArticle(articleName, ArticleData);
+            WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
+            await infoboxGenerator.PopulateUI(infoboxData);
         }
+    }
 
-        // Bezpieczne użycie category
+    private async Task HandleTextures(string articleName, RoomsController roomsController)
+    {
         string category = string.IsNullOrEmpty(ArticleData?.category) ? "default" : ArticleData.category;
         Debug.Log($"Waiting for {category} textures...");
         TexturesStructure cachedTextures = roomsController.GetCachedTextures(articleName);
@@ -157,37 +260,42 @@ public class ElongatedRoomGenerator : MonoBehaviour
                 ApplyTexturesToMaterials(texturesData);
             }
         }
+    }
 
-        // po pobraniu nazwy artykułu (lub gdzieś tam), pobierz obrazy:
-        try
+    private async Task<bool> HandleArticle(string articleName)
+    {
+        Debug.Log($"Waiting for {articleName} article data...");
+        ArticleStructure cachedArticle = null;
+        if (this.roomsController != null)
         {
-            var imagesResult = await GetImagesAsTextures(articleName);
-            wikiImages = imagesResult?.textures ?? new List<Texture2D>();
-            wikiImageCaptions = imagesResult?.captions ?? new List<string>();
-            // teraz masz listę Texture2D w wikiImages oraz odpowiadające markdowny w wikiImageCaptions
-        }
-        catch (Exception ex)
-        {
-            Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
-            wikiImages = new List<Texture2D>();
-            wikiImageCaptions = new List<string>();
+            cachedArticle = this.roomsController.GetCachedArticle(articleName);
         }
 
-        string infoboxJson = await GetInfoboxAsync(articleName);
-        if (string.IsNullOrEmpty(infoboxJson))
+        if (cachedArticle != null)
         {
-            Debug.LogError("Failed to retrieve infobox data.");
+            Debug.Log("Using cached article data.");
+            ArticleData = cachedArticle;
         }
         else
         {
-            WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
-            await infoboxGenerator.PopulateUI(infoboxData);
+            string json = await GetArticleAsync(articleName);
+            if (string.IsNullOrEmpty(json))
+            {
+                Debug.LogError("Failed to retrieve article data.");
+                return false;
+            }
+            ArticleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
+            if (ArticleData == null)
+            {
+                Debug.LogError("Article deserialization returned null.");
+                return false;
+            }
+            if (this.roomsController != null)
+                this.roomsController.CacheArticle(articleName, ArticleData);
         }
 
-        SpawnExtensionsWithBookselfs();
-        Debug.Log($"Loaded {articleName} successfully.");
+        return true;
     }
-
 
     void SetDefaultMaterials()
     {
@@ -357,11 +465,11 @@ public class ElongatedRoomGenerator : MonoBehaviour
             {
                 extension = Instantiate(extensionRoom, nextExtensionPoint, Quaternion.identity, transform);
                 extension.name = $"Extension Room {(i / 6) + 1}";
-                
-                if(2*(i/3) < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, roomSize.y/4), new Vector3(0, 90, 0), wikiImages[2*(i/3)], 2*(i/3) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)] : null, extension.transform);
-                if(2*(i/3)+1 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, roomSize.y/4), new Vector3(0, -90, 0), wikiImages[2*(i/3)+1], (2*(i/3)+1) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+1] : null, extension.transform);
-                if(2*(i/3)+2 < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, -roomSize.y/4), new Vector3(0, 90, 0), wikiImages[2*(i/3)+2], (2*(i/3)+2) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+2] : null, extension.transform);
-                if(2*(i/3)+3 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, -roomSize.y/4), new Vector3(0, -90, 0), wikiImages[2*(i/3)+3], (2*(i/3)+3) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+3] : null, extension.transform);
+                spawnedExtensions.Add(extension);
+                // if(2*(i/3) < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, roomSize.y/4), new Vector3(0, 90, 0), wikiImages[2*(i/3)], 2*(i/3) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)] : null, extension.transform);
+                // if(2*(i/3)+1 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, roomSize.y/4), new Vector3(0, -90, 0), wikiImages[2*(i/3)+1], (2*(i/3)+1) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+1] : null, extension.transform);
+                // if(2*(i/3)+2 < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, -roomSize.y/4), new Vector3(0, 90, 0), wikiImages[2*(i/3)+2], (2*(i/3)+2) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+2] : null, extension.transform);
+                // if(2*(i/3)+3 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, -roomSize.y/4), new Vector3(0, -90, 0), wikiImages[2*(i/3)+3], (2*(i/3)+3) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+3] : null, extension.transform);
                 nextExtensionPoint -= offset;
             }
             GameObject bookshelfContainer = new GameObject($"Bookshelf Container {i}");
@@ -485,37 +593,16 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public async Task<ImagesResult> GetImagesAsTextures(string pageName)
     {
         if (string.IsNullOrEmpty(pageName)) return new ImagesResult { textures = new List<Texture2D>(), captions = new List<string>() };
+        List<Dictionary<string, string>> imagesList = null;
+        var textures = new List<Texture2D>();
+        var captions = new List<string>();
 
         string url = $"http://localhost/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
+        imagesList = await GetImagesListAsync(pageName);
+        if (imagesList == null || imagesList.Count == 0) return new ImagesResult { textures = textures, captions = captions };
+
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
-            var op = request.SendWebRequest();
-            while (!op.isDone)
-                await Task.Yield();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogWarning($"GetImages list failed: {request.error}");
-                return new ImagesResult { textures = new List<Texture2D>(), captions = new List<string>() };
-            }
-
-            string json = request.downloadHandler.text;
-            ImagesResponse resp = null;
-            try
-            {
-                resp = JsonConvert.DeserializeObject<ImagesResponse>(json);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"JSON parse error: {e.Message}");
-                return new ImagesResult { textures = new List<Texture2D>(), captions = new List<string>() };
-            }
-
-            var textures = new List<Texture2D>();
-            var captions = new List<string>();
-            var imagesList = resp?.GetImagesList();
-            if (imagesList == null || imagesList.Count == 0) return new ImagesResult { textures = textures, captions = captions };
-
             int imagesDownloaded = 0;
 
             foreach (var imgObj in imagesList)
@@ -557,6 +644,68 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
             return new ImagesResult { textures = textures, captions = captions };
         }
+    }
+
+    private async Task<List<Dictionary<string, string>>> GetImagesListAsync(string pageName)
+    {
+        List<Dictionary<string, string>> imagesList = new List<Dictionary<string, string>>();
+        string url = $"http://localhost/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            var op = request.SendWebRequest();
+            while (!op.isDone)
+                await Task.Yield();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogWarning($"GetImages list failed: {request.error}");
+                return imagesList;
+            }
+
+            string json = request.downloadHandler.text;
+            ImagesResponse resp = null;
+            try
+            {
+                resp = JsonConvert.DeserializeObject<ImagesResponse>(json);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"JSON parse error: {e.Message}");
+                return imagesList;
+            }
+
+            
+            imagesList = resp?.GetImagesList();
+        }
+        return imagesList;
+    }
+
+    private async Task<Texture2D> GetImageAsTexture(string imageUrl)
+    {
+        using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(imageUrl))
+        {   
+            var texOp = texReq.SendWebRequest();
+            while (!texOp.isDone)
+                await Task.Yield();
+
+            if (texReq.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
+                    return tex;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"Błąd tworzenia Texture2D z {imageUrl}: {e.Message}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to download texture {imageUrl}: {texReq.error}");
+            }
+        }
+        return null;
     }
 
 
