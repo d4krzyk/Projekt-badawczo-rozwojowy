@@ -1146,8 +1146,8 @@
     "m_Value": 1.0,
     "m_FloatType": 1,
     "m_RangeValues": {
-        "x": 0.0,
-        "y": 1.0
+        "x": -50.0,
+        "y": 50.0
     },
     "m_SliderType": 0,
     "m_SliderPower": 3.0,
@@ -1466,8 +1466,8 @@
     "m_ObjectId": "21904e076761403c8bcf498167ae5729",
     "m_Title": "From the tutorial: reducing color resolution",
     "m_Position": {
-        "x": -929.0,
-        "y": -544.0
+        "x": -929.6000366210938,
+        "y": -545.6000366210938
     }
 }
 
@@ -2075,8 +2075,8 @@
     "m_ObjectId": "3a1c905fc9a34784a2141c2f6114c8ab",
     "m_Title": "Little pixel dither filter",
     "m_Position": {
-        "x": -3164.0,
-        "y": 508.0
+        "x": -3164.000244140625,
+        "y": 506.3999328613281
     }
 }
 
@@ -3355,8 +3355,8 @@
     "m_ObjectId": "8f96884053724f878918d473f0c8319c",
     "m_Title": "Blending both the screen and the pixel grid",
     "m_Position": {
-        "x": -1654.0,
-        "y": -152.0
+        "x": -1654.400146484375,
+        "y": -153.60003662109376
     }
 }
 
@@ -3502,7 +3502,7 @@
     "m_Title": "Reducing the resolution of the screen using the pixelate subgraph",
     "m_Position": {
         "x": -5648.0,
-        "y": -1342.0
+        "y": -1344.0001220703125
     }
 }
 

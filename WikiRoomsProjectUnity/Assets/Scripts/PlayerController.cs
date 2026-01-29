@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     public float interactDistance = 2f;
     public Transform cameraTransform;
     public GameObject BookUI;
-    
+    public GameObject ImageUI;
     public GameObject InfoBoxUI;
     public MarkdownRenderer leftPage;
     public MarkdownRenderer rightPage;
@@ -19,6 +19,11 @@ public class PlayerController : MonoBehaviour
     public Logger logger;
     // sprint: dodatkowa prędkość gdy trzymamy Shift + ruch
     public float sprintBonus = 2f;
+    
+    [Header("Camera Zoom")]
+    public float defaultFOV = 60f;
+    public float zoomFOV = 5f;
+    public float zoomSpeed = 5f;
 
     // nowe pole do blokowania ruchu z zewnątrz (np. PortalLift)
     [HideInInspector] public bool movementLocked = false;
@@ -82,6 +87,7 @@ public class PlayerController : MonoBehaviour
     {
         HandleMouseLook();
         HandleInteraction();
+        HandleCameraZoom();
         HandleCameraBobAndFootsteps();
 
         Vector2Int newPosition = DataCollectionUtil.PixelToHexPos(new Vector2(transform.position.x, transform.position.z));
@@ -172,6 +178,17 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
+            
+            if (ImageUI != null && ImageUI.activeSelf)
+            {
+                ImageZoomPan zoomPan = ImageUI.GetComponentInChildren<ImageZoomPan>();
+                if (zoomPan != null) zoomPan.ResetPosition();
+                ImageUI.SetActive(false);
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                isReading = false;
+                return;
+            }
             if (isReading)
             {
                 // odtwórz dźwięk zamknięcia książki / infoboxa
@@ -189,6 +206,7 @@ public class PlayerController : MonoBehaviour
                 currentBook = null;
                 return;
             }
+
 
             if (cameraTransform == null) return;
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
@@ -238,10 +256,51 @@ public class PlayerController : MonoBehaviour
                         return;
                     }
                 }
+                else if(hit.collider.CompareTag("Image"))
+                {
+                    IInteractable imgInteractable = hit.collider.GetComponent<IInteractable>();
+                    Debug.Log($"Wykryto interakcję z obrazem: {hit.collider.name}");
+                    
+
+                    // Najpierw wywołaj OnInteraction, aby ustawić texture i caption
+                    imgInteractable?.OnInteraction();
+                    
+                    // Potem aktywuj UI
+                    if (ImageUI != null) 
+                    {
+                        ImageUI.SetActive(true);
+                        Debug.Log("ImageUI aktywowane");
+                    }
+                    else
+                    {
+                        Debug.LogError("ImageUI jest null!");
+                    }
+                    
+                    if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
+                    if (BookUI != null) BookUI.SetActive(false);
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.visible = true;
+                    currentBook = null;
+                    isReading = true; // Zablokuj ruch i kamerę
+                    return;
+                }
             }
 
         }
 
+    }
+
+    void HandleCameraZoom()
+    {
+        if (cameraTransform == null) return;
+        
+        Camera cam = cameraTransform.GetComponent<Camera>();
+        if (cam == null) return;
+        
+        bool zoomKey = Input.GetKey(KeyCode.Z);
+        float targetFOV = zoomKey ? zoomFOV : defaultFOV;
+        
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * zoomSpeed);
     }
 
     // proste przeniesione zachowanie: jeśli gracz się porusza i stoi na ziemi ->

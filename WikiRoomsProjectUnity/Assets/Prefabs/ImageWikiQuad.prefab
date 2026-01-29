@@ -1466,6 +1466,7 @@ GameObject:
   - component: {fileID: 2776411178547181506}
   - component: {fileID: 2522260471599966954}
   - component: {fileID: 647593106846565573}
+  - component: {fileID: -6712822396158112588}
   m_Layer: 0
   m_Name: ImageWikiQuad
   m_TagString: Image
@@ -1570,3 +1571,18 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &-6712822396158112588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8287182961661605087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aa4f8a25f605c046a17a49e874aade8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ImageInteraction
+  caption: 
+  texture: {fileID: 0}
+  imageUI: {fileID: 2847872130873142220, guid: e72b36d33c11ac345b8bb86dd1fc2e47, type: 3}

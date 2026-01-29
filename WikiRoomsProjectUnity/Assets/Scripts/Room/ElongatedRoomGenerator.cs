@@ -742,6 +742,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         GameObject currentImageHolder = Instantiate(imageHolder, Vector3.zero, Quaternion.Euler(rotation));
         currentImageHolder.transform.parent = extension;
         currentImageHolder.transform.localPosition = pos;
+
         Material currentImageMat = new Material(sampleImageMat);
         tex.filterMode = FilterMode.Point; // ostry pixel-art
         tex.wrapMode = TextureWrapMode.Clamp;
@@ -753,6 +754,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
         var imgComp = currentImageHolder.GetComponent<ImageInteraction>();
         if (imgComp == null) imgComp = currentImageHolder.AddComponent<ImageInteraction>();
         imgComp.caption = caption ?? string.Empty;
+        imgComp.texture = tex;
+
+
+
 
         // skaluj GameObject ImageWikiQuad, żeby zachować aspect ratio tekstury (nie skalujemy materiału)
         SetImageQuadScale(currentImageHolder, tex);
