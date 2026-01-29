@@ -14,10 +14,14 @@ public class InfoboxGenerator : MonoBehaviour
     public GameObject imagePrefab;
     public GameObject captionPrefab;
     public GameObject labelPrefab;
+    
+    [Header("Content")]
+    public RectTransform contentTransform; 
 
     public async Task PopulateUI(WikiPageRaw infoboxesData)
     {
         ClearContent();
+    
         foreach (var infobox in infoboxesData.infobox)
         {
             foreach (var item in infobox)

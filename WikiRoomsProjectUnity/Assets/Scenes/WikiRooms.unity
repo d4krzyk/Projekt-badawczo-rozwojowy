@@ -749,8 +749,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 7.55, y: 5.31, z: 8.36}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 7.55, y: 5.31, z: 9.080733}
+  m_Center: {x: 0, y: 0, z: -0.36036697}
 --- !u!114 &111752412
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2478,6 +2478,7 @@ MonoBehaviour:
   BookUI: {fileID: 509049445}
   ImageUI: {fileID: 1515422911}
   InfoBoxUI: {fileID: 229320036}
+  infoboxGenerator: {fileID: 1169686116}
   leftPage: {fileID: 14453668}
   rightPage: {fileID: 974258906}
   bookController: {fileID: 1312706476}
@@ -4451,9 +4452,9 @@ GameObject:
   - component: {fileID: 977859400}
   - component: {fileID: 977859399}
   - component: {fileID: 977859402}
-  - component: {fileID: 977859401}
   - component: {fileID: 977859403}
   - component: {fileID: 977859404}
+  - component: {fileID: 977859405}
   m_Layer: 0
   m_Name: PortalBack
   m_TagString: PortalBack
@@ -4561,22 +4562,6 @@ VisualEffect:
       m_Array: []
     m_Bool:
       m_Array: []
---- !u!114 &977859401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 977859397}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4a29e618517a4943b0e993b9f616c8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeleportController
-  player: {fileID: 621679087}
-  teleportPoint: {fileID: 1212071582}
-  mainCamera: {fileID: 963194228}
-  gameController: {fileID: 335614232}
 --- !u!65 &977859402
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4596,8 +4581,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.2599998, y: 3.8691998, z: 6.0988317}
-  m_Center: {x: 0, y: 0.4345996, z: -0.7994148}
+  m_Size: {x: 4.2599998, y: 3.8691998, z: 6.09981}
+  m_Center: {x: 0, y: 0.4345996, z: -0.79990387}
 --- !u!82 &977859403
 AudioSource:
   m_ObjectHideFlags: 0
@@ -4718,6 +4703,53 @@ AudioReverbFilter:
   m_LFReference: 250
   m_ReflectionsDelay: 0
   m_ReverbPreset: 3
+--- !u!114 &977859405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977859397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af152e44c7f08fe42a7859b0c824f3e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BackTeleportController
+  player: {fileID: 621679087}
+  teleportPoint: {fileID: 1212071582}
+  mainCamera: {fileID: 963194228}
+  gameController: {fileID: 335614232}
+  suckBackClip: {fileID: 8300000, guid: 6a8b922311a07d94a9393e90f3536c9e, type: 3}
+  suckBackVolume: 1
+  suckBackStartTime: 0
+  portalBack: {fileID: 977859398}
+  pullSpeed: 1.25
+  pullDistance: 0.5
+  maxFOVStretch: 120
+  fovCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1027364053
 GameObject:
   m_ObjectHideFlags: 0
@@ -5756,6 +5788,7 @@ MonoBehaviour:
   imagePrefab: {fileID: 2052758601685698329, guid: daf9584c4a957774c8f7f813fa400d99, type: 3}
   captionPrefab: {fileID: 2052758601685698329, guid: dcdadb01fc357f94e9535ed19c117ea1, type: 3}
   labelPrefab: {fileID: 342741412680053659, guid: 27a17f8405c4e1b45b1b1d3831b55ae0, type: 3}
+  contentTransform: {fileID: 1169686108}
 --- !u!1 &1191034720
 GameObject:
   m_ObjectHideFlags: 0
@@ -7590,8 +7623,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 7.55, y: 5.31, z: 8.872027}
-  m_Center: {x: 0, y: 0, z: -0.2560125}
+  m_Size: {x: 7.55, y: 5.31, z: 9.099937}
+  m_Center: {x: 0, y: 0, z: -0.36996076}
 --- !u!114 &1562358434
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7940,7 +7973,7 @@ GameObject:
   - component: {fileID: 1751320013}
   - component: {fileID: 1751320012}
   - component: {fileID: 1751320011}
-  - component: {fileID: 1751320010}
+  - component: {fileID: 1751320016}
   - component: {fileID: 1751320015}
   - component: {fileID: 1751320014}
   m_Layer: 0
@@ -7966,22 +7999,6 @@ Transform:
   - {fileID: 111752410}
   m_Father: {fileID: 11383945}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1751320010
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1751320008}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4a29e618517a4943b0e993b9f616c8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeleportController
-  player: {fileID: 621679087}
-  teleportPoint: {fileID: 868214403}
-  mainCamera: {fileID: 963194228}
-  gameController: {fileID: 335614232}
 --- !u!65 &1751320011
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8001,8 +8018,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.2599998, y: 3.7786307, z: 3.5173836}
-  m_Center: {x: 0, y: 0.38931507, z: 0.49130765}
+  m_Size: {x: 4.2599998, y: 3.7786307, z: 5.8620787}
+  m_Center: {x: 0, y: 0.38931507, z: -0.6810321}
 --- !u!73398921 &1751320012
 VFXRenderer:
   serializedVersion: 1
@@ -8204,6 +8221,53 @@ AudioSource:
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &1751320016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1751320008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af152e44c7f08fe42a7859b0c824f3e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BackTeleportController
+  player: {fileID: 621679087}
+  teleportPoint: {fileID: 868214403}
+  mainCamera: {fileID: 963194228}
+  gameController: {fileID: 335614232}
+  suckBackClip: {fileID: 8300000, guid: 6a8b922311a07d94a9393e90f3536c9e, type: 3}
+  suckBackVolume: 1
+  suckBackStartTime: 0
+  portalBack: {fileID: 1751320009}
+  pullSpeed: 1.25
+  pullDistance: 0.5
+  maxFOVStretch: 120
+  fovCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4

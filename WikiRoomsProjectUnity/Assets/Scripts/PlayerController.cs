@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     public GameObject BookUI;
     public GameObject ImageUI;
     public GameObject InfoBoxUI;
+    public InfoboxGenerator infoboxGenerator; // Dodaj referencję do InfoboxGenerator
     public MarkdownRenderer leftPage;
     public MarkdownRenderer rightPage;
     public BookController bookController;
@@ -224,8 +225,12 @@ public class PlayerController : MonoBehaviour
 
                         interactable.OnInteraction();
                         currentBook = book;
-                        leftPage.Source = currentBook.content;
-                        rightPage.Source = currentBook.content;
+                        
+                        // Sanityzuj zawartość książki przed renderowaniem
+                        string sanitizedContent = SanitizeMarkdownContent(currentBook.content);
+                        leftPage.Source = sanitizedContent;
+                        rightPage.Source = sanitizedContent;
+                        
                         if (BookUI != null) BookUI.SetActive(true);
                         if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
                         bookController.ResetPages();
@@ -245,6 +250,14 @@ public class PlayerController : MonoBehaviour
                     {
                         if (bookAudioSource != null && openBookClip != null)
                             bookAudioSource.PlayOneShot(openBookClip, bookSoundVolume);
+
+                        // Resetuj pozycję contentu przed otwarciem
+                        if (infoboxGenerator != null && infoboxGenerator.contentTransform != null)
+                        {
+                            Vector2 anchoredPos = infoboxGenerator.contentTransform.anchoredPosition;
+                            anchoredPos.y = 180f;
+                            infoboxGenerator.contentTransform.anchoredPosition = anchoredPos;
+                        }
 
                         if (InfoBoxUI != null) InfoBoxUI.SetActive(true);
                         if (BookUI != null) BookUI.SetActive(false);
@@ -368,6 +381,20 @@ public class PlayerController : MonoBehaviour
         float basePitch = UnityEngine.Random.Range(0.95f, 1.05f);
         footstepSource.pitch = basePitch * (isSprinting ? 1.1f : 1f);
         footstepSource.PlayOneShot(footstepClip, footstepVolume);
+    }
+
+    // Sanityzuje zawartość markdown, usuwając nieprawidłowe formatowanie linków
+    string SanitizeMarkdownContent(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return string.Empty;
+        
+        // Usuń puste lub nieprawidłowe linki markdown []() lub [text]()
+        content = System.Text.RegularExpressions.Regex.Replace(content, @"\[([^\]]*)\]\(\s*\)", "$1");
+        
+        // Usuń linki bez tekstu [](url)
+        content = System.Text.RegularExpressions.Regex.Replace(content, @"\[\]\([^\)]*\)", "");
+        
+        return content;
     }
 
 }

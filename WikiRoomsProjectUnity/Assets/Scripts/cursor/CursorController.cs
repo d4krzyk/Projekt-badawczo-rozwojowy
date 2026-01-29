@@ -191,7 +191,7 @@ public class CursorController : MonoBehaviour
                         else // PortalNext
                             roomName = roomsController.GetNextRoomName();
                     }
-                    string displayRoomName = Uri.UnescapeDataString(roomName);   
+                    string displayRoomName = !string.IsNullOrEmpty(roomName) ? Uri.UnescapeDataString(roomName) : string.Empty;   
                     // nie odtwarzaj dźwięku dla portalu
                     hoverSoundPlayed = true;
 
@@ -304,6 +304,10 @@ public class CursorController : MonoBehaviour
     // Znajdź lub dodaj Outline, ustaw parametry i włącz
     void EnsureAndEnableOutline(GameObject obj)
     {
+        // Nie dodawaj outline do portali
+        if (obj.CompareTag("PortalBack") || obj.CompareTag("PortalNext"))
+            return;
+        
         // spróbuj znaleźć na obiekcie lub jego rodzicu (np. gdy collider jest na childzie)
         Outline outline = obj.GetComponent<Outline>();
         if (outline == null && obj.transform.parent != null)

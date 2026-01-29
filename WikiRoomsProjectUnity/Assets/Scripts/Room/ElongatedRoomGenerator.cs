@@ -200,7 +200,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
             
             
             GameObject extension = spawnedExtensions[imageIndex / 4];
-            Vector3 roomBounds = extension.GetComponent<Renderer>().bounds.size;
+            if (extension == null) continue; // Sprawdź czy obiekt nadal istnieje
+            
+            Renderer renderer = extension.GetComponent<Renderer>();
+            if (renderer == null) continue; // Sprawdź czy ma Renderer
+            
+            Vector3 roomBounds = renderer.bounds.size;
             Vector2 roomSize = new Vector2(roomBounds.x, roomBounds.z);
 
             Vector3[] imagePositions = new Vector3[]
@@ -492,17 +497,23 @@ public class ElongatedRoomGenerator : MonoBehaviour
             while (nextSection.content == null && nextSection.subsections == null)
             {
                 sectionIndex++;
+                if (sectionIndex >= ArticleData.content.Length) break; // Sprawdź czy nie wyszliśmy poza zakres
                 nextSection = ArticleData.content[sectionIndex];
                 bookIndex = 0;
             }
-            currentBookshelfController.AddSign(nextSection.name, bookshelfContainer.transform);
-
-            bookIndex = AddBooksForSection(currentBookshelfController, nextSection, bookshelfContainer.transform, bookIndex - 1);
-            if (bookIndex == BookCountForSection(nextSection))
+            
+            // Sprawdź czy nextSection jest prawidłowy przed użyciem
+            if (sectionIndex < ArticleData.content.Length && nextSection != null)
             {
-                sectionIndex++;
-                if (sectionIndex < ArticleData.content.Length) nextSection = ArticleData.content[sectionIndex];
-                bookIndex = 0;
+                currentBookshelfController.AddSign(nextSection.name, bookshelfContainer.transform);
+
+                bookIndex = AddBooksForSection(currentBookshelfController, nextSection, bookshelfContainer.transform, bookIndex - 1);
+                if (bookIndex == BookCountForSection(nextSection))
+                {
+                    sectionIndex++;
+                    if (sectionIndex < ArticleData.content.Length) nextSection = ArticleData.content[sectionIndex];
+                    bookIndex = 0;
+                }
             }
         }
         nextExtensionPoint += offset / 2;
