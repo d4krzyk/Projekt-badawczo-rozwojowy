@@ -6,6 +6,7 @@ from .models import UserSession
 from ..room.models import Room
 from ..book.models import Book
 from ..event.models import BookSessionEvent
+from ..user.models import DataUser
 
 
 class UserSessionRepository:
@@ -50,6 +51,14 @@ class UserSessionRepository:
             .all()
         )
 
+    def get_all_for_group(self, group_id: int) -> list[UserSession]:
+        stmt = (
+            select(UserSession)
+            .join(UserSession.data_user)
+            .where(DataUser.group_id == group_id)
+        )
+        return self.db.execute(stmt).scalars().all()
+
     def create(self, user_id: int, start_time: datetime, end_time: datetime, is_web: bool = False) -> UserSession:
         user_session = UserSession(
             data_user_id=user_id,
@@ -66,6 +75,17 @@ class UserSessionRepository:
         result = self.db.execute(
             select(UserSession)
             .where(UserSession.data_user_id == user_id)
+            .where(UserSession.is_web == is_web)
+            .limit(1)
+        ).scalars().first()
+        return result is not None
+
+    def exists_for_group_and_type(self, group_id: int, is_web: bool) -> bool:
+        """Checks if a session exists for the given group and session type."""
+        result = self.db.execute(
+            select(UserSession)
+            .join(DataUser, UserSession.data_user)
+            .where(DataUser.group_id == group_id)
             .where(UserSession.is_web == is_web)
             .limit(1)
         ).scalars().first()

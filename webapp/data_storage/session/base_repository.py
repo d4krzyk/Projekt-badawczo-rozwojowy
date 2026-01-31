@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from .group.models import Group
 from .user.models import DataUser
 from .usersession.models import UserSession
 from .room.models import Room
@@ -16,3 +17,4 @@ def clear_all_data(db: Session):
     db.query(Room).delete()
     db.query(UserSession).delete()
     db.query(DataUser).delete()
+    db.query(Group).delete()

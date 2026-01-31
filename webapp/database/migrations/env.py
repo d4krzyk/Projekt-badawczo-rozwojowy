@@ -24,6 +24,7 @@ from database.engine import DATABASE_URL
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 from database.engine import Base
+from data_storage.session.group.models import Group
 from data_storage.session.user.models import DataUser
 from data_storage.session.usersession.models import UserSession
 from data_storage.session.room.models import Room

@@ -25,8 +25,17 @@ class UserGroupedSessions(BaseModel):
     web_sessions: list[SessionInfo]
 
 
-class AllSessionsGroupedResponse(BaseModel):
+class GroupGroupedSessions(BaseModel):
+    group_name: str
     users: list[UserGroupedSessions]
+
+
+class AllSessionsGroupedResponse_old(BaseModel):
+    users: list[UserGroupedSessions]
+
+
+class AllSessionsGroupedResponse(BaseModel):
+    groups: list[GroupGroupedSessions]
 
 
 class FullSessionRequest(BaseModel):

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.0.1
+// @version      2.1
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
 // @connect      localhost
@@ -20,6 +20,7 @@
        UŻYTKOWNIK
     --------------------------------*/
     let username = '';
+    let group = '';
 
     /* ------------------------------
        STAN SESJI
@@ -449,6 +450,7 @@
 
         const data = {
             user_name: username,
+            group: group,
             session_logs: mapRoomsToSessionLogs(session.rooms, session.start_time),
         };
 
@@ -478,6 +480,16 @@
 
         username = name.trim();
         console.log(`WikiTracker: ustawiono username = "${username}"`);
+    }
+
+    function setGroup(name) {
+        if (!name || typeof name !== 'string') {
+            console.error('setGroup(name): name musi być stringiem');
+            return;
+        }
+
+        group = name.trim();
+        console.log(`WikiTracker: ustawiono group = "${group}"`);
     }
 
     unsafeWindow.setName = setName;
@@ -575,8 +587,102 @@
         console.log('%cWikiTracker: dodano pole Username', 'color: cyan');
     }
 
+    function injectGroupField() {
+        const form = document.querySelector(
+            'form.flex.max-w-\\[650px\\].flex-col.gap-4'
+        );
+        if (!form) return;
+        if (form.querySelector('#ws-group')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex min-w-52 flex-1 flex-col';
+
+        const label = document.createElement('label');
+        label.innerText = 'Grupa';
+        label.htmlFor = 'ws-group';
+
+        const container = document.createElement('div');
+        container.className = 'css-b62m3t-container';
+
+        // accessibility spans
+        const liveRegion1 = document.createElement('span');
+        liveRegion1.className = 'css-7pg0cj-a11yText';
+        liveRegion1.id = 'ws-group-live-region';
+
+        const liveRegion2 = document.createElement('span');
+        liveRegion2.className = 'css-7pg0cj-a11yText';
+        liveRegion2.setAttribute('aria-live', 'polite');
+        liveRegion2.setAttribute('aria-atomic', 'false');
+        liveRegion2.setAttribute('aria-relevant', 'additions text');
+        liveRegion2.setAttribute('role', 'log');
+
+        // input wrapper
+        const controlDiv = document.createElement('div');
+        controlDiv.className = 'dark:bg-dark-surface dark:text-dark-primary css-1a3xvlw-control';
+
+        const innerDiv = document.createElement('div');
+        innerDiv.className = 'css-hlgwow';
+
+        const inputDiv = document.createElement('div');
+        inputDiv.className = 'dark:text-dark-primary';
+
+        const input = document.createElement('input');
+        input.id = 'ws-group';
+        input.type = 'text';
+        input.placeholder = 'Wpisz swoją grupę';
+        input.autocomplete = 'off';
+        input.className = '';
+        input.style.color = 'inherit';
+        input.style.background = '0px center';
+        input.style.opacity = '1';
+        input.style.width = '100%';
+        input.style.gridArea = '1 / 2';
+        input.style.font = 'inherit';
+        input.style.minWidth = '2px';
+        input.style.border = '0px';
+        input.style.margin = '0px';
+        input.style.outline = '0px';
+        input.style.padding = '0px';
+
+        // wczytanie ostatniej wartości
+        const saved = localStorage.getItem('wikispeedrun_group');
+        if (saved) {
+            input.value = saved;
+            setGroup(saved);
+        }
+
+        input.addEventListener('input', () => {
+            const val = input.value.trim();
+            localStorage.setItem('wikispeedrun_group', val);
+            setGroup(val);
+        });
+
+        inputDiv.appendChild(input);
+        innerDiv.appendChild(inputDiv);
+        controlDiv.appendChild(innerDiv);
+
+        const indicatorDiv = document.createElement('div');
+        indicatorDiv.className = 'css-1wy0on6';
+        const indicatorInner = document.createElement('div');
+        indicatorInner.className = 'css-1xc3v61-indicatorContainer';
+        indicatorDiv.appendChild(indicatorInner);
+        controlDiv.appendChild(indicatorDiv);
+
+        container.appendChild(liveRegion1);
+        container.appendChild(liveRegion2);
+        container.appendChild(controlDiv);
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(container);
+
+        form.prepend(wrapper);
+
+        console.log('%cWikiTracker: dodano pole Group', 'color: cyan');
+    }
+
     const formObserver = new MutationObserver(() => {
         injectUsernameField();
+        injectGroupField();
     });
 
     formObserver.observe(document.body, {
