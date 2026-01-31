@@ -2,6 +2,7 @@ using System;
 using LogicUI.FancyTextRendering;
 using UnityEditor.Callbacks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,9 +11,8 @@ public class PlayerController : MonoBehaviour
     public float mouseSensitivity = 2f;
     public float interactDistance = 2f;
     public Transform cameraTransform;
-    public GameObject BookUI;
-    public GameObject ImageUI;
-    public GameObject InfoBoxUI;
+
+
     public InfoboxGenerator infoboxGenerator; // Dodaj referencję do InfoboxGenerator
     public MarkdownRenderer leftPage;
     public MarkdownRenderer rightPage;
@@ -45,8 +45,10 @@ public class PlayerController : MonoBehaviour
     [Range(0f, 1f)] public float bookSoundVolume = 0.5f;
     public AudioSource bookAudioSource;
 
+
     float xRotation = 0f;
     bool isReading = false;
+    bool isPaused = false;
     BookInteraction currentBook;
     Vector2Int hexPosition;
     float openBookTime;
@@ -60,12 +62,17 @@ public class PlayerController : MonoBehaviour
     // yaw dla stabilnej rotacji postaci
     float yaw = 0f;
 
+    [Header("UI")]
+    public GameObject BookUI;
+    public GameObject ImageUI;
+    public GameObject InfoBoxUI;
+    public GameObject PauseUI;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         yaw = transform.eulerAngles.y;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        LockCursor();
 
         hexPosition = DataCollectionUtil.PixelToHexPos(new Vector2(transform.position.x, transform.position.z));
         System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
@@ -80,12 +87,13 @@ public class PlayerController : MonoBehaviour
         {
             bookAudioSource = gameObject.AddComponent<AudioSource>();
             bookAudioSource.playOnAwake = false;
-            bookAudioSource.spatialBlend = 0f; // 2D sound (możesz ustawić 3D jeśli chcesz)
+            bookAudioSource.spatialBlend = 0f;
         }
     }
 
     void Update()
     {
+        HandlePause();
         HandleMouseLook();
         HandleInteraction();
         HandleCameraZoom();
@@ -112,6 +120,9 @@ public class PlayerController : MonoBehaviour
 
     void HandleMovement()
     {
+        // jeśli gra jest wstrzymana, nie poruszaj się
+        if (isPaused) return;
+
         // zablokuj ruch gdy czytamy lub movementLocked ustawione z zewnątrz (np. PortalLift)
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
@@ -132,34 +143,21 @@ public class PlayerController : MonoBehaviour
 
     void HandleMouseLook()
     {
+        if (isPaused) return;
+
+        bool canLook = !isReading && !movementLocked;
+        if (!canLook) return;
+
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
-        // Akumuluj yaw i ustaw rotację postaci w kontrolowany sposób (zapobiega dryfowi)
-        if (!isReading && !movementLocked)
-        {
-            yaw += mouseX;
-            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
-        }
+        yaw += mouseX;
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        // Rotate the camera up/down
-        if (!isReading && !movementLocked)
-        {
-            xRotation -= mouseY;
-            xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Prevent flipping
-        }
-
+        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
         if (cameraTransform != null)
-        {
-            // kamera kontroluje pitch niezależnie od rotacji postaci
-            if (!isReading && !movementLocked) cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-            else
-            {
-                // gdy czytamy/lock zwolniony - nadal zachowaj pitch ustawiony przez gracza
-                cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-            }
-        }
-
+            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
     // Wymusza określony yaw/pitch (używane przy teleportacji)
@@ -172,10 +170,61 @@ public class PlayerController : MonoBehaviour
             cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
+    void HandlePause()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            TogglePause();
+        }
+    }
+
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+        Time.timeScale = isPaused ? 0f : 1f;
+        
+        if (PauseUI != null)
+            PauseUI.SetActive(isPaused);
+
+        if (isPaused)
+            UnlockCursor();
+        else
+        {
+            LockCursor();
+
+        }
+    }
+
+    public bool IsPaused()
+    {
+        return isPaused;
+    }
+
+    public void PlayUISound(AudioClip clip, float volume = 1f)
+    {
+        if (bookAudioSource != null && clip != null)
+            bookAudioSource.PlayOneShot(clip, volume);
+    }
+
+    void LockCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    void UnlockCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
     void HandleInteraction()
     {
         // zablokuj interakcje gdy movementLocked (np. w trakcie liftu)
         if (movementLocked) return;
+
+        // zablokuj interakcje gdy gra jest wstrzymana
+        if (isPaused) return;
 
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -185,8 +234,7 @@ public class PlayerController : MonoBehaviour
                 ImageZoomPan zoomPan = ImageUI.GetComponentInChildren<ImageZoomPan>();
                 if (zoomPan != null) zoomPan.ResetPosition();
                 ImageUI.SetActive(false);
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                LockCursor();
                 isReading = false;
                 return;
             }
@@ -200,8 +248,7 @@ public class PlayerController : MonoBehaviour
                 if (BookUI != null) BookUI.SetActive(false);
                 if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
                 currentBook?.OnInteraction();
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                LockCursor();
                 if (currentBook != null && logger != null)
                     logger.LogOnBookClose(currentBook.bookArticleLink, openBookTime, Time.time);
                 currentBook = null;
@@ -235,8 +282,7 @@ public class PlayerController : MonoBehaviour
                         if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
                         bookController.ResetPages();
                         isReading = true;
-                        Cursor.lockState = CursorLockMode.None;
-                        Cursor.visible = true;
+                        UnlockCursor();
                         openBookTime = Time.time;
                         return;
                     }
@@ -263,8 +309,7 @@ public class PlayerController : MonoBehaviour
                         if (BookUI != null) BookUI.SetActive(false);
                         currentBook = null;
                         isReading = true;
-                        Cursor.lockState = CursorLockMode.None;
-                        Cursor.visible = true;
+                        UnlockCursor();
                         openBookTime = Time.time;
                         return;
                     }
@@ -291,10 +336,9 @@ public class PlayerController : MonoBehaviour
                     
                     if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
                     if (BookUI != null) BookUI.SetActive(false);
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
+                    UnlockCursor();
                     currentBook = null;
-                    isReading = true; // Zablokuj ruch i kamerę
+                    isReading = true;
                     return;
                 }
             }

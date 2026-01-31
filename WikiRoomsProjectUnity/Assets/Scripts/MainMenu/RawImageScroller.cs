@@ -9,7 +9,7 @@ public class RawImageScroller : MonoBehaviour {
  
     void Update()
     {
-        _img.uvRect = new Rect(_img.uvRect.position + new Vector2(_x,_y) * Time.deltaTime,_img.uvRect.size);
+        _img.uvRect = new Rect(_img.uvRect.position + new Vector2(_x,_y) * Time.unscaledDeltaTime,_img.uvRect.size);
     }
 }
  
