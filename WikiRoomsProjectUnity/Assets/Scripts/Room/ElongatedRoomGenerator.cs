@@ -589,6 +589,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     public void ResetRoom()
     {
+        spawnedExtensions.Clear();
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
