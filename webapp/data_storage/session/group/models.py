@@ -8,8 +8,8 @@ class Group(Base):
     id = Column(Integer, primary_key=True)
     group_name = Column(String, unique=True, nullable=False)
 
-    users = relationship(
-        "DataUser",
+    sessions = relationship(
+        "UserSession",
         back_populates="group",
         cascade="all, delete-orphan"
     )

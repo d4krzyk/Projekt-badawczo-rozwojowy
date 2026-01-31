@@ -46,8 +46,9 @@ class SessionService:
             return
 
         group = self.group_service.get_or_create_group(request.group)
+        group_id = group.id if group else None
 
-        data_user = self.user_service.get_or_create_user(request.user_name, group)
+        data_user = self.user_service.get_or_create_user(request.user_name)
 
         session_start_time = datetime.utcnow()
         session_end_time = session_start_time + timedelta(
@@ -56,6 +57,7 @@ class SessionService:
         
         user_session = self.usersession_repo.create(
             user_id=data_user.id,
+            group_id=group_id,
             start_time=session_start_time,
             end_time=session_end_time,
             is_web=is_web,
@@ -133,12 +135,11 @@ class SessionService:
         sessions_db = self.usersession_repo.get_all()
 
         # group_name -> user_name -> sessions
-        groups_dict: dict[str, dict[str, dict[str, list]]] = {}
+        groups_dict: dict[str, dict[str, dict[str, list[SessionInfo]]]] = {}
 
         for s in sessions_db:
-            user = s.data_user
-            group_name = user.group.group_name if user.group else "NO_GROUP"
-            user_name = user.name
+            group_name = s.group.group_name if s.group else "NO_GROUP"
+            user_name = s.data_user.name
 
             groups_dict.setdefault(group_name, {})
             groups_dict[group_name].setdefault(

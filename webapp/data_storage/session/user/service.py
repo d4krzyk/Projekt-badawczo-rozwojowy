@@ -7,11 +7,11 @@ class UserService:
     def __init__(self, repository: UserRepository):
         self.repository = repository
 
-    def get_or_create_user(self, user_name: str, group: Group = None) -> DataUser:
+    def get_or_create_user(self, user_name: str) -> DataUser:
         """Gets a user by name, creating one if it doesn't exist."""
         user = self.repository.get_by_name(user_name)
         if not user:
-            user = self.repository.create(user_name, group)
+            user = self.repository.create(user_name)
         return user
 
     def get_user_by_name(self, user_name: str) -> DataUser:

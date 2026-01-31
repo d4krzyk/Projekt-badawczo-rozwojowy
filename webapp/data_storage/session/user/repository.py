@@ -11,8 +11,8 @@ class UserRepository:
     def get_by_name(self, user_name: str) -> DataUser | None:
         return self.db.execute(select(DataUser).where(DataUser.name == user_name)).scalars().first()
 
-    def create(self, user_name: str, group=None) -> DataUser:
-        user = DataUser(name=user_name, group=group)
+    def create(self, user_name: str) -> DataUser:
+        user = DataUser(name=user_name)
         self.db.add(user)
         self.db.flush()
         return user
