@@ -14,6 +14,7 @@ class UserSession(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=True)
     is_web = Column(Boolean, default=False, nullable=False)
+    surrendered: bool = Column(Boolean, default=False, nullable=False)
 
     data_user = relationship("DataUser", back_populates="user_sessions")
     group = relationship("Group", back_populates="sessions")

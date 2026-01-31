@@ -61,6 +61,7 @@ class SessionService:
             start_time=session_start_time,
             end_time=session_end_time,
             is_web=is_web,
+            surrendered=request.surrendered or False,
         )
 
         for room_log in request.session_logs:

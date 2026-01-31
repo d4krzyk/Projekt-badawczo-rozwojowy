@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select
 
 from .models import UserSession
@@ -69,13 +69,14 @@ class UserSessionRepository:
             .all()
         )
 
-    def create(self, user_id: int, start_time: datetime, end_time: datetime, is_web: bool = False, group_id: int = None) -> UserSession:
+    def create(self, user_id: int, start_time: datetime, end_time: datetime, is_web: bool = False, group_id: int = None, surrendered: bool = False) -> UserSession:
         user_session = UserSession(
             data_user_id=user_id,
             group_id=group_id,
             start_time=start_time,
             end_time=end_time,
             is_web=is_web,
+            surrendered=surrendered,
         )
         self.db.add(user_session)
         self.db.flush()

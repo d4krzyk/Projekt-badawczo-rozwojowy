@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.2
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
 // @connect      localhost
@@ -451,6 +451,7 @@
         const data = {
             user_name: username,
             group: group,
+            surrendered: reason === 'surrender_modal_button',
             session_logs: mapRoomsToSessionLogs(session.rooms, session.start_time),
         };
 

@@ -10,6 +10,7 @@ class SessionInfo(BaseModel):
     start_time: datetime
     end_time: datetime | None
     is_web: bool
+    surrendered: bool | None
     rooms: list[RoomInfo]
 
     class Config:
@@ -42,4 +43,5 @@ class AllSessionsGroupedResponse(BaseModel):
 class FullSessionRequest(BaseModel):
     user_name: str
     group: str | None
+    surrendered: bool | None
     session_logs: list[RoomLog]
