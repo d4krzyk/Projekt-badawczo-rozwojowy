@@ -134,7 +134,12 @@
         session.rooms.push(currentPage);
         console.log('Artykuł:', currentPage.name);
 
-        waitForArticleContent(initSectionTracking);
+        waitForArticleContent((headings) => {
+            hideUnwantedSections();
+            initSectionTracking(headings);
+        });
+        setTimeout(hideUnwantedSections, 500);
+
     }
 
     function trackPageExit() {
@@ -605,4 +610,47 @@
 
     unsafeWindow.hideUI = hideUI;
     unsafeWindow.showUI = showUI;
+
+    /* ------------------------------
+       UKRYWANIE SEKCJI
+    --------------------------------*/
+
+    function hideUnwantedSections() {
+        const titles = [
+            'references',
+            'notes',
+            'sources',
+            'external links',
+            'see also',
+        ];
+
+        const container = document.querySelector('.mw-parser-output');
+        if (!container) return;
+
+        const headings = container.querySelectorAll('h2');
+
+        headings.forEach(h2 => {
+            const title = h2.innerText.trim().toLowerCase();
+
+            if (!titles.includes(title)) return;
+
+            let el = h2.parentElement.nextElementSibling;
+
+            h2.remove();
+
+            while (el) {
+                const next = el.nextElementSibling;
+
+                if (
+                    el.nodeType === Node.ELEMENT_NODE &&
+                    el.tagName === 'H2'
+                ) {
+                    break;
+                }
+
+                el.remove();
+                el = next;
+            }
+        });
+    }
 })();
