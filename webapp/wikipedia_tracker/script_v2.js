@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
 // @connect      localhost
@@ -46,10 +46,19 @@
     /* ------------------------------
        UTILS
     --------------------------------*/
+    /**
+     * Get current time as an ISO 8601 string.
+     * @returns {string} Current time in ISO format.
+     */
     function nowISO() {
         return new Date().toISOString();
     }
 
+    /**
+     * Extract the article title from the current URL path.
+     * If no title is found, returns the string 'unknown'.
+     * @returns {string} Article title (decoded and spaces restored) or 'unknown'.
+     */
     function getArticleTitle() {
         const match = location.pathname.match(/\/wiki\/(.+)$/);
         return match
@@ -57,10 +66,20 @@
             : 'unknown';
     }
 
+    /**
+     * Locate the main article container element in the page DOM.
+     * @returns {Element|null} The element with class 'mw-parser-output' or null if not found.
+     */
     function getArticleContainer() {
         return document.querySelector('.mw-parser-output');
     }
 
+    /**
+     * Normalize a section heading element's text by removing bracketed
+     * annotations (e.g. [edit]) and trimming whitespace.
+     * @param {Element} el - The heading element (h2/h3/h4).
+     * @returns {string} Cleaned section title.
+     */
     function getSectionTitle(el) {
         return el.innerText.replace(/\[.*?\]/g, '').trim();
     }
@@ -121,6 +140,11 @@
     /* ------------------------------
        STRONA – ENTER / EXIT
     --------------------------------*/
+    /**
+     * Handle entering an article page: record enter time, create a
+     * room object for the session, and initialize section tracking
+     * when article content becomes available.
+     */
     function trackPageEnter() {
         pageEnterTime = new Date();
         currentPage = {
@@ -135,9 +159,19 @@
         session.rooms.push(currentPage);
         console.log('Artykuł:', currentPage.name);
 
-        waitForArticleContent(initSectionTracking);
+        waitForArticleContent((headings) => {
+            hideUnwantedSections();
+            initSectionTracking(headings);
+        });
+        setTimeout(hideUnwantedSections, 500);
+
     }
 
+    /**
+     * Handle exiting an article page: finalize current section,
+     * set exit timestamp, copy section times to the page object and
+     * clean up observers.
+     */
     function trackPageExit() {
         if (!currentPage) return;
 
@@ -158,6 +192,11 @@
     /* ------------------------------
        CZEKAJ NA DYNAMICZNY CONTENT
     --------------------------------*/
+    /**
+     * Poll the DOM until the article container and headings are present,
+     * then invoke the provided callback with the headings NodeList.
+     * @param {function} callback - Function to call with the headings NodeList.
+     */
     function waitForArticleContent(callback) {
         const interval = setInterval(() => {
             const container = getArticleContainer();
@@ -173,6 +212,11 @@
     /* ------------------------------
        ŚLEDZENIE SEKCJI
     --------------------------------*/
+    /**
+     * Initialize an IntersectionObserver to monitor section headings
+     * and update the active section as the user scrolls.
+     * @param {NodeList} headings - List of heading elements to observe.
+     */
     function initSectionTracking(headings) {
         cleanupSectionObserver();
 
@@ -185,6 +229,11 @@
         headings.forEach((h) => sectionObserver.observe(h));
     }
 
+    /**
+     * IntersectionObserver callback that determines the most centered
+     * visible heading and starts/ends section timing accordingly.
+     * @param {IntersectionObserverEntry[]} entries - Observer entries.
+     */
     function onSectionIntersect(entries) {
         const visible = entries
             .filter((e) => e.isIntersecting)
@@ -211,6 +260,10 @@
         }
     }
 
+    /**
+     * Finalize timing for the currently active section and push a
+     * session event into `sectionTimes` if the duration is >= 1s.
+     */
     function endCurrentSection() {
         if (!currentSection || !sectionStartTime) return;
 
@@ -229,6 +282,9 @@
         });
     }
 
+    /**
+     * Disconnect and clear the section IntersectionObserver if present.
+     */
     function cleanupSectionObserver() {
         if (sectionObserver) {
             sectionObserver.disconnect();
@@ -239,6 +295,11 @@
     /* ------------------------------
        KLIKNIĘCIA LINKÓW
     --------------------------------*/
+    /**
+     * Record a clicked link (or auxiliary click) into the current room's
+     * `book_links` array with a timestamp.
+     * @param {Event} event - The click/auxclick event.
+     */
     function logLinkInteraction(event) {
         if (!session.active) return;
 
@@ -305,6 +366,13 @@
     /* ------------------------------
        KONIEC SESJI
     --------------------------------*/
+    /**
+     * Merge consecutive or duplicate room entries by name into a single
+     * aggregated room, preserving enter/exit times, links and combining
+     * 'Introduction' events.
+     * @param {Array} rooms - Array of room objects to merge.
+     * @returns {Array} Array of merged room objects.
+     */
     function mergeDuplicateRooms(rooms) {
         const byName = new Map();
 
@@ -385,6 +453,13 @@
         return mergedRooms;
     }
 
+    /**
+     * Convert internal room objects to a compact session log format that
+     * uses seconds relative to the session start.
+     * @param {Array} rooms - Array of room objects.
+     * @param {string} sessionStartISO - ISO timestamp of session start.
+     * @returns {Array} Array of mapped session log objects.
+     */
     function mapRoomsToSessionLogs(rooms, sessionStartISO) {
         const sessionStartMs = Date.parse(sessionStartISO);
 
@@ -433,6 +508,11 @@
         endSession('surrender_modal_button');
     });
 
+    /**
+     * Finalize and send the session to the configured API endpoint.
+     * Merges rooms, maps logs and issues a POST request.
+     * @param {string} [reason='unknown'] - Reason code for session end.
+     */
     function endSession(reason = 'unknown') {
         if (!session.active) return;
 
@@ -473,6 +553,10 @@
     /* ------------------------------
        UŻYTKOWNIK
     --------------------------------*/
+    /**
+     * Set the username used for session reporting. Validates input type.
+     * @param {string} name - Username to set.
+     */
     function setName(name) {
         if (!name || typeof name !== 'string') {
             console.error('setName(name): name musi być stringiem');
@@ -483,6 +567,10 @@
         console.log(`WikiTracker: ustawiono username = "${username}"`);
     }
 
+    /**
+     * Set the group used for session reporting. Validates input type.
+     * @param {string} name - Group name to set.
+     */
     function setGroup(name) {
         if (!name || typeof name !== 'string') {
             console.error('setGroup(name): name musi być stringiem');
@@ -495,6 +583,10 @@
 
     unsafeWindow.setName = setName;
 
+    /**
+     * Inject a username input field into the game's start form if not
+     * already present. Persists value to localStorage and wires change events.
+     */
     function injectUsernameField() {
         const form = document.querySelector(
             'form.flex.max-w-\\[650px\\].flex-col.gap-4'
@@ -588,6 +680,10 @@
         console.log('%cWikiTracker: dodano pole Username', 'color: cyan');
     }
 
+    /**
+     * Inject a group input field into the game's start form if not
+     * already present. Persists value to localStorage and wires change events.
+     */
     function injectGroupField() {
         const form = document.querySelector(
             'form.flex.max-w-\\[650px\\].flex-col.gap-4'
@@ -696,6 +792,9 @@
        UKRYWANIE UI
     --------------------------------*/
 
+    /**
+     * Hide the main UI elements used by the game (used when session starts).
+     */
     function hideUI() {
         const elements = document.querySelectorAll('.flex.h-full.w-full.flex-col.items-center.justify-start.gap-8');
         elements.forEach(el => {
@@ -703,6 +802,9 @@
         })
     }
 
+    /**
+     * Show the main UI elements (reverses `hideUI`).
+     */
     function showUI() {
         const elements = document.querySelectorAll('.flex.h-full.w-full.flex-col.items-center.justify-start.gap-8');
         elements.forEach(el => {
@@ -712,4 +814,69 @@
 
     unsafeWindow.hideUI = hideUI;
     unsafeWindow.showUI = showUI;
+
+    /* ------------------------------
+       UKRYWANIE SEKCJI
+    --------------------------------*/
+
+    /**
+     * Remove undesired sections from the article (references, notes,
+     * external links, etc.) and optionally remove tables.
+     */
+    function hideUnwantedSections() {
+        const titles = [
+            'references',
+            'notes',
+            'sources',
+            'external links',
+            'see also',
+        ];
+
+        const container = document.querySelector('.mw-parser-output');
+        if (!container) return;
+
+        const headings = container.querySelectorAll('h2');
+
+        headings.forEach(h2 => {
+            const title = h2.innerText.trim().toLowerCase();
+
+            if (!titles.includes(title)) return;
+
+            let el = h2.parentElement.nextElementSibling;
+
+            h2.remove();
+
+            while (el) {
+                const next = el.nextElementSibling;
+
+                if (
+                    el.nodeType === Node.ELEMENT_NODE &&
+                    el.tagName === 'H2'
+                ) {
+                    break;
+                }
+
+                el.remove();
+                el = next;
+            }
+        });
+
+        removeTables();  // optional
+    }
+
+    /**
+     * Remove non-infobox tables from the article container to reduce noise
+     * during section tracking.
+     */
+    function removeTables() {
+        const container = document.querySelector('.mw-parser-output');
+        if (!container) return;
+
+        const tables = container.querySelectorAll('table');
+
+        tables.forEach(table => {
+            if (table.classList.contains('infobox')) return;
+            table.remove();
+        });
+    }
 })();
