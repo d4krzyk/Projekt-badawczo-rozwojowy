@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.0.1
+// @version      2.3
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
 // @connect      localhost
@@ -651,6 +651,20 @@
                 el.remove();
                 el = next;
             }
+        });
+
+        removeTables();  // optional
+    }
+
+    function removeTables() {
+        const container = document.querySelector('.mw-parser-output');
+        if (!container) return;
+
+        const tables = container.querySelectorAll('table');
+
+        tables.forEach(table => {
+            if (table.classList.contains('infobox')) return;
+            table.remove();
         });
     }
 })();
