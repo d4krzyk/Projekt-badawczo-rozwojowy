@@ -49,6 +49,15 @@
     const HOVER_MARGIN = 40;
 
     /* ------------------------------
+       KURSOR
+    --------------------------------*/
+    const CURSOR_SAMPLE_MS = 500;
+    let cursorTrackingActive = false;
+    let lastCursorSample = null;
+    let lastCursorLogTime = 0;
+    let pageCursorStartTime = 0;
+
+    /* ------------------------------
        UTILS
     --------------------------------*/
     /**
@@ -160,6 +169,7 @@
             books: [],
             book_links: [],
             images: [],
+            cursor: [],
         };
 
         session.rooms.push(currentPage);
@@ -171,7 +181,7 @@
             initImageTracking();
         });
         setTimeout(hideUnwantedSections, 500);
-
+        startCursorTracking();
     }
 
     /**
@@ -182,6 +192,7 @@
     function trackPageExit() {
         if (!currentPage) return;
 
+        stopCursorTracking();
         endCurrentSection();
 
         currentPage.exit_time = nowISO();
@@ -249,8 +260,8 @@
                 distance:
                     Math.abs(
                         e.boundingClientRect.top +
-                            e.boundingClientRect.height / 2 -
-                            window.innerHeight / 2
+                        e.boundingClientRect.height / 2 -
+                        window.innerHeight / 2
                     ),
             }))
             .sort((a, b) => a.distance - b.distance);
@@ -338,6 +349,11 @@
        INTERAKCJE Z OBRAZAMI
     --------------------------------*/
 
+    /**
+     * Retrieve all article images within the main content area, excluding
+     * images that are part of infoboxes.
+     * @returns {HTMLImageElement[]} Array of image elements found in the article.
+     */
     function getArticleImages() {
         const container = document.querySelector('.mw-parser-output');
         if (!container) return [];
@@ -346,10 +362,17 @@
             container.querySelectorAll('img')
         ).filter(img =>
             img.src &&
-            !img.closest('.infobox') // opcjonalnie: jeśli nie chcesz infobox
+            !img.closest('.infobox')
         );
     }
 
+    /**
+     * Observe visibility of an image and accumulate visible time statistics
+     * into the provided imageData object.
+     * @param {HTMLImageElement} image - The image element to observe.
+     * @param {Object} imageData - The data object where interaction stats are stored.
+     * @returns {IntersectionObserver} The observer instance for later disconnection.
+     */
     function trackImageVisibility(image, imageData) {
         let visibleStart = null;
 
@@ -381,6 +404,14 @@
         return observer;
     }
 
+    /**
+     * Determine whether a given point (x,y) lies within a margin around a rect.
+     * @param {DOMRect} rect - Bounding rect to compare against.
+     * @param {number} x - X coordinate of the point.
+     * @param {number} y - Y coordinate of the point.
+     * @param {number} margin - Margin in pixels to expand the rect.
+     * @returns {boolean} True if point is within the expanded rect.
+     */
     function isNear(rect, x, y, margin) {
         return (
             x >= rect.left - margin &&
@@ -390,21 +421,56 @@
         );
     }
 
+    /**
+     * Check whether a y coordinate falls approximately on the same vertical
+     * band as the rect (within a tolerance).
+     * @param {DOMRect} rect - Bounding rect to compare against.
+     * @param {number} y - Y coordinate to test.
+     * @param {number} [tolerance=10] - Vertical tolerance in pixels.
+     * @returns {boolean}
+     */
     function isSameY(rect, y, tolerance = 10) {
         return y >= rect.top - tolerance && y <= rect.bottom + tolerance;
     }
 
+    /**
+     * Track mouse movement relative to an image to record hover-on,
+     * hover-near and same-row hover interactions.
+     * Returns a cleanup function that removes the attached listener.
+     * @param {HTMLImageElement} image - The image element to track.
+     * @param {Object} imageData - Object where interaction stats are stored.
+     * @returns {Function} Cleanup function to detach the mousemove listener.
+     */
     function trackImageHover(image, imageData) {
         let nearStart = null;
         let sameYStart = null;
+        let onStart = null;
 
         function onMove(e) {
             const rect = image.getBoundingClientRect();
             const x = e.clientX;
             const y = e.clientY;
 
-            // near image
-            if (isNear(rect, x, y, HOVER_MARGIN)) {
+            const isOn =
+                x >= rect.left &&
+                x <= rect.right &&
+                y >= rect.top &&
+                y <= rect.bottom;
+
+            // hover on
+            if (isOn) {
+                if (!onStart) {
+                    onStart = Date.now();
+                    imageData.interactions.hover_on.count++;
+                }
+            } else if (onStart) {
+                imageData.interactions.hover_on.total_time +=
+                    (Date.now() - onStart) / 1000;
+                onStart = null;
+            }
+
+            // hover near (not on image)
+            if (!isOn && isNear(rect, x, y, HOVER_MARGIN)) {
                 if (!nearStart) {
                     nearStart = Date.now();
                     imageData.interactions.hover_near.count++;
@@ -415,8 +481,8 @@
                 nearStart = null;
             }
 
-            // same Y level
-            if (isSameY(rect, y)) {
+            // same y
+            if (!isOn && isSameY(rect, y)) {
                 if (!sameYStart) {
                     sameYStart = Date.now();
                     imageData.interactions.hover_same_y.count++;
@@ -433,12 +499,21 @@
         return () => document.removeEventListener('mousemove', onMove);
     }
 
+    /**
+     * Attach click listener to an image to count click attempts.
+     * @param {HTMLImageElement} image - The image element to observe clicks on.
+     * @param {Object} imageData - Data object where click attempts are recorded.
+     */
     function trackImageClicks(image, imageData) {
         image.addEventListener('click', (e) => {
             imageData.interactions.click_attempts++;
         }, true);
     }
 
+    /**
+     * Initialize tracking for all relevant images in the current article.
+     * Populates `currentPage.images` and attaches observers/listeners.
+     */
     function initImageTracking() {
         const images = getArticleImages();
         currentPage.images = [];
@@ -448,6 +523,7 @@
                 photo_url: img.src,
                 interactions: {
                     visible: { total_time: 0, count: 0 },
+                    hover_on: { total_time: 0, count: 0 },
                     hover_near: { total_time: 0, count: 0 },
                     hover_same_y: { total_time: 0, count: 0 },
                     click_attempts: 0
@@ -462,7 +538,75 @@
         });
     }
 
+    /* ------------------------------
+       RUCHY KURSORA
+    --------------------------------*/
+    /**
+     * Begin sampling cursor movement for the current page. Samples are
+     * throttled and stored into `currentPage.cursor`.
+     */
+    function startCursorTracking() {
+        pageCursorStartTime = performance.now();
+        lastCursorSample = null;
+        lastCursorLogTime = 0;
+        cursorTrackingActive = true;
 
+        if (!currentPage.cursor) {
+            currentPage.cursor = [];
+        }
+
+        document.addEventListener('mousemove', onCursorMove, { passive: true });
+    }
+
+    /**
+     * Stop sampling cursor movement for the current page.
+     */
+    function stopCursorTracking() {
+        cursorTrackingActive = false;
+        document.removeEventListener('mousemove', onCursorMove);
+    }
+
+    /**
+     * Mousemove handler that samples cursor deltas and velocity at a
+     * coarse interval and appends them to the current page cursor log.
+     * @param {MouseEvent} e - Mouse event.
+     */
+    function onCursorMove(e) {
+        if (!session.active || !currentPage || !cursorTrackingActive) return;
+
+        const now = performance.now();
+        if (now - lastCursorLogTime < CURSOR_SAMPLE_MS) return;
+        lastCursorLogTime = now;
+
+        const x = e.clientX + window.scrollX;
+        const y = e.clientY + window.scrollY;
+
+        if (!lastCursorSample) {
+            lastCursorSample = { x, y, t: now };
+            return;
+        }
+
+        const dt = (now - lastCursorSample.t) / 1000;
+        if (dt <= 0) return;
+
+        const dx = x - lastCursorSample.x;
+        const dy = y - lastCursorSample.y;
+
+        const vx = dx / dt;
+        const vy = dy / dt;
+
+        const t = (now - pageCursorStartTime) / 1000;
+
+        currentPage.cursor.push(
+            Math.round(dx),
+            Math.round(dy),
+            +vx.toFixed(6),
+            +vy.toFixed(6),
+            +t.toFixed(2)
+        );
+
+        lastCursorSample = { x, y, t: now };
+    }
 
     /* ------------------------------
         WYKRYWANIE KOŃCA GRY
@@ -477,9 +621,9 @@
                 if (!(node instanceof HTMLElement)) continue;
 
                 const dialog =
-                      node.getAttribute?.('role') === 'dialog'
-                ? node
-                : node.querySelector?.('[role="dialog"]');
+                    node.getAttribute?.('role') === 'dialog'
+                        ? node
+                        : node.querySelector?.('[role="dialog"]');
 
                 if (!dialog) continue;
 
