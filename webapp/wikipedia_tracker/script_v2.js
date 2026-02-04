@@ -767,6 +767,31 @@
                     clickTime:
                         (Date.parse(link.click_time) - sessionStartMs) / 1000,
                 })),
+
+                imageLogs: (room.images || []).map(img => ({
+                    photoUrl: img.photo_url,
+                    interactions: {
+                        visible: {
+                            totalTime: +img.interactions.visible.total_time.toFixed(3),
+                            count: img.interactions.visible.count,
+                        },
+                        hoverOn: {
+                            totalTime: +img.interactions.hover_on.total_time.toFixed(3),
+                            count: img.interactions.hover_on.count,
+                        },
+                        hoverNear: {
+                            totalTime: +img.interactions.hover_near.total_time.toFixed(3),
+                            count: img.interactions.hover_near.count,
+                        },
+                        hoverSameY: {
+                            totalTime: +img.interactions.hover_same_y.total_time.toFixed(3),
+                            count: img.interactions.hover_same_y.count,
+                        },
+                        clickAttempts: img.interactions.click_attempts,
+                    },
+                })),
+
+                cursorLog: room.cursor || [],
             };
         });
     }
@@ -802,7 +827,6 @@
         session.end_time = nowISO();
         session.active = false;
         session.reason = reason;
-        console.log(session)
 
         session.rooms = mergeDuplicateRooms(
             session.rooms.filter(
