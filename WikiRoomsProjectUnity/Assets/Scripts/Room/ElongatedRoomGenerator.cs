@@ -29,6 +29,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public GameObject portalPrevious;
     public InfoboxGenerator infoboxGenerator;
     public BackendConfig backendConfig;
+    public GameObject loadingScreen;
 
     [HideInInspector] public float EnterTime;
     [HideInInspector] public float ExitTime;
@@ -43,6 +44,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     List<GameObject> spawnedExtensions = new List<GameObject>();
     string auth_header;
+    public bool HasLoaded = false;
     
     // struktura odpowiadająca JSON z /images/generator
     [Serializable]
@@ -82,6 +84,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
+        HasLoaded = false;
+        if(roomsController.elongatedRoom == this) loadingScreen.SetActive(true);
         auth_header = "Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(backendConfig.username + ":" + backendConfig.password));
         string displayArticleName = Uri.UnescapeDataString(articleName);
         // nie odtwarzaj dźwięku dla portalu
@@ -116,6 +120,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
         await Task.WhenAll(textureTask, infoboxTask);
 
         SpawnExtensionsWithBookselfs();
+        loadingScreen.SetActive(false);
+        HasLoaded = true;
         await HandleImagesOneAtATime(articleName);
         Debug.Log($"Loaded {articleName} successfully.");
     }
