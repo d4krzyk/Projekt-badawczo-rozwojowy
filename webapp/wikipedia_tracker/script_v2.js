@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.3
+// @version      2.4
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
 // @connect      localhost
@@ -41,6 +41,12 @@
     let currentSection = null;
     let sectionStartTime = null;
     let sectionTimes = [];
+
+    /* ------------------------------
+       OBRAZY
+    --------------------------------*/
+    const IMAGE_MARGIN = 150;
+    const HOVER_MARGIN = 40;
 
     /* ------------------------------
        UTILS
@@ -153,6 +159,7 @@
             exit_time: null,
             books: [],
             book_links: [],
+            images: [],
         };
 
         session.rooms.push(currentPage);
@@ -161,6 +168,7 @@
         waitForArticleContent((headings) => {
             hideUnwantedSections();
             initSectionTracking(headings);
+            initImageTracking();
         });
         setTimeout(hideUnwantedSections, 500);
 
@@ -325,6 +333,136 @@
             logLinkInteraction(e);
         }
     });
+
+    /* ------------------------------
+       INTERAKCJE Z OBRAZAMI
+    --------------------------------*/
+
+    function getArticleImages() {
+        const container = document.querySelector('.mw-parser-output');
+        if (!container) return [];
+
+        return Array.from(
+            container.querySelectorAll('img')
+        ).filter(img =>
+            img.src &&
+            !img.closest('.infobox') // opcjonalnie: jeśli nie chcesz infobox
+        );
+    }
+
+    function trackImageVisibility(image, imageData) {
+        let visibleStart = null;
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                const ratio = entry.intersectionRect.height / entry.boundingClientRect.height;
+
+                if (entry.isIntersecting && ratio >= 0.5) {
+                    if (!visibleStart) {
+                        visibleStart = Date.now();
+                        imageData.interactions.visible.count++;
+                    }
+                } else {
+                    if (visibleStart) {
+                        imageData.interactions.visible.total_time +=
+                            (Date.now() - visibleStart) / 1000;
+                        visibleStart = null;
+                    }
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: `${IMAGE_MARGIN}px 0px ${IMAGE_MARGIN}px 0px`,
+            threshold: [0.5]
+        });
+
+        observer.observe(image);
+
+        return observer;
+    }
+
+    function isNear(rect, x, y, margin) {
+        return (
+            x >= rect.left - margin &&
+            x <= rect.right + margin &&
+            y >= rect.top - margin &&
+            y <= rect.bottom + margin
+        );
+    }
+
+    function isSameY(rect, y, tolerance = 10) {
+        return y >= rect.top - tolerance && y <= rect.bottom + tolerance;
+    }
+
+    function trackImageHover(image, imageData) {
+        let nearStart = null;
+        let sameYStart = null;
+
+        function onMove(e) {
+            const rect = image.getBoundingClientRect();
+            const x = e.clientX;
+            const y = e.clientY;
+
+            // near image
+            if (isNear(rect, x, y, HOVER_MARGIN)) {
+                if (!nearStart) {
+                    nearStart = Date.now();
+                    imageData.interactions.hover_near.count++;
+                }
+            } else if (nearStart) {
+                imageData.interactions.hover_near.total_time +=
+                    (Date.now() - nearStart) / 1000;
+                nearStart = null;
+            }
+
+            // same Y level
+            if (isSameY(rect, y)) {
+                if (!sameYStart) {
+                    sameYStart = Date.now();
+                    imageData.interactions.hover_same_y.count++;
+                }
+            } else if (sameYStart) {
+                imageData.interactions.hover_same_y.total_time +=
+                    (Date.now() - sameYStart) / 1000;
+                sameYStart = null;
+            }
+        }
+
+        document.addEventListener('mousemove', onMove);
+
+        return () => document.removeEventListener('mousemove', onMove);
+    }
+
+    function trackImageClicks(image, imageData) {
+        image.addEventListener('click', (e) => {
+            imageData.interactions.click_attempts++;
+        }, true);
+    }
+
+    function initImageTracking() {
+        const images = getArticleImages();
+        currentPage.images = [];
+
+        images.forEach(img => {
+            const imageData = {
+                photo_url: img.src,
+                interactions: {
+                    visible: { total_time: 0, count: 0 },
+                    hover_near: { total_time: 0, count: 0 },
+                    hover_same_y: { total_time: 0, count: 0 },
+                    click_attempts: 0
+                }
+            };
+
+            currentPage.images.push(imageData);
+
+            trackImageVisibility(img, imageData);
+            trackImageHover(img, imageData);
+            trackImageClicks(img, imageData);
+        });
+    }
+
+
 
     /* ------------------------------
         WYKRYWANIE KOŃCA GRY
@@ -520,6 +658,7 @@
         session.end_time = nowISO();
         session.active = false;
         session.reason = reason;
+        console.log(session)
 
         session.rooms = mergeDuplicateRooms(
             session.rooms.filter(
