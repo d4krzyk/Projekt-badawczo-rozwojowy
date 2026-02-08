@@ -532,10 +532,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
                 extension = Instantiate(extensionRoom, nextExtensionPoint, Quaternion.identity, transform);
                 extension.name = $"Extension Room {(i / 6) + 1}";
                 spawnedExtensions.Add(extension);
-                // if(2*(i/3) < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, roomSize.y/4), new Vector3(0, 90, 0), wikiImages[2*(i/3)], 2*(i/3) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)] : null, extension.transform);
-                // if(2*(i/3)+1 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, roomSize.y/4), new Vector3(0, -90, 0), wikiImages[2*(i/3)+1], (2*(i/3)+1) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+1] : null, extension.transform);
-                // if(2*(i/3)+2 < wikiImages.Count) SpawnImageHolder(new Vector3(roomSize.x/2 - 0.05f, 2f, -roomSize.y/4), new Vector3(0, 90, 0), wikiImages[2*(i/3)+2], (2*(i/3)+2) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+2] : null, extension.transform);
-                // if(2*(i/3)+3 < wikiImages.Count) SpawnImageHolder(new Vector3(-roomSize.x/2 + 0.05f, 2f, -roomSize.y/4), new Vector3(0, -90, 0), wikiImages[2*(i/3)+3], (2*(i/3)+3) < wikiImageCaptions.Count ? wikiImageCaptions[2*(i/3)+3] : null, extension.transform);
                 nextExtensionPoint -= offset;
             }
             GameObject bookshelfContainer = new GameObject($"Bookshelf Container {i}");

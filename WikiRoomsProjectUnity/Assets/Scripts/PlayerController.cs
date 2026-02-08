@@ -437,7 +437,7 @@ public class PlayerController : MonoBehaviour
         
         // Usuń linki bez tekstu [](url)
         content = System.Text.RegularExpressions.Regex.Replace(content, @"\[\]\([^\)]*\)", "");
-        
+        content = System.Text.RegularExpressions.Regex.Replace(content, @"\[([^\]]+)\](?!\()", "$1");
         return content;
     }
 
