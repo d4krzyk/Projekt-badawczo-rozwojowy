@@ -31,6 +31,31 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public BackendConfig backendConfig;
     public GameObject loadingScreen;
 
+    [Header("Image size classification")]
+    public int smallMaxPixels = 200000;
+    public int mediumMaxPixels = 600000;
+
+    [Header("Image class base heights")]
+    public float smallImageHeight = 1.1f;
+    public float mediumImageHeight = 1.4f;
+    public float largeImageHeight = 2.0f;
+
+    [Header("Image cluster layout")]
+    public float clusterWidth = 2.2f;
+    public float clusterHeight = 2.2f;
+    public float clusterPadding = 0.05f;
+    public float twoImageDiagonalOffsetY = 0.05f;
+    public float twoImageDiagonalOffsetX = 0.35f;
+    [Range(0.0f, 1.0f)]
+    public float twoImageAspectSimilarityThreshold = 0.25f;
+
+    [Header("Transparent images handling")]
+    public bool fillTransparentWithWhite = true;
+    [Range(0.0f, 1.0f)]
+    public float transparentAlphaThreshold = 0.05f;
+    [Range(0.0f, 1.0f)]
+    public float transparentPixelRatioThreshold = 0.15f;
+
     [HideInInspector] public float EnterTime;
     [HideInInspector] public float ExitTime;
     [HideInInspector] public string PreviousRoom;
@@ -74,6 +99,27 @@ public class ElongatedRoomGenerator : MonoBehaviour
     {
         public List<Texture2D> textures;
         public List<string> captions;
+    }
+
+    enum ImageSizeClass
+    {
+        Small,
+        Medium,
+        Large
+    }
+
+    struct ImagePayload
+    {
+        public Texture2D texture;
+        public string caption;
+        public ImageSizeClass sizeClass;
+    }
+
+    struct ImageSlot
+    {
+        public Transform parent;
+        public Vector3 localPosition;
+        public Vector3 localRotation;
     }
     
     public void Awake()
@@ -143,38 +189,36 @@ public class ElongatedRoomGenerator : MonoBehaviour
             wikiImages = new List<Texture2D>();
             wikiImageCaptions = new List<string>();
         }
-        for (int i = 0; i < spawnedExtensions.Count; i++)
+        var slots = BuildImageSlots();
+        if (slots.Count == 0 || wikiImages.Count == 0) return;
+
+        int usableCount = Mathf.Min(wikiImages.Count, slots.Count * 4);
+        var groupSizes = BuildGroupSizes(usableCount, slots.Count, 4);
+        int imageIndex = 0;
+
+        for (int s = 0; s < slots.Count; s++)
         {
-            GameObject extension = spawnedExtensions[i];
-            Vector3 roomBounds = extension.GetComponent<Renderer>().bounds.size;
-            Vector2 roomSize = new Vector2(roomBounds.x, roomBounds.z);
+            int count = groupSizes[s];
+            if (count <= 0) continue;
 
-            Vector3[] imagePositions = new Vector3[]
+            var payloads = new List<ImagePayload>();
+            for (int k = 0; k < count && imageIndex < usableCount; k++)
             {
-                new Vector3(roomSize.x / 2 - 0.05f, 2f, roomSize.y / 4),
-                new Vector3(-roomSize.x / 2 + 0.05f, 2f, roomSize.y / 4),
-                new Vector3(roomSize.x / 2 - 0.05f, 2f, -roomSize.y / 4),
-                new Vector3(-roomSize.x / 2 + 0.05f, 2f, -roomSize.y / 4)
-            };
-
-            Vector3[] imageRotations = new Vector3[]
-            {
-                new Vector3(0, 90, 0),
-                new Vector3(0, -90, 0),
-                new Vector3(0, 90, 0),
-                new Vector3(0, -90, 0)
-            };
-
-            for (int j = 0; j < 4; j++)
-            {
-                int imageIndex = i * 4 + j;
-                if (imageIndex < wikiImages.Count)
+                Texture2D tex = wikiImages[imageIndex];
+                string caption = imageIndex < wikiImageCaptions.Count ? wikiImageCaptions[imageIndex] : null;
+                if (tex != null)
                 {
-                    SpawnImageHolder(imagePositions[j], imageRotations[j], wikiImages[imageIndex],
-                        imageIndex < wikiImageCaptions.Count ? wikiImageCaptions[imageIndex] : null,
-                        extension.transform);
+                    payloads.Add(new ImagePayload
+                    {
+                        texture = ProcessTransparency(tex),
+                        caption = caption,
+                        sizeClass = ClassifyImage(tex)
+                    });
                 }
+                imageIndex++;
             }
+
+            SpawnImageCluster(slots[s], payloads);
         }
 
     }
@@ -191,48 +235,40 @@ public class ElongatedRoomGenerator : MonoBehaviour
             Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
         }
 
+        var slots = BuildImageSlots();
+        if (slots.Count == 0 || imagesLinks.Count == 0) return;
+
+        int usableCount = Mathf.Min(imagesLinks.Count, slots.Count * 4);
+        var groupSizes = BuildGroupSizes(usableCount, slots.Count, 4);
         int imageIndex = 0;
 
-        foreach(var imgObj in imagesLinks)
+        for (int s = 0; s < slots.Count; s++)
         {
-            if (imageIndex >= spawnedExtensions.Count * 4) break; // maksymalna liczba obrazów do umieszczenia
-            if (imgObj == null || imgObj.Count == 0) continue;
-            var kvp = imgObj.First();
-            string imgUrl = kvp.Key;
-            string caption = kvp.Value ?? "[no caption]";
+            int count = groupSizes[s];
+            if (count <= 0) continue;
 
-            Texture2D tex = await GetImageAsTexture(imgUrl);
-            if (tex == null) continue;
-            
-            
-            GameObject extension = spawnedExtensions[imageIndex / 4];
-            if (extension == null) continue; // Sprawdź czy obiekt nadal istnieje
-            
-            Renderer renderer = extension.GetComponent<Renderer>();
-            if (renderer == null) continue; // Sprawdź czy ma Renderer
-            
-            Vector3 roomBounds = renderer.bounds.size;
-            Vector2 roomSize = new Vector2(roomBounds.x, roomBounds.z);
-
-            Vector3[] imagePositions = new Vector3[]
+            var payloads = new List<ImagePayload>();
+            for (int k = 0; k < count && imageIndex < usableCount; k++)
             {
-                new Vector3(roomSize.x / 2 - 0.05f, 2f, roomSize.y / 4),
-                new Vector3(-roomSize.x / 2 + 0.05f, 2f, roomSize.y / 4),
-                new Vector3(roomSize.x / 2 - 0.05f, 2f, -roomSize.y / 4),
-                new Vector3(-roomSize.x / 2 + 0.05f, 2f, -roomSize.y / 4)
-            };
+                var imgObj = imagesLinks[imageIndex];
+                imageIndex++;
+                if (imgObj == null || imgObj.Count == 0) continue;
+                var kvp = imgObj.First();
+                string imgUrl = kvp.Key;
+                string caption = kvp.Value ?? "[no caption]";
 
-            Vector3[] imageRotations = new Vector3[]
-            {
-                new Vector3(0, 90, 0),
-                new Vector3(0, -90, 0),
-                new Vector3(0, 90, 0),
-                new Vector3(0, -90, 0)
-            };
+                Texture2D tex = await GetImageAsTexture(imgUrl);
+                if (tex == null) continue;
 
-            int j = imageIndex % 4;
-            SpawnImageHolder(imagePositions[j], imageRotations[j], tex, caption, extension.transform);
-            imageIndex++;
+                payloads.Add(new ImagePayload
+                {
+                    texture = ProcessTransparency(tex),
+                    caption = caption,
+                    sizeClass = ClassifyImage(tex)
+                });
+            }
+
+            SpawnImageCluster(slots[s], payloads);
         }
 
     }
@@ -650,7 +686,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
                         {
                             Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
                             Debug.Log($"{tex.width}, {tex.height}");
-                            textures.Add(tex);
+                            textures.Add(ProcessTransparency(tex));
                             captions.Add(caption);
                         }
                         catch (Exception e)
@@ -736,7 +772,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     // Skaluje podany quad / plane tak, aby zachować proporcje tekstury.
     // Zakładamy, że quad ma jednostkowy proporcjonalny rozmiar w localScale (height bazowy na localScale.y).
-    void SetImageQuadScale(GameObject quad, Texture2D tex)
+    void SetImageQuadScale(GameObject quad, Texture2D tex, float baseHeight)
     {
         if (quad == null || tex == null)
         {
@@ -748,18 +784,17 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
         float texAspect = (float)tex.width / tex.height;
         // Pobierz aktualny localScale
-        Vector3 ls = new Vector3(2, 2 , 1);
-        ls.x = ls.y * texAspect;
+        Vector3 ls = new Vector3(baseHeight * texAspect, baseHeight , 1);
         quad.transform.localScale = ls;
 
         Debug.Log($"[SetImageQuadScale] '{quad.name}' po localScale={quad.transform.localScale}");
     }
 
-    void SpawnImageHolder(Vector3 pos, Vector3 rotation, Texture2D tex, string caption, Transform extension)
+    void SpawnImageHolder(Vector3 pos, Vector3 rotation, Texture2D tex, string caption, Transform extension, float baseHeight)
     {
-        GameObject currentImageHolder = Instantiate(imageHolder, Vector3.zero, Quaternion.Euler(rotation));
-        currentImageHolder.transform.parent = extension;
+        GameObject currentImageHolder = Instantiate(imageHolder, extension);
         currentImageHolder.transform.localPosition = pos;
+        currentImageHolder.transform.localRotation = Quaternion.Euler(rotation);
 
         Material currentImageMat = new Material(sampleImageMat);
         tex.filterMode = FilterMode.Point; // ostry pixel-art
@@ -778,6 +813,208 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
 
         // skaluj GameObject ImageWikiQuad, żeby zachować aspect ratio tekstury (nie skalujemy materiału)
-        SetImageQuadScale(currentImageHolder, tex);
+        SetImageQuadScale(currentImageHolder, tex, baseHeight);
+    }
+
+    ImageSizeClass ClassifyImage(Texture2D tex)
+    {
+        if (tex == null) return ImageSizeClass.Medium;
+        int pixels = tex.width * tex.height;
+        if (pixels <= smallMaxPixels) return ImageSizeClass.Small;
+        if (pixels <= mediumMaxPixels) return ImageSizeClass.Medium;
+        return ImageSizeClass.Large;
+    }
+
+    Texture2D ProcessTransparency(Texture2D tex)
+    {
+        if (!fillTransparentWithWhite || tex == null) return tex;
+
+        try
+        {
+            Color32[] pixels = tex.GetPixels32();
+            if (pixels == null || pixels.Length == 0) return tex;
+
+            int transparentCount = 0;
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                if (pixels[i].a <= (byte)(transparentAlphaThreshold * 255f))
+                    transparentCount++;
+            }
+
+            float ratio = (float)transparentCount / pixels.Length;
+            if (ratio < transparentPixelRatioThreshold) return tex;
+
+            var flattened = new Texture2D(tex.width, tex.height, TextureFormat.RGBA32, false);
+            Color32 white = new Color32(255, 255, 255, 255);
+            byte alphaCut = (byte)(transparentAlphaThreshold * 255f);
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                if (pixels[i].a <= alphaCut)
+                {
+                    pixels[i] = white;
+                }
+                else
+                {
+                    pixels[i].a = 255;
+                }
+            }
+
+            flattened.SetPixels32(pixels);
+            flattened.Apply(false, false);
+            flattened.wrapMode = tex.wrapMode;
+            flattened.filterMode = tex.filterMode;
+            return flattened;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[ProcessTransparency] Nie udało się przetworzyć tekstury: {e.Message}");
+            return tex;
+        }
+    }
+
+    float GetBaseHeightForClass(ImageSizeClass sizeClass)
+    {
+        switch (sizeClass)
+        {
+            case ImageSizeClass.Small:
+                return smallImageHeight;
+            case ImageSizeClass.Large:
+                return largeImageHeight;
+            default:
+                return mediumImageHeight;
+        }
+    }
+
+    bool AreAspectSimilar(Texture2D a, Texture2D b)
+    {
+        if (a == null || b == null) return false;
+        float ra = a.height == 0 ? 1f : (float)a.width / a.height;
+        float rb = b.height == 0 ? 1f : (float)b.width / b.height;
+        float max = Mathf.Max(ra, rb);
+        if (max <= 0f) return false;
+        float diff = Mathf.Abs(ra - rb) / max;
+        return diff <= twoImageAspectSimilarityThreshold;
+    }
+
+    List<ImageSlot> BuildImageSlots()
+    {
+        var slots = new List<ImageSlot>();
+        if (spawnedExtensions == null || spawnedExtensions.Count == 0) return slots;
+
+        foreach (var extension in spawnedExtensions)
+        {
+            if (extension == null) continue;
+            Renderer renderer = extension.GetComponent<Renderer>();
+            if (renderer == null) continue;
+
+            Vector3 roomBounds = renderer.bounds.size;
+            Vector2 roomSize = new Vector2(roomBounds.x, roomBounds.z);
+
+            Vector3[] imagePositions = new Vector3[]
+            {
+                new Vector3(roomSize.x / 2 - 0.05f, 2f, roomSize.y / 4),
+                new Vector3(-roomSize.x / 2 + 0.05f, 2f, roomSize.y / 4),
+                new Vector3(roomSize.x / 2 - 0.05f, 2f, -roomSize.y / 4),
+                new Vector3(-roomSize.x / 2 + 0.05f, 2f, -roomSize.y / 4)
+            };
+
+            Vector3[] imageRotations = new Vector3[]
+            {
+                new Vector3(0, 90, 0),
+                new Vector3(0, -90, 0),
+                new Vector3(0, 90, 0),
+                new Vector3(0, -90, 0)
+            };
+
+            for (int i = 0; i < 4; i++)
+            {
+                slots.Add(new ImageSlot
+                {
+                    parent = extension.transform,
+                    localPosition = imagePositions[i],
+                    localRotation = imageRotations[i]
+                });
+            }
+        }
+
+        return slots;
+    }
+
+    List<int> BuildGroupSizes(int imageCount, int slotCount, int maxPerSlot)
+    {
+        var sizes = new List<int>(new int[slotCount]);
+        if (imageCount <= 0 || slotCount <= 0) return sizes;
+
+        if (imageCount <= slotCount)
+        {
+            for (int i = 0; i < imageCount; i++) sizes[i] = 1;
+            return sizes;
+        }
+
+        for (int i = 0; i < slotCount; i++) sizes[i] = 1;
+        int remaining = imageCount - slotCount;
+        int idx = 0;
+        while (remaining > 0)
+        {
+            if (sizes[idx] < maxPerSlot)
+            {
+                sizes[idx]++;
+                remaining--;
+            }
+            idx = (idx + 1) % slotCount;
+        }
+        return sizes;
+    }
+
+    void SpawnImageCluster(ImageSlot slot, List<ImagePayload> payloads)
+    {
+        if (payloads == null || payloads.Count == 0 || slot.parent == null) return;
+
+        GameObject anchor = new GameObject("ImageSlot");
+        anchor.transform.SetParent(slot.parent, false);
+        anchor.transform.localPosition = slot.localPosition;
+        anchor.transform.localRotation = Quaternion.Euler(slot.localRotation);
+        anchor.transform.localScale = Vector3.one;
+
+        int count = payloads.Count;
+        int rows = count == 1 ? 1 : 2;
+        int cols = count == 1 ? 1 : (count == 2 ? 1 : 2);
+        bool applyDiagonalOffset = count == 2 && AreAspectSimilar(payloads[0].texture, payloads[1].texture);
+
+        float cellHeight = (clusterHeight / rows) - (clusterPadding * 2);
+        float cellWidth = (clusterWidth / cols) - (clusterPadding * 2);
+
+        float startY = (clusterHeight / 2f) - (cellHeight / 2f) - clusterPadding;
+        float startZ = -(clusterWidth / 2f) + (cellWidth / 2f) + clusterPadding;
+
+        for (int i = 0; i < payloads.Count; i++)
+        {
+            int r = (cols == 1) ? i : i / cols;
+            int c = (cols == 1) ? 0 : i % cols;
+
+            Vector3 localPos = new Vector3(0f, startY - r * (cellHeight + clusterPadding * 2), startZ + c * (cellWidth + clusterPadding * 2));
+            if (applyDiagonalOffset)
+            {
+                float sign = (i == 0) ? -1f : 1f;
+                localPos.y -= sign * twoImageDiagonalOffsetY;
+                localPos.x += sign * twoImageDiagonalOffsetX;
+            }
+
+            var payload = payloads[i];
+            float baseHeight = GetBaseHeightForClass(payload.sizeClass);
+            float aspect = payload.texture != null && payload.texture.height != 0 ? (float)payload.texture.width / payload.texture.height : 1f;
+            float desiredWidth = baseHeight * aspect;
+            float scaleFactor = 1f;
+            if (desiredWidth > cellWidth || baseHeight > cellHeight)
+            {
+                float widthFactor = desiredWidth > 0 ? cellWidth / desiredWidth : 1f;
+                float heightFactor = baseHeight > 0 ? cellHeight / baseHeight : 1f;
+                scaleFactor = Mathf.Min(widthFactor, heightFactor);
+            }
+            float finalHeight = baseHeight * scaleFactor;
+
+            SpawnImageHolder(localPos, Vector3.zero, payload.texture, payload.caption, anchor.transform, finalHeight);
+        }
     }
 }

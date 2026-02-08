@@ -10982,6 +10982,20 @@ MonoBehaviour:
   infoboxGenerator: {fileID: 1169686116}
   backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
   loadingScreen: {fileID: 1235979131}
+  smallMaxPixels: 200000
+  mediumMaxPixels: 600000
+  smallImageHeight: 1.1
+  mediumImageHeight: 1.4
+  largeImageHeight: 2
+  clusterWidth: 2.2
+  clusterHeight: 2.2
+  clusterPadding: 0.05
+  twoImageDiagonalOffsetY: 0.05
+  twoImageDiagonalOffsetX: 0.35
+  twoImageAspectSimilarityThreshold: 0.25
+  fillTransparentWithWhite: 1
+  transparentAlphaThreshold: 0.05
+  transparentPixelRatioThreshold: 0.15
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
@@ -11072,6 +11086,20 @@ MonoBehaviour:
   infoboxGenerator: {fileID: 1169686116}
   backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
   loadingScreen: {fileID: 1235979131}
+  smallMaxPixels: 200000
+  mediumMaxPixels: 600000
+  smallImageHeight: 1.1
+  mediumImageHeight: 1.4
+  largeImageHeight: 2
+  clusterWidth: 2.2
+  clusterHeight: 2.2
+  clusterPadding: 0.05
+  twoImageDiagonalOffsetY: 0.05
+  twoImageDiagonalOffsetX: 0.35
+  twoImageAspectSimilarityThreshold: 0.25
+  fillTransparentWithWhite: 1
+  transparentAlphaThreshold: 0.05
+  transparentPixelRatioThreshold: 0.15
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
