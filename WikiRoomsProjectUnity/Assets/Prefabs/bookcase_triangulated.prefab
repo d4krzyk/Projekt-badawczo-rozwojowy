@@ -110,6 +110,14 @@ MonoBehaviour:
   - {fileID: 6220459616262144272, guid: 63c4493873dd8024dacc0b8a5af36c2c, type: 3}
   Sign: {fileID: 3482480152544124024, guid: ed7c7389ed3716349876ea924b07c85c, type: 3}
   shelfRowInitialPosition: []
+  drawSignArrow: 1
+  signArrowRadius: 0.1
+  signArrowHeadRadius: 0.16
+  signArrowHeadLength: 0.24
+  signArrowConeSegments: 4
+  signArrowSpinSpeed: 60
+  signArrowStartLocalOffsetFromShelf: {x: 0, y: 2.3, z: 0}
+  shelfLinkLocalOffset: {x: 0, y: 1.9, z: 0}
   booksPerRow: 2
   zStep: -0.63
   rowYOffset: 0.517

@@ -29,11 +29,21 @@ public class CursorController : MonoBehaviour
 
     // Outline
     [Header("Outline Settings")]
-    public Color outlineColor = Color.yellow;
+    public Color outlineColor = Color.white;
     [Range(0f, 10f)] public float outlineWidth = 4f;
     public bool addOutlineIfMissing = true; // doda Outline gdy brak
 
     Outline lastOutline; // aktualny outline na obiekcie
+
+    [Header("Nearest Sign Outline")]
+    public bool highlightNearestSign = true;
+    public float signOutlineMaxDistance = 5f;
+    public Color signOutlineColor = Color.white;
+    [Range(0f, 20f)] public float signOutlineWidth = 10f;
+    public bool addSignOutlineIfMissing = true;
+
+    Outline lastSignOutline;
+    SignController lastSign;
 
     [Header("Hover UI")]
     public GameObject hoverUI; // przypisz GameObject z GUI (wyłączony domyślnie)
@@ -114,6 +124,7 @@ public class CursorController : MonoBehaviour
     void LateUpdate()
     {
         UpdateCrosshair();
+        UpdateNearestSignOutline();
     }
 
     void UpdateCrosshair()
@@ -337,6 +348,94 @@ public class CursorController : MonoBehaviour
             lastOutline.enabled = false;
             lastOutline = null;
         }
+    }
+
+    void UpdateNearestSignOutline()
+    {
+        if (!highlightNearestSign)
+        {
+            DisableNearestSignOutline();
+            return;
+        }
+
+        if (SignController.ActiveSigns.Count == 0)
+        {
+            DisableNearestSignOutline();
+            return;
+        }
+
+        Vector3 origin = transform.position;
+        if (playerController != null) origin = playerController.transform.position;
+        else if (mainCamera != null) origin = mainCamera.transform.position;
+
+        float maxDistSqr = signOutlineMaxDistance * signOutlineMaxDistance;
+        float bestDistSqr = maxDistSqr;
+        SignController best = null;
+
+        for (int i = 0; i < SignController.ActiveSigns.Count; i++)
+        {
+            var sign = SignController.ActiveSigns[i];
+            if (sign == null) continue;
+            float d = (sign.transform.position - origin).sqrMagnitude;
+            if (d <= bestDistSqr)
+            {
+                bestDistSqr = d;
+                best = sign;
+            }
+        }
+
+        if (best == null)
+        {
+            DisableNearestSignOutline();
+            return;
+        }
+
+        if (best != lastSign)
+        {
+            DisableNearestSignOutline();
+            lastSign = best;
+            lastSign.SetForceOnTop(true);
+            lastSignOutline = GetOrAddOutline(best.gameObject, addSignOutlineIfMissing);
+        }
+
+        if (lastSign != null)
+        {
+            lastSign.SetForceOnTop(true);
+        }
+
+        if (lastSignOutline != null)
+        {
+            lastSignOutline.enabled = true;
+            setOutlineColor(lastSignOutline, signOutlineColor);
+            setOutlineWidth(lastSignOutline, signOutlineWidth);
+        }
+    }
+
+    void DisableNearestSignOutline()
+    {
+        if (lastSignOutline != null)
+        {
+            lastSignOutline.enabled = false;
+        }
+        if (lastSign != null)
+        {
+            lastSign.SetForceOnTop(false);
+        }
+        lastSignOutline = null;
+        lastSign = null;
+    }
+
+    Outline GetOrAddOutline(GameObject obj, bool allowAdd)
+    {
+        if (obj == null) return null;
+        Outline outline = obj.GetComponent<Outline>();
+        if (outline == null && obj.transform.parent != null)
+            outline = obj.transform.parent.GetComponent<Outline>();
+
+        if (outline == null && allowAdd)
+            outline = obj.AddComponent<Outline>();
+
+        return outline;
     }
 
     // Pomocnicze metody do ustawiania właściwości w różnych wersjach Outline

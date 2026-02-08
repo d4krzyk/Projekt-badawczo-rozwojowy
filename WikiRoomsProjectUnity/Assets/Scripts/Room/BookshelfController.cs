@@ -7,6 +7,17 @@ public class BookshelfController : MonoBehaviour
     public GameObject Sign;
     public Transform[] shelfRowInitialPosition;
 
+    [Header("Sign link arrow")]
+    public bool drawSignArrow = true;
+    public float signArrowRadius = 0.08f;
+    public float signArrowHeadRadius = 0.18f;
+    public float signArrowHeadLength = 0.24f;
+    public int signArrowConeSegments = 4;
+    public float signArrowSpinSpeed = 60f;
+    public Vector3 signArrowStartLocalOffsetFromShelf = new Vector3(0f, 2.3f, 0f);
+    public Vector3 shelfLinkLocalOffset = new Vector3(0f, 1.9f, 0f);
+
+    [Header("Bookshelf settings")]
     public int booksPerRow = 2;
     public float zStep = -0.63f;   // domyślny przesunięcie w osi Z między książkami (używane gdy brak rendererów)
     public float rowYOffset = 0.517f; // (nieużywane jeśli rowHeights ustawione)
@@ -269,6 +280,137 @@ public class BookshelfController : MonoBehaviour
 
         var sc = signObj.GetComponent<SignController>();
         if (sc != null) sc.SetSignText(name);
+
+
+        if (drawSignArrow)
+        {
+            CreateSignArrow(signObj, parent);
+        }
+    }
+
+    private static Mesh cachedConeMesh;
+    private Material cachedArrowMaterial;
+
+    private void CreateSignArrow(GameObject signObj, Transform parent)
+    {
+        if (signObj == null || parent == null) return;
+
+        Vector3 startWorld = parent.TransformPoint(signArrowStartLocalOffsetFromShelf);
+        Vector3 endWorld = parent.TransformPoint(shelfLinkLocalOffset);
+        float height = endWorld.y - startWorld.y;
+        float totalLength = Mathf.Abs(height);
+        if (totalLength <= 0.001f) return;
+
+        Vector3 dir = (height >= 0f) ? Vector3.up : Vector3.down;
+        float headLength = Mathf.Clamp(signArrowHeadLength, 0.01f, totalLength * 0.7f);
+        float shaftLength = Mathf.Max(0.01f, totalLength - headLength);
+
+        GameObject arrowRoot = new GameObject("SignArrow");
+        arrowRoot.transform.SetParent(parent, true);
+        arrowRoot.transform.position = startWorld + dir * (totalLength * 0.5f);
+        arrowRoot.transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
+
+        GameObject arrowSpinRoot = new GameObject("ArrowSpinRoot");
+        arrowSpinRoot.transform.SetParent(arrowRoot.transform, false);
+
+        var spinner = arrowSpinRoot.AddComponent<SignArrowSpinner>();
+        spinner.spinSpeed = signArrowSpinSpeed;
+
+        GameObject shaft = CreateArrowPartCylinder(arrowSpinRoot.transform, "Shaft");
+        shaft.transform.localPosition = new Vector3(0f, -totalLength * 0.5f + shaftLength * 0.5f, 0f);
+        shaft.transform.localRotation = Quaternion.identity;
+        shaft.transform.localScale = new Vector3(signArrowRadius, shaftLength, signArrowRadius);
+
+        GameObject head = CreateArrowPartCone(arrowSpinRoot.transform, "Head");
+        head.transform.localPosition = new Vector3(0f, totalLength * 0.5f - headLength, 0f);
+        head.transform.localRotation = Quaternion.identity;
+        head.transform.localScale = new Vector3(signArrowHeadRadius, headLength, signArrowHeadRadius);
+    }
+
+    private GameObject CreateArrowPartCylinder(Transform parent, string name)
+    {
+        GameObject part = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        part.name = name;
+        part.transform.SetParent(parent, false);
+        var col = part.GetComponent<Collider>();
+        if (col != null) Destroy(col);
+
+        ApplyArrowMaterial(part.GetComponent<MeshRenderer>());
+        return part;
+    }
+
+    private GameObject CreateArrowPartCone(Transform parent, string name)
+    {
+        GameObject part = new GameObject(name);
+        part.transform.SetParent(parent, false);
+        var mf = part.AddComponent<MeshFilter>();
+        var mr = part.AddComponent<MeshRenderer>();
+        mf.sharedMesh = GetConeMesh(signArrowConeSegments);
+        ApplyArrowMaterial(mr);
+        return part;
+    }
+
+    private void ApplyArrowMaterial(MeshRenderer renderer)
+    {
+        if (renderer == null) return;
+        renderer.sharedMaterial = GetArrowMaterial();
+    }
+
+    private Material GetArrowMaterial()
+    {
+        if (cachedArrowMaterial == null)
+        {
+            cachedArrowMaterial = new Material(Shader.Find("Unlit/Texture"));
+            cachedArrowMaterial.color = Color.white;
+        }
+        return cachedArrowMaterial;
+    }
+
+    private Mesh GetConeMesh(int segments)
+    {
+        if (cachedConeMesh != null) return cachedConeMesh;
+
+        int seg = Mathf.Max(3, segments);
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> triangles = new List<int>();
+
+        int tipIndex = 0;
+        vertices.Add(new Vector3(0f, 1f, 0f));
+
+        for (int i = 0; i < seg; i++)
+        {
+            float angle = (Mathf.PI * 2f * i) / seg;
+            vertices.Add(new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)));
+        }
+
+        int baseCenterIndex = vertices.Count;
+        vertices.Add(Vector3.zero);
+
+        for (int i = 0; i < seg; i++)
+        {
+            int curr = 1 + i;
+            int next = 1 + ((i + 1) % seg);
+            triangles.Add(tipIndex);
+            triangles.Add(next);
+            triangles.Add(curr);
+        }
+
+        for (int i = 0; i < seg; i++)
+        {
+            int curr = 1 + i;
+            int next = 1 + ((i + 1) % seg);
+            triangles.Add(baseCenterIndex);
+            triangles.Add(curr);
+            triangles.Add(next);
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.SetVertices(vertices);
+        mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        cachedConeMesh = mesh;
+        return cachedConeMesh;
     }
 
     public void AddBookElongatedRoom(string name, string content, string articleLink, Transform parent)

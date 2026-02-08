@@ -8930,8 +8930,13 @@ MonoBehaviour:
   audioSource: {fileID: 947016147}
   playerController: {fileID: 621679088}
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 8
+  outlineWidth: 4
   addOutlineIfMissing: 1
+  highlightNearestSign: 1
+  signOutlineMaxDistance: 5
+  signOutlineColor: {r: 1, g: 1, b: 1, a: 1}
+  signOutlineWidth: 10
+  addSignOutlineIfMissing: 1
   hoverUI: {fileID: 2102580965}
   hoverTags:
   - Book
@@ -10975,7 +10980,7 @@ MonoBehaviour:
   portalNext: {fileID: 1958911163}
   portalPrevious: {fileID: 1751320008}
   infoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
+  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
   loadingScreen: {fileID: 1235979131}
   EnterTime: 0
   ExitTime: 0
@@ -11065,7 +11070,7 @@ MonoBehaviour:
   portalNext: {fileID: 410983050840802480}
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
+  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
   loadingScreen: {fileID: 1235979131}
   EnterTime: 0
   ExitTime: 0
