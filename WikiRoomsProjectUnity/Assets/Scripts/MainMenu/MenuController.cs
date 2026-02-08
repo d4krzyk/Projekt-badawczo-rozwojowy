@@ -9,6 +9,11 @@ public class MenuController : MonoBehaviour
 
     public GameObject settingsMenuPanel;
 
+    [Header("Settings")]
+    public Toggle toggleGenAISettings;
+
+    const string GenAIEnabledKey = "GenAITexturesEnabled";
+
 
 
     [Header("UI audio")]
@@ -25,6 +30,27 @@ public class MenuController : MonoBehaviour
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 0f;
         }
+
+        if (toggleGenAISettings != null)
+        {
+            bool enabled = PlayerPrefs.GetInt(GenAIEnabledKey, 1) == 1;
+            toggleGenAISettings.isOn = enabled;
+            toggleGenAISettings.onValueChanged.AddListener(OnGenAIToggleChanged);
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (toggleGenAISettings != null)
+        {
+            toggleGenAISettings.onValueChanged.RemoveListener(OnGenAIToggleChanged);
+        }
+    }
+
+    void OnGenAIToggleChanged(bool isOn)
+    {
+        PlayerPrefs.SetInt(GenAIEnabledKey, isOn ? 1 : 0);
+        PlayerPrefs.Save();
     }
 
     // metody dostępne z zewnątrz do odtwarzania dźwięków UI

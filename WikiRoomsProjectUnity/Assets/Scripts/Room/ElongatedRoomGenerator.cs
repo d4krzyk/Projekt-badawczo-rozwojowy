@@ -10,6 +10,8 @@ using TMPro;
 
 public class ElongatedRoomGenerator : MonoBehaviour
 {
+    const string GenAIEnabledKey = "GenAITexturesEnabled";
+
     public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf, imageHolder;
     public Transform initialRoomPosition;
     public Material sampleImageMat; 
@@ -290,6 +292,13 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     private async Task HandleTextures(string articleName, RoomsController roomsController)
     {
+        if (!IsGenAITexturesEnabled())
+        {
+            Debug.Log("GenAI textures disabled - using default materials.");
+            SetDefaultMaterials();
+            return;
+        }
+
         string category = string.IsNullOrEmpty(ArticleData?.category) ? "default" : ArticleData.category;
         Debug.Log($"Waiting for {category} textures...");
         TexturesStructure cachedTextures = roomsController.GetCachedTextures(articleName);
@@ -353,6 +362,11 @@ public class ElongatedRoomGenerator : MonoBehaviour
         extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
         extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat});
         bookshelf.GetComponent<MeshRenderer>().sharedMaterial = defBookcaseMat;
+    }
+
+    bool IsGenAITexturesEnabled()
+    {
+        return PlayerPrefs.GetInt(GenAIEnabledKey, 1) == 1;
     }
 
     public async Task<string> GetArticleAsync(string article)
