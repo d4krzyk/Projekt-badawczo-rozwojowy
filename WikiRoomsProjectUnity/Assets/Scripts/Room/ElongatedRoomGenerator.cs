@@ -45,7 +45,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     [Header("Image cluster layout")]
     public float clusterWidth = 2.2f;
     public float clusterHeight = 2.2f;
-    public float clusterPadding = 0.05f;
+    public float clusterPadding = 0.15f;
     public float twoImageDiagonalOffsetY = 0.05f;
     public float twoImageDiagonalOffsetX = 0.35f;
     [Range(0.0f, 1.0f)]
@@ -1010,6 +1010,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
             int c = (cols == 1) ? 0 : i % cols;
 
             Vector3 localPos = new Vector3(startX + c * (cellWidth + clusterPadding * 2), startY - r * (cellHeight + clusterPadding * 2), 0f);
+            if (count == 3 && cols == 2 && r == 1)
+            {
+                localPos.x = 0f;
+            }
             if (applyDiagonalOffset)
             {
                 float sign = (i == 0) ? -1f : 1f;

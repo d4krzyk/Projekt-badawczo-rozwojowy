@@ -59,6 +59,9 @@ public class CursorController : MonoBehaviour
     private bool isHoverUIInteractive = false; // flaga czy hover UI jest w trybie interaktywnym
     private GameObject currentImageObject = null; // przechowuje aktualnie najechany Image do sprawdzenia Ctrl
 
+    [Header("Controls UI")]
+    public GameObject controlsUI; // przypisz GameObject z GUI (wyłączony domyślnie)
+
     void Start()
     {
         if (crosshairImage == null)
@@ -117,6 +120,18 @@ public class CursorController : MonoBehaviour
                     playerController.movementLocked = false;
                 Debug.Log("[CursorController] Hover UI interactive mode disabled");
             }
+        }
+
+        // Sprawdź, czy Tab jest przytrzymywany
+        if (Input.GetKey(KeyCode.Tab))
+        {
+            if (controlsUI != null)
+                controlsUI.SetActive(true);
+        }
+        else
+        {
+            if (controlsUI != null)
+                controlsUI.SetActive(false);
         }
     }
 
