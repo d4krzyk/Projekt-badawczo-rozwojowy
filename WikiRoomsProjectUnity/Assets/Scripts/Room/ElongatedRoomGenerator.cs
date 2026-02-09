@@ -133,7 +133,13 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
         HasLoaded = false;
-        if(roomsController.elongatedRoom == this) loadingScreen.SetActive(true);
+        if(roomsController.elongatedRoom == this)
+        {
+            loadingScreen.SetActive(true);
+            // Zresetuj animację loading screen
+            var loadingMotion = loadingScreen.GetComponentInChildren<LoadingPuzzleMotion>();
+            if (loadingMotion != null) loadingMotion.ResetAnimation();
+        }
         auth_header = "Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(backendConfig.username + ":" + backendConfig.password));
         string displayArticleName = Uri.UnescapeDataString(articleName);
         // nie odtwarzaj dźwięku dla portalu

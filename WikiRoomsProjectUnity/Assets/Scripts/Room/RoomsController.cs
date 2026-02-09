@@ -43,7 +43,13 @@ public class RoomsController : MonoBehaviour
             elongatedRoom.ResetRoom();
             elongatedRoom.GenerateRoom(currentRoomNode.Value, this);
         }
-        if (!elongatedRoom.HasLoaded) elongatedRoom.loadingScreen.SetActive(true);
+        if (!elongatedRoom.HasLoaded)
+        {
+            elongatedRoom.loadingScreen.SetActive(true);
+            // Zresetuj animację loading screen
+            var loadingMotion = elongatedRoom.loadingScreen.GetComponentInChildren<LoadingPuzzleMotion>();
+            if (loadingMotion != null) loadingMotion.ResetAnimation();
+        }
         elongatedRoom.SetActivePortalPrevious(true);
         if (currentRoomNode.Next != null) elongatedRoom.SetActivePortalNext(true);
         else elongatedRoom.SetActivePortalNext(false);

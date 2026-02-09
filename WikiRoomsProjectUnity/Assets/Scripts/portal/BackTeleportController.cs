@@ -88,6 +88,16 @@ public class BackTeleportController : MonoBehaviour
             yield return null;
         }
         
+        // Wywołaj swap pokojów PRZED teleportacją (loading UI pojawi się tutaj)
+        if (!gameController.SwapRoomsPrevious())
+        {
+            // Jeśli swap się nie powiódł, przerwij
+            if (playerController != null)
+                playerController.movementLocked = false;
+            isPulling = false;
+            yield break;
+        }
+        
         // Wykonaj teleportację
         player.position = teleportPoint.position;
         player.rotation = Quaternion.Euler(0, 180, 0);
@@ -116,7 +126,7 @@ public class BackTeleportController : MonoBehaviour
     {
         if (collider.GetComponent<Transform>() == player)
         {
-            if (gameController.SwapRoomsPrevious()) TeleportPlayer();
+            TeleportPlayer();
         }
     }
 }

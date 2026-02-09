@@ -202,4 +202,33 @@ public class LoadingPuzzleMotion : MonoBehaviour
             p.reachedEnd = false;
         }
     }
+
+    public void ResetAnimation()
+    {
+        // Zatrzymaj wszystkie korutyny
+        if (_rotationCoroutine != null) StopCoroutine(_rotationCoroutine);
+        StopAllCoroutines();
+
+        // Zresetuj stan wszystkich puzzli
+        for (int i = 0; i < puzzles.Length; i++)
+        {
+            var p = puzzles[i];
+            if (p == null || p.rect == null) continue;
+            Vector2 pos = p.rect.anchoredPosition;
+            pos.x = startX;
+            p.rect.anchoredPosition = pos;
+            p.started = false;
+            p.reachedEnd = false;
+            p.baseY = p.rect.anchoredPosition.y;
+            p.phase = i * phaseOffset;
+            var e = p.rect.localEulerAngles;
+            e.z = Mathf.Round(e.z / rotationStep) * rotationStep;
+            p.rect.localEulerAngles = e;
+        }
+
+        // Uruchom korutyny ponownie
+        StartCoroutine(RunRandomSequence());
+        if (motionMode == MotionMode.Rotate && rotationInterval > 0f)
+            _rotationCoroutine = StartCoroutine(RotateSnappy());
+    }
 }
