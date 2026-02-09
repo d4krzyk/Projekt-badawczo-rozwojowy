@@ -1002,14 +1002,14 @@ public class ElongatedRoomGenerator : MonoBehaviour
         float cellWidth = (clusterWidth / cols) - (clusterPadding * 2);
 
         float startY = (clusterHeight / 2f) - (cellHeight / 2f) - clusterPadding;
-        float startZ = -(clusterWidth / 2f) + (cellWidth / 2f) + clusterPadding;
+        float startX = -(clusterWidth / 2f) + (cellWidth / 2f) + clusterPadding;
 
         for (int i = 0; i < payloads.Count; i++)
         {
             int r = (cols == 1) ? i : i / cols;
             int c = (cols == 1) ? 0 : i % cols;
 
-            Vector3 localPos = new Vector3(0f, startY - r * (cellHeight + clusterPadding * 2), startZ + c * (cellWidth + clusterPadding * 2));
+            Vector3 localPos = new Vector3(startX + c * (cellWidth + clusterPadding * 2), startY - r * (cellHeight + clusterPadding * 2), 0f);
             if (applyDiagonalOffset)
             {
                 float sign = (i == 0) ? -1f : 1f;
