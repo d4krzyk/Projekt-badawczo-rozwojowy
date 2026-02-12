@@ -3163,6 +3163,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   elongatedRoom: {fileID: 1892327105}
   secondElongatedRoom: {fileID: 1836512196}
+  finalUI: {fileID: 798999163}
+  finalUIScore: {fileID: 4480860}
+  finalUIRoomCount: {fileID: 1435940204}
+  finalUITime: {fileID: 1887834481}
+  goalUI: {fileID: 36500714}
+  logger: {fileID: 2101044395}
 --- !u!4 &335614233
 Transform:
   m_ObjectHideFlags: 0
@@ -5268,13 +5274,13 @@ MonoBehaviour:
 
     <i>E</i> - interact
 
-    <i>Z (hold)</i> - camera
-    zoom
+    <i>Z (hold)</i> - camera zoom
 
-    <i>Esc</i> - pause menu
+    <i>Esc</i>
+    - pause menu
 
-    <i>L. Ctrl (hold, while aiming at captioned
-    image)</i> - Hover UI interactive mode'
+    <i>L. Ctrl (hold, while aiming at captioned image)</i> - Hover
+    UI interactive mode'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
   m_sharedMaterial: {fileID: 3066015743098452413, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
@@ -5934,7 +5940,7 @@ GameObject:
   - component: {fileID: 828602344}
   - component: {fileID: 828602343}
   m_Layer: 5
-  m_Name: QuitButton
+  m_Name: MenuButton
   m_TagString: MenuOption
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6029,7 +6035,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 828602343}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 970434244}
+        m_TargetAssemblyTypeName: PauseController, Assembly-CSharp
+        m_MethodName: OnMenuClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &828602345
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7968,6 +7986,11 @@ MonoBehaviour:
   resumeButton: {fileID: 2128816315}
   menuButton: {fileID: 686896383}
   giveUpButton: {fileID: 583576636}
+  finalUI: {fileID: 798999163}
+  finalUIScore: {fileID: 4480860}
+  finalUIRoomCount: {fileID: 1435940204}
+  finalUITime: {fileID: 1887834481}
+  logger: {fileID: 2101044395}
   hoverSound: {fileID: 8300000, guid: d783a8eb33560444a9098ed644ef21bf, type: 3}
   clickSound: {fileID: 8300000, guid: 07a0ab06103abda4da99144eda50d14f, type: 3}
   soundVolume: 0.35
@@ -14172,7 +14195,7 @@ MonoBehaviour:
   portalNext: {fileID: 1958911163}
   portalPrevious: {fileID: 1751320008}
   infoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
   loadingScreen: {fileID: 1235979131}
   smallMaxPixels: 200000
   mediumMaxPixels: 600000
@@ -14412,7 +14435,7 @@ MonoBehaviour:
   portalNext: {fileID: 410983050840802480}
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
   loadingScreen: {fileID: 1235979131}
   smallMaxPixels: 200000
   mediumMaxPixels: 600000

@@ -5,11 +5,18 @@ public class RoomsController : MonoBehaviour
 {
     public ElongatedRoomGenerator elongatedRoom;
     public ElongatedRoomGenerator secondElongatedRoom;
+    public GameObject finalUI;
+    public TMPro.TMP_Text finalUIScore;
+    public TMPro.TMP_Text finalUIRoomCount;
+    public TMPro.TMP_Text finalUITime;
+    public TMPro.TMP_Text goalUI;
+    public Logger logger;
 
     Dictionary<string, TexturesStructure> textureCache;
     Dictionary<string, ArticleStructure> articleCache;
     LinkedList<string> roomHistory;
     LinkedListNode<string> currentRoomNode;
+    string targetArticleName = null;
 
     void Start()
     {
@@ -19,6 +26,8 @@ public class RoomsController : MonoBehaviour
         elongatedRoom.GenerateRoom(elongatedRoom.articleName, this);
         elongatedRoom.PreviousRoom = "";
         currentRoomNode = roomHistory.AddFirst(elongatedRoom.articleName);
+        targetArticleName = FindAnyObjectByType<GameController>()?.TargetArticleName;
+        goalUI.text = targetArticleName != null ? targetArticleName : "No target article set";
     }
 
     public bool SwapRoomsNext()
@@ -49,6 +58,21 @@ public class RoomsController : MonoBehaviour
             // Zresetuj animację loading screen
             var loadingMotion = elongatedRoom.loadingScreen.GetComponentInChildren<LoadingPuzzleMotion>();
             if (loadingMotion != null) loadingMotion.ResetAnimation();
+        }
+        if(targetArticleName != null)
+        {
+            if(elongatedRoom.ArticleData.name.ToLower() == targetArticleName.ToLower())
+            {
+                finalUI.SetActive(true);
+                finalUIScore.text = logger.GetTotalBooksOpened().ToString();
+                finalUIRoomCount.text = logger.GetTotalRoomsVisited().ToString();
+                int duration = (int)logger.GetSessionDuration();
+                int hours = Mathf.FloorToInt(duration / 3600);
+                int minutes = Mathf.FloorToInt(duration / 60 % 60);
+                int seconds = Mathf.FloorToInt(duration % 60);
+                finalUITime.text = $"{hours} h {minutes} min {seconds} s";
+                logger.SendLogs();
+            }
         }
         elongatedRoom.SetActivePortalPrevious(true);
         if (currentRoomNode.Next != null) elongatedRoom.SetActivePortalNext(true);

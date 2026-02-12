@@ -9,12 +9,17 @@ public class PauseController : MonoBehaviour
     public Button resumeButton;
     public Button menuButton;
     public Button giveUpButton;
+    public GameObject finalUI;
+    public TMPro.TMP_Text finalUIScore;
+    public TMPro.TMP_Text finalUIRoomCount;
+    public TMPro.TMP_Text finalUITime;
+
+    public Logger logger;
 
     [Header("UI Sounds")]
     public AudioClip hoverSound;
     public AudioClip clickSound;
     [Range(0f, 1f)] public float soundVolume = 1f;
-    
     AudioSource audioSource;
     CanvasGroup canvasGroup;
 
@@ -39,7 +44,7 @@ public class PauseController : MonoBehaviour
         // Znajdź PlayerController jeśli nie jest przypisany
         if (playerController == null)
         {
-            playerController = FindObjectOfType<PlayerController>();
+            playerController = FindAnyObjectByType<PlayerController>();
         }
 
         // Przypisz callback do przycisków
@@ -94,6 +99,7 @@ public class PauseController : MonoBehaviour
     {
         Debug.Log("Menu button clicked");
         Time.timeScale = 1f;
+        Destroy(FindAnyObjectByType<GameController>());
         SceneManager.LoadScene("MainMenu");
         PlayClickSound();
     }
@@ -102,8 +108,16 @@ public class PauseController : MonoBehaviour
     {
         Debug.Log("Give up button clicked");
         Time.timeScale = 1f;
-        SceneManager.LoadScene("MainMenu");
         PlayClickSound();
+        finalUI.SetActive(true);
+        finalUIScore.text = logger.GetTotalBooksOpened().ToString();
+        finalUIRoomCount.text = logger.GetTotalRoomsVisited().ToString();
+        int duration = (int)logger.GetSessionDuration();
+        int hours = Mathf.FloorToInt(duration / 3600);
+        int minutes = Mathf.FloorToInt(duration / 60 % 60);
+        int seconds = Mathf.FloorToInt(duration % 60);
+        finalUITime.text = $"{hours} h {minutes} min {seconds} s";
+        logger.SendLogs();
     }
 
     void AddHoverSoundToButton(Button button)

@@ -9,6 +9,7 @@ public class CheckSearchButton : MonoBehaviour
     public GameObject messagePlayPanelText;
     public GameObject nicknameTextField;
     public GameObject articleTextField;
+    public GameObject targetArticleTextField;
     public Button SearchButton; // jeśli null, zostanie pobrany z tego GameObjectu lub z childów
     public GameController gameController;
 
@@ -30,6 +31,7 @@ public class CheckSearchButton : MonoBehaviour
         // // pobierz teksty z pól (obsługuje TMP_InputField, TextMeshProUGUI, TextMeshPro oraz InputField)
         string nick = GetTextFromField(nicknameTextField);
         string article = GetTextFromField(articleTextField);
+        string targetArticle = GetTextFromField(targetArticleTextField);
 
         bool nickOk = !string.IsNullOrWhiteSpace(nick);
         bool articleOk = !string.IsNullOrWhiteSpace(article);
@@ -51,15 +53,14 @@ public class CheckSearchButton : MonoBehaviour
         }
         gameController.ArticleName = article;
         gameController.PlayerNick = nick;
+        gameController.TargetArticleName = targetArticle;
         // wszystko ok -> ukryj komunikat i wywołaj akcję startu (onClick przycisku)
         if (tmpUGUI != null) tmpUGUI.text = "";
         else if (tmp3D != null) tmp3D.text = "";
         messagePlayPanelText.SetActive(false);
 
         SceneManager.LoadScene("WikiRooms");
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName("WikiRooms"));
-
-        return;
+        // SceneManager.SetActiveScene(SceneManager.GetSceneByName("WikiRooms"));
     }
 
     // pomocnicza funkcja odczytująca tekst z różnych typów pól

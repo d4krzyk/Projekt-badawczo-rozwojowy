@@ -1684,6 +1684,7 @@ MonoBehaviour:
   messagePlayPanelText: {fileID: 1124226674}
   nicknameTextField: {fileID: 681985500}
   articleTextField: {fileID: 765094483}
+  targetArticleTextField: {fileID: 496060158}
   SearchButton: {fileID: 591573661}
   gameController: {fileID: 1839466777}
 --- !u!1 &623048389
@@ -5121,6 +5122,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   ArticleName: 
   PlayerNick: 
+  TargetArticleName: 
 --- !u!4 &1839466778
 Transform:
   m_ObjectHideFlags: 0

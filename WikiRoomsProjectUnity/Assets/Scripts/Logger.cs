@@ -16,9 +16,11 @@ public class Logger : MonoBehaviour
     string currentPath;
     string playerNick;
     string auth_header;
+    float sessionStartTime;
 
     void Start()
     {
+        sessionStartTime = Time.time;
         sessionId = Guid.NewGuid().ToString();
         roomLogs = new List<RoomLog>();
         lastLinkLogs = new List<LinkLog>();
@@ -110,5 +112,25 @@ public class Logger : MonoBehaviour
         logs.session_logs = roomLogs;
 
         SendRoomLogToDB(logs, false); // ustaw true/false wg potrzeby
+    }
+
+    public float GetSessionDuration()
+    {
+        return Time.time - sessionStartTime;
+    }
+
+    public int GetTotalRoomsVisited()
+    {
+        return roomLogs.Count;
+    }
+
+    public int GetTotalBooksOpened()
+    {
+        int count = 0;
+        foreach (var room in roomLogs)
+        {
+            count += room.bookLogs.Count;
+        }
+        return count;
     }
 }
