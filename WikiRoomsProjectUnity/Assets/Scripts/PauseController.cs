@@ -110,13 +110,13 @@ public class PauseController : MonoBehaviour
         Time.timeScale = 1f;
         PlayClickSound();
         finalUI.SetActive(true);
-        finalUIScore.text = logger.GetTotalBooksOpened().ToString();
-        finalUIRoomCount.text = logger.GetTotalRoomsVisited().ToString();
+        finalUIScore.text = logger.GetTotalBooksOpened().ToString("D9");
+        finalUIRoomCount.text = logger.GetTotalRoomsVisited().ToString("D9");
         int duration = (int)logger.GetSessionDuration();
         int hours = Mathf.FloorToInt(duration / 3600);
         int minutes = Mathf.FloorToInt(duration / 60 % 60);
         int seconds = Mathf.FloorToInt(duration % 60);
-        finalUITime.text = $"{hours} h {minutes} min {seconds} s";
+        finalUITime.text = $"{hours:00} h {minutes:00} min {seconds:00} s";
         logger.SendLogs();
     }
 
