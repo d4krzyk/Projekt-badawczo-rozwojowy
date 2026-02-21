@@ -469,8 +469,8 @@ MonoBehaviour:
     <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Ecclesiastical_jurisdiction\">jurisdiction</link></color>
     of the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Episcopal_see\">episcopal
     see</link></color> is called the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Holy_See\">Holy
-    See</link></color> . The word see comes from the Latin for 'seat' or 'chair'
-    ( sede , referring in particular to the one on which the newly elected pope sits
+    See</link></color>. The word see comes from the Latin for 'seat' or 'chair' (
+    sede , referring in particular to the one on which the newly elected pope sits
     during the enthronement ceremony). It is the Holy See that is the <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/Sovereign_entity\">sovereign
     entity</link></color> under <color=#5D1DEAFF><link=\"https://en.wikipedia.org/wiki/International_law\">international
     law</link></color> headquartered in the distinctively independent Vatican City,
@@ -622,7 +622,7 @@ MonoBehaviour:
     , who was elected on 8 May 2025 on the second day of the [2025 papal conclave](https://en.wikipedia.org/wiki/2025_papal_conclave)
     .\\n\\nAlthough his office is called the papacy , the [jurisdiction](https://en.wikipedia.org/wiki/Ecclesiastical_jurisdiction)
     of the [episcopal see](https://en.wikipedia.org/wiki/Episcopal_see) is called
-    the [Holy See](https://en.wikipedia.org/wiki/Holy_See) . The word see comes from
+    the [Holy See](https://en.wikipedia.org/wiki/Holy_See). The word see comes from
     the Latin for 'seat' or 'chair' ( sede , referring in particular to the one on
     which the newly elected pope sits during the enthronement ceremony). It is the
     Holy See that is the [sovereign entity](https://en.wikipedia.org/wiki/Sovereign_entity)
@@ -9872,7 +9872,7 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 77524043f63116d41823855b0f5082c3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 121f2b250c866574085cbff0b118c8af, type: 2}
   m_sharedMaterial: {fileID: 3066015743098452413, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -14192,8 +14192,13 @@ MonoBehaviour:
   portalNext: {fileID: 1958911163}
   portalPrevious: {fileID: 1751320008}
   infoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 11400000, guid: a995a153d9f962144920a0f8a02e4cca, type: 2}
   loadingScreen: {fileID: 1235979131}
+  infoboxMinIntervalSeconds: 0.6
+  imagesListMinIntervalSeconds: 0.5
+  imageDownloadMinIntervalSeconds: 0.2
+  max429Retries: 3
+  retryBaseDelaySeconds: 0.75
   smallMaxPixels: 200000
   mediumMaxPixels: 600000
   smallImageHeight: 1.1
@@ -14471,8 +14476,13 @@ MonoBehaviour:
   portalNext: {fileID: 410983050840802480}
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 11400000, guid: a995a153d9f962144920a0f8a02e4cca, type: 2}
   loadingScreen: {fileID: 1235979131}
+  infoboxMinIntervalSeconds: 0.6
+  imagesListMinIntervalSeconds: 0.5
+  imageDownloadMinIntervalSeconds: 0.2
+  max429Retries: 3
+  retryBaseDelaySeconds: 0.75
   smallMaxPixels: 200000
   mediumMaxPixels: 600000
   smallImageHeight: 1.1
