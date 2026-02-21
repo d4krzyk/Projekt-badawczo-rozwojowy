@@ -17,9 +17,12 @@ public class RoomsController : MonoBehaviour
     LinkedList<string> roomHistory;
     LinkedListNode<string> currentRoomNode;
     string targetArticleName = null;
+    bool sessionEnded = false;
 
     void Start()
     {
+        AudioListener.pause = false;
+
         textureCache = new Dictionary<string, TexturesStructure>();
         articleCache = new Dictionary<string, ArticleStructure>();
         roomHistory = new LinkedList<string>();
@@ -32,6 +35,11 @@ public class RoomsController : MonoBehaviour
 
     public bool SwapRoomsNext()
     {
+        if (sessionEnded)
+        {
+            return false;
+        }
+
         if (currentRoomNode.Next == null)
         {
             Debug.LogWarning("No next room in history to swap to.");
@@ -63,6 +71,7 @@ public class RoomsController : MonoBehaviour
         {
             if(elongatedRoom.ArticleData.name.ToLower() == targetArticleName.ToLower())
             {
+                EnterFinalState();
                 finalUI.SetActive(true);
                 finalUIScore.text = logger.GetTotalBooksOpened().ToString("D9");
                 finalUIRoomCount.text = logger.GetTotalRoomsVisited().ToString("D9");
@@ -82,6 +91,11 @@ public class RoomsController : MonoBehaviour
 
     public bool SwapRoomsPrevious()
     {
+        if (sessionEnded)
+        {
+            return false;
+        }
+
         if (currentRoomNode.Previous == null)
         {
             Debug.LogWarning("No previous room in history to swap to.");
@@ -156,5 +170,23 @@ public class RoomsController : MonoBehaviour
     public string GetPreviousRoomName()
     {
         return currentRoomNode.Previous != null ? currentRoomNode.Previous.Value : null;
+    }
+
+    void EnterFinalState()
+    {
+        if (sessionEnded) return;
+        sessionEnded = true;
+
+        Time.timeScale = 0f;
+        AudioListener.pause = true;
+
+        PlayerController playerController = FindAnyObjectByType<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.movementLocked = true;
+        }
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }

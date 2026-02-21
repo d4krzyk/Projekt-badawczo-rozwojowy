@@ -22,9 +22,12 @@ public class PauseController : MonoBehaviour
     [Range(0f, 1f)] public float soundVolume = 1f;
     AudioSource audioSource;
     CanvasGroup canvasGroup;
+    bool sessionEnded;
 
     public void Start()
     {
+        AudioListener.pause = false;
+
         // Przygotuj AudioSource
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
@@ -98,6 +101,7 @@ public class PauseController : MonoBehaviour
     public void OnMenuClicked()
     {
         Debug.Log("Menu button clicked");
+        AudioListener.pause = false;
         Time.timeScale = 1f;
         Destroy(FindAnyObjectByType<GameController>());
         SceneManager.LoadScene("MainMenu");
@@ -106,9 +110,12 @@ public class PauseController : MonoBehaviour
 
     public void OnGiveUpClicked()
     {
+        if (sessionEnded) return;
+        sessionEnded = true;
+
         Debug.Log("Give up button clicked");
-        Time.timeScale = 1f;
         PlayClickSound();
+        EnterFinalState();
         finalUI.SetActive(true);
         finalUIScore.text = logger.GetTotalBooksOpened().ToString("D9");
         finalUIRoomCount.text = logger.GetTotalRoomsVisited().ToString("D9");
@@ -118,6 +125,25 @@ public class PauseController : MonoBehaviour
         int seconds = Mathf.FloorToInt(duration % 60);
         finalUITime.text = $"{hours:00} h {minutes:00} min {seconds:00} s";
         logger.SendLogs();
+    }
+
+    void EnterFinalState()
+    {
+        Time.timeScale = 0f;
+        AudioListener.pause = true;
+
+        if (playerController == null)
+        {
+            playerController = FindAnyObjectByType<PlayerController>();
+        }
+
+        if (playerController != null)
+        {
+            playerController.movementLocked = true;
+        }
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     void AddHoverSoundToButton(Button button)

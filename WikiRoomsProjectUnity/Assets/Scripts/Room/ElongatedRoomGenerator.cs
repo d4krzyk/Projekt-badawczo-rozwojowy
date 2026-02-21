@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -11,6 +12,14 @@ using TMPro;
 public class ElongatedRoomGenerator : MonoBehaviour
 {
     const string GenAIEnabledKey = "GenAITexturesEnabled";
+
+    static readonly SemaphoreSlim InfoboxRequestGate = new SemaphoreSlim(1, 1);
+    static readonly SemaphoreSlim ImagesListRequestGate = new SemaphoreSlim(1, 1);
+    static readonly SemaphoreSlim ImageDownloadRequestGate = new SemaphoreSlim(1, 1);
+    static readonly object RateLimitLock = new object();
+    static DateTime lastInfoboxRequestUtc = DateTime.MinValue;
+    static DateTime lastImagesListRequestUtc = DateTime.MinValue;
+    static DateTime lastImageDownloadRequestUtc = DateTime.MinValue;
 
     public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf, imageHolder;
     public Transform initialRoomPosition;
@@ -32,6 +41,13 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public InfoboxGenerator infoboxGenerator;
     public BackendConfig backendConfig;
     public GameObject loadingScreen;
+
+    [Header("Request throttling")]
+    [Min(0f)] public float infoboxMinIntervalSeconds = 0.6f;
+    [Min(0f)] public float imagesListMinIntervalSeconds = 0.5f;
+    [Min(0f)] public float imageDownloadMinIntervalSeconds = 0.2f;
+    [Min(0)] public int max429Retries = 3;
+    [Min(0f)] public float retryBaseDelaySeconds = 0.75f;
 
     [Header("Image size classification")]
     public int smallMaxPixels = 200000;
@@ -429,26 +445,19 @@ public class ElongatedRoomGenerator : MonoBehaviour
         string encodedArticle = UnityWebRequest.EscapeURL(article);
         string url = $"{backendConfig.baseURL}/scraping/infobox?page_name={encodedArticle}";
 
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            request.SetRequestHeader("accept", "application/json");
-            request.SetRequestHeader("Authorization", auth_header);
-
-            var operation = request.SendWebRequest();
-
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (request.result == UnityWebRequest.Result.Success)
+        return await SendTextRequestRateLimitedAsync(
+            () =>
             {
-                return request.downloadHandler.text;
-            }
-            else
-            {
-                Debug.LogError("Request error: " + request.error);
-                return null;
-            }
-        }
+                UnityWebRequest request = UnityWebRequest.Get(url);
+                request.SetRequestHeader("accept", "application/json");
+                request.SetRequestHeader("Authorization", auth_header);
+                return request;
+            },
+            InfoboxRequestGate,
+            GetLastInfoboxRequestUtc,
+            SetLastInfoboxRequestUtc,
+            infoboxMinIntervalSeconds,
+            "infobox");
     }
 
     void ApplyTexturesToMaterials(TexturesStructure texturesData)
@@ -672,26 +681,154 @@ public class ElongatedRoomGenerator : MonoBehaviour
         var textures = new List<Texture2D>();
         var captions = new List<string>();
 
-        string url = $"{backendConfig.baseURL}/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
         imagesList = await GetImagesListAsync(pageName);
         if (imagesList == null || imagesList.Count == 0) return new ImagesResult { textures = textures, captions = captions };
 
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        int imagesDownloaded = 0;
+        foreach (var imgObj in imagesList)
         {
-            request.SetRequestHeader("Authorization", auth_header);
-            int imagesDownloaded = 0;
+            if (imgObj == null || imgObj.Count == 0) continue;
+            var kvp = imgObj.First();
+            string imgUrl = kvp.Key;
+            string caption = kvp.Value ?? "[no caption]";
 
-            foreach (var imgObj in imagesList)
+            if (string.IsNullOrEmpty(imgUrl)) continue;
+
+            Debug.Log($"Loading image {imagesDownloaded + 1}/{imagesList.Count}");
+            Texture2D tex = await GetImageAsTexture(imgUrl);
+            if (tex != null)
             {
-                if (imgObj == null || imgObj.Count == 0) continue;
-                var kvp = imgObj.First();
-                string imgUrl = kvp.Key;
-                string caption = kvp.Value ?? "[no caption]";
+                Debug.Log($"{tex.width}, {tex.height}");
+                textures.Add(ProcessTransparency(tex));
+                captions.Add(caption);
+            }
 
-                if (string.IsNullOrEmpty(imgUrl)) continue;
-                using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(imgUrl))
+            imagesDownloaded++;
+        }
+
+        return new ImagesResult { textures = textures, captions = captions };
+    }
+
+    private async Task<List<Dictionary<string, string>>> GetImagesListAsync(string pageName)
+    {
+        List<Dictionary<string, string>> imagesList = new List<Dictionary<string, string>>();
+        string url = $"{backendConfig.baseURL}/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
+
+        string json = await SendTextRequestRateLimitedAsync(
+            () =>
+            {
+                UnityWebRequest request = UnityWebRequest.Get(url);
+                request.SetRequestHeader("Authorization", auth_header);
+                return request;
+            },
+            ImagesListRequestGate,
+            GetLastImagesListRequestUtc,
+            SetLastImagesListRequestUtc,
+            imagesListMinIntervalSeconds,
+            "images-list");
+
+        if (string.IsNullOrEmpty(json))
+        {
+            return imagesList;
+        }
+
+        ImagesResponse resp = null;
+        try
+        {
+            resp = JsonConvert.DeserializeObject<ImagesResponse>(json);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"JSON parse error: {e.Message}");
+            return imagesList;
+        }
+
+        imagesList = resp?.GetImagesList() ?? new List<Dictionary<string, string>>();
+        return imagesList;
+    }
+
+    private async Task<Texture2D> GetImageAsTexture(string imageUrl)
+    {
+        return await SendTextureRequestRateLimitedAsync(
+            () => UnityWebRequestTexture.GetTexture(imageUrl),
+            ImageDownloadRequestGate,
+            GetLastImageDownloadRequestUtc,
+            SetLastImageDownloadRequestUtc,
+            imageDownloadMinIntervalSeconds,
+            imageUrl);
+    }
+
+    private async Task<string> SendTextRequestRateLimitedAsync(
+        Func<UnityWebRequest> requestFactory,
+        SemaphoreSlim gate,
+        Func<DateTime> getLastRequestUtc,
+        Action<DateTime> setLastRequestUtc,
+        float minIntervalSeconds,
+        string requestName)
+    {
+        for (int attempt = 0; attempt <= max429Retries; attempt++)
+        {   
+            int retryDelayMs = 0;
+            await gate.WaitAsync();
+            try
+            {
+                await WaitForMinIntervalAsync(minIntervalSeconds, getLastRequestUtc);
+                setLastRequestUtc(DateTime.UtcNow);
+
+                using (UnityWebRequest request = requestFactory())
                 {
-                    Debug.Log($"Loading image {imagesDownloaded+1}/{imagesList.Count}");
+                    var operation = request.SendWebRequest();
+                    while (!operation.isDone)
+                        await Task.Yield();
+
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        return request.downloadHandler.text;
+                    }
+
+                    if (request.responseCode == 429 && attempt < max429Retries)
+                    {
+                        retryDelayMs = GetRetryDelayMilliseconds(request, attempt);
+                        Debug.LogWarning($"Request '{requestName}' got 429. Retry {attempt + 1}/{max429Retries} in {retryDelayMs / 1000f:0.##}s.");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Request '{requestName}' failed ({request.responseCode}): {request.error}");
+                        return null;
+                    }
+                }
+            }
+            finally
+            {
+                gate.Release();
+            }
+
+            if (retryDelayMs > 0)
+                await Task.Delay(retryDelayMs);
+        }
+
+        return null;
+    }
+
+    private async Task<Texture2D> SendTextureRequestRateLimitedAsync(
+        Func<UnityWebRequest> requestFactory,
+        SemaphoreSlim gate,
+        Func<DateTime> getLastRequestUtc,
+        Action<DateTime> setLastRequestUtc,
+        float minIntervalSeconds,
+        string imageUrl)
+    {
+        for (int attempt = 0; attempt <= max429Retries; attempt++)
+        {
+            int retryDelayMs = 0;
+            await gate.WaitAsync();
+            try
+            {
+                await WaitForMinIntervalAsync(minIntervalSeconds, getLastRequestUtc);
+                setLastRequestUtc(DateTime.UtcNow);
+
+                using (UnityWebRequest texReq = requestFactory())
+                {
                     var texOp = texReq.SendWebRequest();
                     while (!texOp.isDone)
                         await Task.Yield();
@@ -701,88 +838,94 @@ public class ElongatedRoomGenerator : MonoBehaviour
                         try
                         {
                             Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
-                            Debug.Log($"{tex.width}, {tex.height}");
-                            textures.Add(ProcessTransparency(tex));
-                            captions.Add(caption);
+                            return tex;
                         }
                         catch (Exception e)
                         {
-                            Debug.LogWarning($"Błąd tworzenia Texture2D z {imgUrl}: {e.Message}");
+                            Debug.LogWarning($"Błąd tworzenia Texture2D z {imageUrl}: {e.Message}");
+                            return null;
                         }
+                    }
+
+                    if (texReq.responseCode == 429 && attempt < max429Retries)
+                    {
+                        retryDelayMs = GetRetryDelayMilliseconds(texReq, attempt);
+                        Debug.LogWarning($"Image request got 429 for '{imageUrl}'. Retry {attempt + 1}/{max429Retries} in {retryDelayMs / 1000f:0.##}s.");
                     }
                     else
                     {
-                        Debug.LogWarning($"Failed to download texture {imgUrl}: {texReq.error}");
+                        Debug.LogWarning($"Failed to download texture {imageUrl} ({texReq.responseCode}): {texReq.error}");
+                        return null;
                     }
-                    imagesDownloaded++;
                 }
             }
+            finally
+            {
+                gate.Release();
+            }
 
-            return new ImagesResult { textures = textures, captions = captions };
+            if (retryDelayMs > 0)
+                await Task.Delay(retryDelayMs);
         }
-    }
 
-    private async Task<List<Dictionary<string, string>>> GetImagesListAsync(string pageName)
-    {
-        List<Dictionary<string, string>> imagesList = new List<Dictionary<string, string>>();
-        string url = $"{backendConfig.baseURL}/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            request.SetRequestHeader("Authorization", auth_header);
-            var op = request.SendWebRequest();
-            while (!op.isDone)
-                await Task.Yield();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogWarning($"GetImages list failed: {request.error}");
-                return imagesList;
-            }
-
-            string json = request.downloadHandler.text;
-            ImagesResponse resp = null;
-            try
-            {
-                resp = JsonConvert.DeserializeObject<ImagesResponse>(json);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"JSON parse error: {e.Message}");
-                return imagesList;
-            }
-
-            
-            imagesList = resp?.GetImagesList();
-        }
-        return imagesList;
-    }
-
-    private async Task<Texture2D> GetImageAsTexture(string imageUrl)
-    {
-        using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(imageUrl))
-        {   
-            var texOp = texReq.SendWebRequest();
-            while (!texOp.isDone)
-                await Task.Yield();
-
-            if (texReq.result == UnityWebRequest.Result.Success)
-            {
-                try
-                {
-                    Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
-                    return tex;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning($"Błąd tworzenia Texture2D z {imageUrl}: {e.Message}");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"Failed to download texture {imageUrl}: {texReq.error}");
-            }
-        }
         return null;
+    }
+
+    private async Task WaitForMinIntervalAsync(float minIntervalSeconds, Func<DateTime> getLastRequestUtc)
+    {
+        if (minIntervalSeconds <= 0f) return;
+
+        DateTime lastRequestUtc = getLastRequestUtc();
+        if (lastRequestUtc == DateTime.MinValue) return;
+
+        double elapsedSeconds = (DateTime.UtcNow - lastRequestUtc).TotalSeconds;
+        if (elapsedSeconds >= minIntervalSeconds) return;
+
+        int waitMs = Mathf.CeilToInt((minIntervalSeconds - (float)elapsedSeconds) * 1000f);
+        if (waitMs > 0)
+            await Task.Delay(waitMs);
+    }
+
+    private int GetRetryDelayMilliseconds(UnityWebRequest request, int attempt)
+    {
+        string retryAfterHeader = request.GetResponseHeader("Retry-After");
+        if (!string.IsNullOrEmpty(retryAfterHeader) && int.TryParse(retryAfterHeader, out int retryAfterSeconds))
+        {
+            return Mathf.Max(0, retryAfterSeconds) * 1000;
+        }
+
+        float expDelaySeconds = retryBaseDelaySeconds * Mathf.Pow(2f, attempt);
+        return Mathf.CeilToInt(Mathf.Max(0f, expDelaySeconds) * 1000f);
+    }
+
+    private DateTime GetLastInfoboxRequestUtc()
+    {
+        lock (RateLimitLock) return lastInfoboxRequestUtc;
+    }
+
+    private void SetLastInfoboxRequestUtc(DateTime value)
+    {
+        lock (RateLimitLock) lastInfoboxRequestUtc = value;
+    }
+
+    private DateTime GetLastImagesListRequestUtc()
+    {
+        lock (RateLimitLock) return lastImagesListRequestUtc;
+    }
+
+    private void SetLastImagesListRequestUtc(DateTime value)
+    {
+        lock (RateLimitLock) lastImagesListRequestUtc = value;
+    }
+
+    private DateTime GetLastImageDownloadRequestUtc()
+    {
+        lock (RateLimitLock) return lastImageDownloadRequestUtc;
+    }
+
+    private void SetLastImageDownloadRequestUtc(DateTime value)
+    {
+        lock (RateLimitLock) lastImageDownloadRequestUtc = value;
     }
 
 
