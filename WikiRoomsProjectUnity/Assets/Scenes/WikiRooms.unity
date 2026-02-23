@@ -14194,11 +14194,19 @@ MonoBehaviour:
   infoboxGenerator: {fileID: 1169686116}
   backendConfig: {fileID: 11400000, guid: a995a153d9f962144920a0f8a02e4cca, type: 2}
   loadingScreen: {fileID: 1235979131}
-  infoboxMinIntervalSeconds: 0.6
-  imagesListMinIntervalSeconds: 0.5
-  imageDownloadMinIntervalSeconds: 0.2
-  max429Retries: 3
-  retryBaseDelaySeconds: 0.75
+  requestThrottling:
+    infoboxMinIntervalSeconds: 0.6
+    imagesListMinIntervalSeconds: 0.5
+    imageDownloadMinIntervalSeconds: 0.2
+    textMax429Retries: 3
+    retryBaseDelaySeconds: 0.75
+  imageDownloads:
+    maxConcurrentDownloads: 3
+    max429Retries: 5
+    extraThrottleStepSeconds: 0.35
+    maxExtraThrottleSeconds: 1.5
+    successThrottleDecaySeconds: 0.05
+  imageProgressToHideLoadingScreen: 0.35
   smallMaxPixels: 200000
   mediumMaxPixels: 600000
   smallImageHeight: 1.1
@@ -14478,11 +14486,19 @@ MonoBehaviour:
   infoboxGenerator: {fileID: 1169686116}
   backendConfig: {fileID: 11400000, guid: a995a153d9f962144920a0f8a02e4cca, type: 2}
   loadingScreen: {fileID: 1235979131}
-  infoboxMinIntervalSeconds: 0.6
-  imagesListMinIntervalSeconds: 0.5
-  imageDownloadMinIntervalSeconds: 0.2
-  max429Retries: 3
-  retryBaseDelaySeconds: 0.75
+  requestThrottling:
+    infoboxMinIntervalSeconds: 0.6
+    imagesListMinIntervalSeconds: 0.5
+    imageDownloadMinIntervalSeconds: 0.2
+    textMax429Retries: 3
+    retryBaseDelaySeconds: 0.75
+  imageDownloads:
+    maxConcurrentDownloads: 3
+    max429Retries: 5
+    extraThrottleStepSeconds: 0.35
+    maxExtraThrottleSeconds: 1.5
+    successThrottleDecaySeconds: 0.05
+  imageProgressToHideLoadingScreen: 0.35
   smallMaxPixels: 200000
   mediumMaxPixels: 600000
   smallImageHeight: 1.1

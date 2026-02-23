@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,26 @@ public class ElongatedRoomGenerator : MonoBehaviour
 {
     const string GenAIEnabledKey = "GenAITexturesEnabled";
 
+    [Serializable]
+    public class RequestThrottlingSettings
+    {
+        [Min(0f)] public float infoboxMinIntervalSeconds = 0.6f;
+        [Min(0f)] public float imagesListMinIntervalSeconds = 0.5f;
+        [Min(0f)] public float imageDownloadMinIntervalSeconds = 0.2f;
+        [Min(0)] public int textMax429Retries = 3;
+        [Min(0f)] public float retryBaseDelaySeconds = 0.75f;
+    }
+
+    [Serializable]
+    public class ImageDownloadSettings
+    {
+        [Min(1)] public int maxConcurrentDownloads = 4;
+        [Min(0)] public int max429Retries = 4;
+        [Min(0f)] public float extraThrottleStepSeconds = 0.15f;
+        [Min(0f)] public float maxExtraThrottleSeconds = 1.5f;
+        [Min(0f)] public float successThrottleDecaySeconds = 0.05f;
+    }
+
     static readonly SemaphoreSlim InfoboxRequestGate = new SemaphoreSlim(1, 1);
     static readonly SemaphoreSlim ImagesListRequestGate = new SemaphoreSlim(1, 1);
     static readonly SemaphoreSlim ImageDownloadRequestGate = new SemaphoreSlim(1, 1);
@@ -20,6 +41,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
     static DateTime lastInfoboxRequestUtc = DateTime.MinValue;
     static DateTime lastImagesListRequestUtc = DateTime.MinValue;
     static DateTime lastImageDownloadRequestUtc = DateTime.MinValue;
+    static DateTime imageDownloadCooldownUntilUtc = DateTime.MinValue;
+    static float dynamicImageExtraThrottleSeconds = 0f;
 
     public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf, imageHolder;
     public Transform initialRoomPosition;
@@ -43,11 +66,13 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public GameObject loadingScreen;
 
     [Header("Request throttling")]
-    [Min(0f)] public float infoboxMinIntervalSeconds = 0.6f;
-    [Min(0f)] public float imagesListMinIntervalSeconds = 0.5f;
-    [Min(0f)] public float imageDownloadMinIntervalSeconds = 0.2f;
-    [Min(0)] public int max429Retries = 3;
-    [Min(0f)] public float retryBaseDelaySeconds = 0.75f;
+    public RequestThrottlingSettings requestThrottling = new RequestThrottlingSettings();
+
+    [Header("Image download")]
+    public ImageDownloadSettings imageDownloads = new ImageDownloadSettings();
+
+    [Header("Loading screen")]
+    [Range(0f, 1f)] public float imageProgressToHideLoadingScreen = 0.5f;
 
     [Header("Image size classification")]
     public int smallMaxPixels = 200000;
@@ -88,6 +113,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
     List<GameObject> spawnedExtensions = new List<GameObject>();
     string auth_header;
     public bool HasLoaded = false;
+    SemaphoreSlim imageDownloadParallelGate;
+    int imageDownloadParallelGateLimit = -1;
     
     // struktura odpowiadająca JSON z /images/generator
     [Serializable]
@@ -112,13 +139,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
         }
     }
 
-    // wynik pobierania obrazów
-    public class ImagesResult
-    {
-        public List<Texture2D> textures;
-        public List<string> captions;
-    }
-
     enum ImageSizeClass
     {
         Small,
@@ -139,15 +159,25 @@ public class ElongatedRoomGenerator : MonoBehaviour
         public Vector3 localPosition;
         public Vector3 localRotation;
     }
+
+    struct SlotClusterResult
+    {
+        public int slotIndex;
+        public List<ImagePayload> payloads;
+    }
     
     public void Awake()
     {
+        EnsureSettings();
         GameController gameController = FindAnyObjectByType<GameController>();
         if(gameController != null) articleName = gameController.ArticleName;
     }
 
     public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
+        EnsureSettings();
+        EnsureImageDownloadParallelGate();
+        ResetImageDownloadAdaptiveState();
         HasLoaded = false;
         if(roomsController.elongatedRoom == this)
         {
@@ -190,65 +220,34 @@ public class ElongatedRoomGenerator : MonoBehaviour
         await Task.WhenAll(textureTask, infoboxTask);
 
         SpawnExtensionsWithBookselfs();
-        loadingScreen.SetActive(false);
         HasLoaded = true;
-        await HandleImagesOneAtATime(articleName);
+        await HandleImagesProgressively(articleName, hideWhenProgressReached: true);
+        HideLoadingScreenIfNeeded();
         Debug.Log($"Loaded {articleName} successfully.");
     }
 
-    private async Task HandleImagesAllAtOnce(string articleName)
+    private async Task HandleImagesProgressively(string articleName, bool hideWhenProgressReached)
     {
-        List<Texture2D> wikiImages;
-        List<string> wikiImageCaptions;
-        try
-        {
-            var imagesResult = await GetImagesAsTextures(articleName);
-            wikiImages = imagesResult?.textures ?? new List<Texture2D>();
-            wikiImageCaptions = imagesResult?.captions ?? new List<string>();
-            // teraz masz listę Texture2D w wikiImages oraz odpowiadające markdowny w wikiImageCaptions
-        }
-        catch (Exception ex)
-        {
-            Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
-            wikiImages = new List<Texture2D>();
-            wikiImageCaptions = new List<string>();
-        }
         var slots = BuildImageSlots();
-        if (slots.Count == 0 || wikiImages.Count == 0) return;
-
-        int usableCount = Mathf.Min(wikiImages.Count, slots.Count * 4);
-        var groupSizes = BuildGroupSizes(usableCount, slots.Count, 4);
-        int imageIndex = 0;
-
-        for (int s = 0; s < slots.Count; s++)
+        if (slots.Count == 0)
         {
-            int count = groupSizes[s];
-            if (count <= 0) continue;
-
-            var payloads = new List<ImagePayload>();
-            for (int k = 0; k < count && imageIndex < usableCount; k++)
-            {
-                Texture2D tex = wikiImages[imageIndex];
-                string caption = imageIndex < wikiImageCaptions.Count ? wikiImageCaptions[imageIndex] : null;
-                if (tex != null)
-                {
-                    payloads.Add(new ImagePayload
-                    {
-                        texture = ProcessTransparency(tex),
-                        caption = caption,
-                        sizeClass = ClassifyImage(tex)
-                    });
-                }
-                imageIndex++;
-            }
-
-            SpawnImageCluster(slots[s], payloads);
+            if (hideWhenProgressReached)
+                HideLoadingScreenIfNeeded();
+            return;
         }
 
-    }
+        if (roomsController != null)
+        {
+            List<RoomsController.CachedImageData> cachedImages = roomsController.GetCachedImages(articleName);
+            if (cachedImages != null && cachedImages.Count > 0)
+            {
+                SpawnCachedImages(cachedImages, slots);
+                if (hideWhenProgressReached)
+                    HideLoadingScreenIfNeeded();
+                return;
+            }
+        }
 
-    private async Task HandleImagesOneAtATime(string articleName)
-    {
         var imagesLinks = new List<Dictionary<string, string>>();
         try
         {
@@ -259,42 +258,166 @@ public class ElongatedRoomGenerator : MonoBehaviour
             Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
         }
 
-        var slots = BuildImageSlots();
-        if (slots.Count == 0 || imagesLinks.Count == 0) return;
-
-        int usableCount = Mathf.Min(imagesLinks.Count, slots.Count * 4);
-        var groupSizes = BuildGroupSizes(usableCount, slots.Count, 4);
-        int imageIndex = 0;
-
-        for (int s = 0; s < slots.Count; s++)
+        if (imagesLinks.Count == 0)
         {
-            int count = groupSizes[s];
-            if (count <= 0) continue;
-
-            var payloads = new List<ImagePayload>();
-            for (int k = 0; k < count && imageIndex < usableCount; k++)
-            {
-                var imgObj = imagesLinks[imageIndex];
-                imageIndex++;
-                if (imgObj == null || imgObj.Count == 0) continue;
-                var kvp = imgObj.First();
-                string imgUrl = kvp.Key;
-                string caption = kvp.Value ?? "[no caption]";
-
-                Texture2D tex = await GetImageAsTexture(imgUrl);
-                if (tex == null) continue;
-
-                payloads.Add(new ImagePayload
-                {
-                    texture = ProcessTransparency(tex),
-                    caption = caption,
-                    sizeClass = ClassifyImage(tex)
-                });
-            }
-
-            SpawnImageCluster(slots[s], payloads);
+            if (hideWhenProgressReached)
+                HideLoadingScreenIfNeeded();
+            return;
         }
 
+        int usableCount = Mathf.Min(imagesLinks.Count, slots.Count * 4);
+        int loadedImagesCount = 0;
+        int imagesTargetToHide = Mathf.CeilToInt(Mathf.Max(0f, Mathf.Min(1f, imageProgressToHideLoadingScreen)) * usableCount);
+        var downloadedForCache = new List<RoomsController.CachedImageData>(usableCount);
+
+        if (hideWhenProgressReached && imagesTargetToHide <= 0)
+            HideLoadingScreenIfNeeded();
+
+        var groupSizes = BuildGroupSizes(usableCount, slots.Count, 4);
+
+        int imageIndex = 0;
+        for (int slotIndex = 0; slotIndex < slots.Count; slotIndex++)
+        {
+            int count = groupSizes[slotIndex];
+            if (count <= 0) continue;
+
+            var tasksForSlot = new List<Task<ImagePayload?>>(count);
+            for (int k = 0; k < count && imageIndex < usableCount; k++)
+            {
+                tasksForSlot.Add(DownloadImagePayloadAsync(imagesLinks[imageIndex]));
+                imageIndex++;
+            }
+
+            SlotClusterResult slotResult = await CollectSlotPayloadsAsync(slotIndex, tasksForSlot);
+            if (slotResult.payloads != null && slotResult.payloads.Count > 0)
+            {
+                SpawnImageCluster(slots[slotResult.slotIndex], slotResult.payloads);
+                loadedImagesCount += slotResult.payloads.Count;
+                AddPayloadsToCacheBuffer(downloadedForCache, slotResult.payloads);
+
+                if (hideWhenProgressReached && loadingScreen != null && loadingScreen.activeSelf && loadedImagesCount >= imagesTargetToHide)
+                {
+                    HideLoadingScreenIfNeeded();
+                }
+            }
+        }
+
+        if (roomsController != null && downloadedForCache.Count > 0)
+        {
+            roomsController.CacheImages(articleName, downloadedForCache);
+        }
+
+    }
+
+    private void SpawnCachedImages(List<RoomsController.CachedImageData> cachedImages, List<ImageSlot> slots)
+    {
+        if (cachedImages == null || cachedImages.Count == 0 || slots == null || slots.Count == 0)
+            return;
+
+        int usableCount = Mathf.Min(cachedImages.Count, slots.Count * 4);
+        var payloads = new List<ImagePayload>(usableCount);
+
+        for (int i = 0; i < usableCount; i++)
+        {
+            RoomsController.CachedImageData cached = cachedImages[i];
+            if (cached == null || cached.texture == null) continue;
+
+            payloads.Add(new ImagePayload
+            {
+                texture = cached.texture,
+                caption = cached.caption ?? string.Empty,
+                sizeClass = ClassifyImage(cached.texture)
+            });
+        }
+
+        if (payloads.Count == 0) return;
+
+        var groupSizes = BuildGroupSizes(payloads.Count, slots.Count, 4);
+        int payloadIndex = 0;
+        for (int slotIndex = 0; slotIndex < slots.Count; slotIndex++)
+        {
+            int count = groupSizes[slotIndex];
+            if (count <= 0) continue;
+
+            var slotPayloads = new List<ImagePayload>(count);
+            for (int k = 0; k < count && payloadIndex < payloads.Count; k++)
+            {
+                slotPayloads.Add(payloads[payloadIndex]);
+                payloadIndex++;
+            }
+
+            if (slotPayloads.Count > 0)
+                SpawnImageCluster(slots[slotIndex], slotPayloads);
+        }
+    }
+
+    private void AddPayloadsToCacheBuffer(List<RoomsController.CachedImageData> targetCache, List<ImagePayload> payloads)
+    {
+        if (targetCache == null || payloads == null || payloads.Count == 0)
+            return;
+
+        for (int i = 0; i < payloads.Count; i++)
+        {
+            if (payloads[i].texture == null) continue;
+
+            targetCache.Add(new RoomsController.CachedImageData
+            {
+                texture = payloads[i].texture,
+                caption = payloads[i].caption ?? string.Empty
+            });
+        }
+    }
+
+    private void HideLoadingScreenIfNeeded()
+    {
+        if (loadingScreen != null && loadingScreen.activeSelf)
+            loadingScreen.SetActive(false);
+    }
+
+    private async Task<SlotClusterResult> CollectSlotPayloadsAsync(int slotIndex, List<Task<ImagePayload?>> tasksForSlot)
+    {
+        if (tasksForSlot == null || tasksForSlot.Count == 0)
+        {
+            return new SlotClusterResult
+            {
+                slotIndex = slotIndex,
+                payloads = new List<ImagePayload>()
+            };
+        }
+
+        ImagePayload?[] results = await Task.WhenAll(tasksForSlot);
+        var payloads = new List<ImagePayload>(results.Length);
+        for (int i = 0; i < results.Length; i++)
+        {
+            if (results[i].HasValue)
+                payloads.Add(results[i].Value);
+        }
+
+        return new SlotClusterResult
+        {
+            slotIndex = slotIndex,
+            payloads = payloads
+        };
+    }
+
+    private async Task<ImagePayload?> DownloadImagePayloadAsync(Dictionary<string, string> imgObj)
+    {
+        if (imgObj == null || imgObj.Count == 0) return null;
+
+        var kvp = imgObj.First();
+        string imgUrl = kvp.Key;
+        if (string.IsNullOrEmpty(imgUrl)) return null;
+
+        string caption = kvp.Value ?? "[no caption]";
+        Texture2D tex = await GetImageAsTexture(imgUrl);
+        if (tex == null) return null;
+
+        return new ImagePayload
+        {
+            texture = ProcessTransparency(tex),
+            caption = caption,
+            sizeClass = ClassifyImage(tex)
+        };
     }
 
 
@@ -347,9 +470,9 @@ public class ElongatedRoomGenerator : MonoBehaviour
     {
         Debug.Log($"Waiting for {articleName} article data...");
         ArticleStructure cachedArticle = null;
-        if (this.roomsController != null)
+        if (roomsController != null)
         {
-            cachedArticle = this.roomsController.GetCachedArticle(articleName);
+            cachedArticle = roomsController.GetCachedArticle(articleName);
         }
 
         if (cachedArticle != null)
@@ -371,8 +494,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
                 Debug.LogError("Article deserialization returned null.");
                 return false;
             }
-            if (this.roomsController != null)
-                this.roomsController.CacheArticle(articleName, ArticleData);
+            if (roomsController != null)
+                roomsController.CacheArticle(articleName, ArticleData);
         }
 
         return true;
@@ -380,10 +503,15 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     void SetDefaultMaterials()
     {
-        spawnRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat, defFloorMat });
-        extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat, defFloorMat });
-        extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { defWallMat});
-        bookshelf.GetComponent<MeshRenderer>().sharedMaterial = defBookcaseMat;
+        ApplyRoomMaterials(defWallMat, defFloorMat, defBookcaseMat);
+    }
+
+    void ApplyRoomMaterials(Material wallMaterial, Material floorMaterial, Material shelfMaterial)
+    {
+        spawnRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMaterial, floorMaterial, floorMaterial });
+        extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMaterial, floorMaterial });
+        extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMaterial });
+        bookshelf.GetComponent<MeshRenderer>().sharedMaterial = shelfMaterial;
     }
 
     bool IsGenAITexturesEnabled()
@@ -456,7 +584,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             InfoboxRequestGate,
             GetLastInfoboxRequestUtc,
             SetLastInfoboxRequestUtc,
-            infoboxMinIntervalSeconds,
+            requestThrottling.infoboxMinIntervalSeconds,
             "infobox");
     }
 
@@ -491,10 +619,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         floorTexture.Apply(false, false);
         floorMat.mainTexture = floorTexture;
 
-        spawnRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat, floorMat });
-        extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat, floorMat });
-        extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMat});
-        bookshelf.GetComponent<MeshRenderer>().sharedMaterial = bookshelfMat;
+        ApplyRoomMaterials(wallMat, floorMat, bookshelfMat);
     }
 
     Texture2D CreateNormalMapFromGrayscale(Texture2D source, float strength = 1.0f)
@@ -673,42 +798,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
         portalPrevious.SetActive(isActive);
     }
 
-    // Pobiera listę URL-i z API i zwraca listę Texture2D oraz odpowiadające im opisy markdown
-    public async Task<ImagesResult> GetImagesAsTextures(string pageName)
-    {
-        if (string.IsNullOrEmpty(pageName)) return new ImagesResult { textures = new List<Texture2D>(), captions = new List<string>() };
-        List<Dictionary<string, string>> imagesList = null;
-        var textures = new List<Texture2D>();
-        var captions = new List<string>();
-
-        imagesList = await GetImagesListAsync(pageName);
-        if (imagesList == null || imagesList.Count == 0) return new ImagesResult { textures = textures, captions = captions };
-
-        int imagesDownloaded = 0;
-        foreach (var imgObj in imagesList)
-        {
-            if (imgObj == null || imgObj.Count == 0) continue;
-            var kvp = imgObj.First();
-            string imgUrl = kvp.Key;
-            string caption = kvp.Value ?? "[no caption]";
-
-            if (string.IsNullOrEmpty(imgUrl)) continue;
-
-            Debug.Log($"Loading image {imagesDownloaded + 1}/{imagesList.Count}");
-            Texture2D tex = await GetImageAsTexture(imgUrl);
-            if (tex != null)
-            {
-                Debug.Log($"{tex.width}, {tex.height}");
-                textures.Add(ProcessTransparency(tex));
-                captions.Add(caption);
-            }
-
-            imagesDownloaded++;
-        }
-
-        return new ImagesResult { textures = textures, captions = captions };
-    }
-
     private async Task<List<Dictionary<string, string>>> GetImagesListAsync(string pageName)
     {
         List<Dictionary<string, string>> imagesList = new List<Dictionary<string, string>>();
@@ -724,7 +813,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             ImagesListRequestGate,
             GetLastImagesListRequestUtc,
             SetLastImagesListRequestUtc,
-            imagesListMinIntervalSeconds,
+            requestThrottling.imagesListMinIntervalSeconds,
             "images-list");
 
         if (string.IsNullOrEmpty(json))
@@ -750,11 +839,17 @@ public class ElongatedRoomGenerator : MonoBehaviour
     private async Task<Texture2D> GetImageAsTexture(string imageUrl)
     {
         return await SendTextureRequestRateLimitedAsync(
-            () => UnityWebRequestTexture.GetTexture(imageUrl),
+            () =>
+            {
+                UnityWebRequest request = UnityWebRequestTexture.GetTexture(imageUrl);
+                request.SetRequestHeader("User-Agent", "WikiRoomsProjectUnity/1.0 (Unity client)");
+                return request;
+            },
             ImageDownloadRequestGate,
+            imageDownloadParallelGate,
             GetLastImageDownloadRequestUtc,
             SetLastImageDownloadRequestUtc,
-            imageDownloadMinIntervalSeconds,
+            requestThrottling.imageDownloadMinIntervalSeconds,
             imageUrl);
     }
 
@@ -766,7 +861,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
         float minIntervalSeconds,
         string requestName)
     {
-        for (int attempt = 0; attempt <= max429Retries; attempt++)
+        int retriesLimit = Mathf.Max(0, requestThrottling.textMax429Retries);
+        for (int attempt = 0; attempt <= retriesLimit; attempt++)
         {   
             int retryDelayMs = 0;
             await gate.WaitAsync();
@@ -786,10 +882,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
                         return request.downloadHandler.text;
                     }
 
-                    if (request.responseCode == 429 && attempt < max429Retries)
+                    if (request.responseCode == 429 && attempt < retriesLimit)
                     {
                         retryDelayMs = GetRetryDelayMilliseconds(request, attempt);
-                        Debug.LogWarning($"Request '{requestName}' got 429. Retry {attempt + 1}/{max429Retries} in {retryDelayMs / 1000f:0.##}s.");
+                        Debug.LogWarning($"Request '{requestName}' got 429. Retry {attempt + 1}/{retriesLimit} in {retryDelayMs / 1000f:0.##}s.");
                     }
                     else
                     {
@@ -813,19 +909,32 @@ public class ElongatedRoomGenerator : MonoBehaviour
     private async Task<Texture2D> SendTextureRequestRateLimitedAsync(
         Func<UnityWebRequest> requestFactory,
         SemaphoreSlim gate,
+        SemaphoreSlim parallelGate,
         Func<DateTime> getLastRequestUtc,
         Action<DateTime> setLastRequestUtc,
         float minIntervalSeconds,
         string imageUrl)
     {
-        for (int attempt = 0; attempt <= max429Retries; attempt++)
+        if (parallelGate != null)
+            await parallelGate.WaitAsync();
+
+        try
+        {
+        int retriesLimit = Mathf.Max(0, imageDownloads.max429Retries);
+        for (int attempt = 0; attempt <= retriesLimit; attempt++)
         {
             int retryDelayMs = 0;
             await gate.WaitAsync();
             try
             {
                 await WaitForMinIntervalAsync(minIntervalSeconds, getLastRequestUtc);
+                await WaitForImageDownloadCooldownAsync();
                 setLastRequestUtc(DateTime.UtcNow);
+            }
+            finally
+            {
+                gate.Release();
+            }
 
                 using (UnityWebRequest texReq = requestFactory())
                 {
@@ -835,6 +944,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
                     if (texReq.result == UnityWebRequest.Result.Success)
                     {
+                        RegisterImageDownloadSuccess();
                         try
                         {
                             Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
@@ -847,10 +957,11 @@ public class ElongatedRoomGenerator : MonoBehaviour
                         }
                     }
 
-                    if (texReq.responseCode == 429 && attempt < max429Retries)
+                    if (texReq.responseCode == 429 && attempt < retriesLimit)
                     {
                         retryDelayMs = GetRetryDelayMilliseconds(texReq, attempt);
-                        Debug.LogWarning($"Image request got 429 for '{imageUrl}'. Retry {attempt + 1}/{max429Retries} in {retryDelayMs / 1000f:0.##}s.");
+                        RegisterImageDownload429(retryDelayMs);
+                        Debug.LogWarning($"Image request got 429 for '{imageUrl}'. Retry {attempt + 1}/{retriesLimit} in {retryDelayMs / 1000f:0.##}s. Extra throttle={GetDynamicImageExtraThrottleSeconds():0.##}s");
                     }
                     else
                     {
@@ -858,17 +969,29 @@ public class ElongatedRoomGenerator : MonoBehaviour
                         return null;
                     }
                 }
-            }
-            finally
-            {
-                gate.Release();
-            }
 
             if (retryDelayMs > 0)
                 await Task.Delay(retryDelayMs);
         }
 
         return null;
+        }
+        finally
+        {
+            if (parallelGate != null)
+                parallelGate.Release();
+        }
+    }
+
+    void EnsureImageDownloadParallelGate()
+    {
+        int desiredLimit = Mathf.Max(1, imageDownloads.maxConcurrentDownloads);
+        if (imageDownloadParallelGate != null && imageDownloadParallelGateLimit == desiredLimit)
+            return;
+
+        imageDownloadParallelGate?.Dispose();
+        imageDownloadParallelGate = new SemaphoreSlim(desiredLimit, desiredLimit);
+        imageDownloadParallelGateLimit = desiredLimit;
     }
 
     private async Task WaitForMinIntervalAsync(float minIntervalSeconds, Func<DateTime> getLastRequestUtc)
@@ -889,13 +1012,90 @@ public class ElongatedRoomGenerator : MonoBehaviour
     private int GetRetryDelayMilliseconds(UnityWebRequest request, int attempt)
     {
         string retryAfterHeader = request.GetResponseHeader("Retry-After");
-        if (!string.IsNullOrEmpty(retryAfterHeader) && int.TryParse(retryAfterHeader, out int retryAfterSeconds))
+        if (!string.IsNullOrEmpty(retryAfterHeader))
         {
-            return Mathf.Max(0, retryAfterSeconds) * 1000;
+            if (int.TryParse(retryAfterHeader, out int retryAfterSeconds))
+            {
+                return Mathf.Max(0, retryAfterSeconds) * 1000;
+            }
+
+            if (DateTimeOffset.TryParse(retryAfterHeader, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset retryAfterDate))
+            {
+                double delayMs = (retryAfterDate.UtcDateTime - DateTime.UtcNow).TotalMilliseconds;
+                if (delayMs > 0)
+                    return Mathf.CeilToInt((float)delayMs);
+            }
         }
 
-        float expDelaySeconds = retryBaseDelaySeconds * Mathf.Pow(2f, attempt);
+        float expDelaySeconds = requestThrottling.retryBaseDelaySeconds * Mathf.Pow(2f, attempt);
         return Mathf.CeilToInt(Mathf.Max(0f, expDelaySeconds) * 1000f);
+    }
+
+    private async Task WaitForImageDownloadCooldownAsync()
+    {
+        float extraThrottle = GetDynamicImageExtraThrottleSeconds();
+        if (extraThrottle > 0f)
+        {
+            int extraMs = Mathf.CeilToInt(extraThrottle * 1000f);
+            if (extraMs > 0)
+                await Task.Delay(extraMs);
+        }
+
+        DateTime cooldownUntilUtc = GetImageDownloadCooldownUntilUtc();
+        if (cooldownUntilUtc == DateTime.MinValue) return;
+
+        int waitMs = Mathf.CeilToInt((float)(cooldownUntilUtc - DateTime.UtcNow).TotalMilliseconds);
+        if (waitMs > 0)
+            await Task.Delay(waitMs);
+    }
+
+    private void RegisterImageDownload429(int retryDelayMs)
+    {
+        DateTime newCooldownUntil = DateTime.UtcNow.AddMilliseconds(Mathf.Max(0, retryDelayMs));
+        lock (RateLimitLock)
+        {
+            if (newCooldownUntil > imageDownloadCooldownUntilUtc)
+                imageDownloadCooldownUntilUtc = newCooldownUntil;
+
+            dynamicImageExtraThrottleSeconds = Mathf.Min(
+                imageDownloads.maxExtraThrottleSeconds,
+                dynamicImageExtraThrottleSeconds + imageDownloads.extraThrottleStepSeconds);
+        }
+    }
+
+    private void RegisterImageDownloadSuccess()
+    {
+        lock (RateLimitLock)
+        {
+            dynamicImageExtraThrottleSeconds = Mathf.Max(0f, dynamicImageExtraThrottleSeconds - imageDownloads.successThrottleDecaySeconds);
+        }
+    }
+
+    private void EnsureSettings()
+    {
+        if (requestThrottling == null)
+            requestThrottling = new RequestThrottlingSettings();
+        if (imageDownloads == null)
+            imageDownloads = new ImageDownloadSettings();
+    }
+
+    private DateTime GetImageDownloadCooldownUntilUtc()
+    {
+        lock (RateLimitLock) return imageDownloadCooldownUntilUtc;
+    }
+
+    private float GetDynamicImageExtraThrottleSeconds()
+    {
+        lock (RateLimitLock) return dynamicImageExtraThrottleSeconds;
+    }
+
+    private void ResetImageDownloadAdaptiveState()
+    {
+        lock (RateLimitLock)
+        {
+            imageDownloadCooldownUntilUtc = DateTime.MinValue;
+            dynamicImageExtraThrottleSeconds = 0f;
+        }
     }
 
     private DateTime GetLastInfoboxRequestUtc()

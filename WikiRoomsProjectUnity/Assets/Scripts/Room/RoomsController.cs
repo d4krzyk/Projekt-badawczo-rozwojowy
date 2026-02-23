@@ -3,6 +3,12 @@ using UnityEngine;
 
 public class RoomsController : MonoBehaviour
 {
+    public class CachedImageData
+    {
+        public Texture2D texture;
+        public string caption;
+    }
+
     public ElongatedRoomGenerator elongatedRoom;
     public ElongatedRoomGenerator secondElongatedRoom;
     public GameObject finalUI;
@@ -14,6 +20,7 @@ public class RoomsController : MonoBehaviour
 
     Dictionary<string, TexturesStructure> textureCache;
     Dictionary<string, ArticleStructure> articleCache;
+    Dictionary<string, List<CachedImageData>> imageCache;
     LinkedList<string> roomHistory;
     LinkedListNode<string> currentRoomNode;
     string targetArticleName = null;
@@ -25,6 +32,7 @@ public class RoomsController : MonoBehaviour
 
         textureCache = new Dictionary<string, TexturesStructure>();
         articleCache = new Dictionary<string, ArticleStructure>();
+        imageCache = new Dictionary<string, List<CachedImageData>>();
         roomHistory = new LinkedList<string>();
         elongatedRoom.GenerateRoom(elongatedRoom.articleName, this);
         elongatedRoom.PreviousRoom = "";
@@ -150,6 +158,26 @@ public class RoomsController : MonoBehaviour
         {
             articleCache[articleName] = article;
         }
+    }
+
+    public List<CachedImageData> GetCachedImages(string articleName)
+    {
+        if (imageCache.TryGetValue(articleName, out List<CachedImageData> images))
+        {
+            return images;
+        }
+
+        return null;
+    }
+
+    public void CacheImages(string articleName, List<CachedImageData> images)
+    {
+        if (string.IsNullOrEmpty(articleName) || images == null || images.Count == 0)
+        {
+            return;
+        }
+
+        imageCache[articleName] = images;
     }
 
     public void AddNextRoomToHistory(string articleName)
