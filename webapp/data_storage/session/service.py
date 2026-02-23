@@ -81,20 +81,14 @@ class SessionService:
             group_id=group_id,
             start_time=session_start_time,
             end_time=session_end_time,
-        user = self.user_service.get_or_create_user(request.user_name)
-        start_time = datetime.utcnow()
-        end_time = start_time + timedelta(seconds=request.session_logs[-1].exitTime)
-
-        session = self.usersession_repo.create(
-            user_id=user.id,
-            start_time=start_time,
-            end_time=end_time,
             is_web=is_web,
             surrendered=request.surrendered or False,
         )
 
         for room_log in request.session_logs:
-            self.room_service.create_room_and_logs(room_log, session.id, start_time)
+            self.room_service.create_room_and_logs(
+                room_log, user_session.id, session_start_time
+            )
 
         self.db.commit()
 
