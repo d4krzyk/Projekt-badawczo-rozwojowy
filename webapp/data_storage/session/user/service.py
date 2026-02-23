@@ -1,5 +1,6 @@
 from .repository import UserRepository
 from .models import DataUser
+from ..group.models import Group
 
 
 class UserService:

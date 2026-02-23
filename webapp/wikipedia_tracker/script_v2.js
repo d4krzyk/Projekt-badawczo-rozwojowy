@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.0.1
+// @version      2.4
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
 // @connect      localhost
@@ -20,6 +20,7 @@
        UŻYTKOWNIK
     --------------------------------*/
     let username = '';
+    let group = '';
 
     /* ------------------------------
        STAN SESJI
@@ -43,12 +44,36 @@
     let sectionTimes = [];
 
     /* ------------------------------
+       OBRAZY
+    --------------------------------*/
+    const IMAGE_MARGIN = 150;
+    const HOVER_MARGIN = 40;
+
+    /* ------------------------------
+       KURSOR
+    --------------------------------*/
+    const CURSOR_SAMPLE_MS = 500;
+    let cursorTrackingActive = false;
+    let lastCursorSample = null;
+    let lastCursorLogTime = 0;
+    let pageCursorStartTime = 0;
+
+    /* ------------------------------
        UTILS
     --------------------------------*/
+    /**
+     * Get current time as an ISO 8601 string.
+     * @returns {string} Current time in ISO format.
+     */
     function nowISO() {
         return new Date().toISOString();
     }
 
+    /**
+     * Extract the article title from the current URL path.
+     * If no title is found, returns the string 'unknown'.
+     * @returns {string} Article title (decoded and spaces restored) or 'unknown'.
+     */
     function getArticleTitle() {
         const match = location.pathname.match(/\/wiki\/(.+)$/);
         return match
@@ -56,10 +81,20 @@
             : 'unknown';
     }
 
+    /**
+     * Locate the main article container element in the page DOM.
+     * @returns {Element|null} The element with class 'mw-parser-output' or null if not found.
+     */
     function getArticleContainer() {
         return document.querySelector('.mw-parser-output');
     }
 
+    /**
+     * Normalize a section heading element's text by removing bracketed
+     * annotations (e.g. [edit]) and trimming whitespace.
+     * @param {Element} el - The heading element (h2/h3/h4).
+     * @returns {string} Cleaned section title.
+     */
     function getSectionTitle(el) {
         return el.innerText.replace(/\[.*?\]/g, '').trim();
     }
@@ -120,6 +155,11 @@
     /* ------------------------------
        STRONA – ENTER / EXIT
     --------------------------------*/
+    /**
+     * Handle entering an article page: record enter time, create a
+     * room object for the session, and initialize section tracking
+     * when article content becomes available.
+     */
     function trackPageEnter() {
         pageEnterTime = new Date();
         currentPage = {
@@ -129,17 +169,31 @@
             exit_time: null,
             books: [],
             book_links: [],
+            images: [],
+            cursor: [],
         };
 
         session.rooms.push(currentPage);
         console.log('Artykuł:', currentPage.name);
 
-        waitForArticleContent(initSectionTracking);
+        waitForArticleContent((headings) => {
+            hideUnwantedSections();
+            initSectionTracking(headings);
+            initImageTracking();
+        });
+        setTimeout(hideUnwantedSections, 500);
+        startCursorTracking();
     }
 
+    /**
+     * Handle exiting an article page: finalize current section,
+     * set exit timestamp, copy section times to the page object and
+     * clean up observers.
+     */
     function trackPageExit() {
         if (!currentPage) return;
 
+        stopCursorTracking();
         endCurrentSection();
 
         currentPage.exit_time = nowISO();
@@ -157,6 +211,11 @@
     /* ------------------------------
        CZEKAJ NA DYNAMICZNY CONTENT
     --------------------------------*/
+    /**
+     * Poll the DOM until the article container and headings are present,
+     * then invoke the provided callback with the headings NodeList.
+     * @param {function} callback - Function to call with the headings NodeList.
+     */
     function waitForArticleContent(callback) {
         const interval = setInterval(() => {
             const container = getArticleContainer();
@@ -172,6 +231,11 @@
     /* ------------------------------
        ŚLEDZENIE SEKCJI
     --------------------------------*/
+    /**
+     * Initialize an IntersectionObserver to monitor section headings
+     * and update the active section as the user scrolls.
+     * @param {NodeList} headings - List of heading elements to observe.
+     */
     function initSectionTracking(headings) {
         cleanupSectionObserver();
 
@@ -184,6 +248,11 @@
         headings.forEach((h) => sectionObserver.observe(h));
     }
 
+    /**
+     * IntersectionObserver callback that determines the most centered
+     * visible heading and starts/ends section timing accordingly.
+     * @param {IntersectionObserverEntry[]} entries - Observer entries.
+     */
     function onSectionIntersect(entries) {
         const visible = entries
             .filter((e) => e.isIntersecting)
@@ -192,8 +261,8 @@
                 distance:
                     Math.abs(
                         e.boundingClientRect.top +
-                            e.boundingClientRect.height / 2 -
-                            window.innerHeight / 2
+                        e.boundingClientRect.height / 2 -
+                        window.innerHeight / 2
                     ),
             }))
             .sort((a, b) => a.distance - b.distance);
@@ -210,6 +279,10 @@
         }
     }
 
+    /**
+     * Finalize timing for the currently active section and push a
+     * session event into `sectionTimes` if the duration is >= 1s.
+     */
     function endCurrentSection() {
         if (!currentSection || !sectionStartTime) return;
 
@@ -228,6 +301,9 @@
         });
     }
 
+    /**
+     * Disconnect and clear the section IntersectionObserver if present.
+     */
     function cleanupSectionObserver() {
         if (sectionObserver) {
             sectionObserver.disconnect();
@@ -238,6 +314,11 @@
     /* ------------------------------
        KLIKNIĘCIA LINKÓW
     --------------------------------*/
+    /**
+     * Record a clicked link (or auxiliary click) into the current room's
+     * `book_links` array with a timestamp.
+     * @param {Event} event - The click/auxclick event.
+     */
     function logLinkInteraction(event) {
         if (!session.active) return;
 
@@ -266,6 +347,269 @@
     });
 
     /* ------------------------------
+       INTERAKCJE Z OBRAZAMI
+    --------------------------------*/
+
+    /**
+     * Retrieve all article images within the main content area, excluding
+     * images that are part of infoboxes.
+     * @returns {HTMLImageElement[]} Array of image elements found in the article.
+     */
+    function getArticleImages() {
+        const container = document.querySelector('.mw-parser-output');
+        if (!container) return [];
+
+        return Array.from(
+            container.querySelectorAll('img')
+        ).filter(img =>
+            img.src &&
+            !img.closest('.infobox')
+        );
+    }
+
+    /**
+     * Observe visibility of an image and accumulate visible time statistics
+     * into the provided imageData object.
+     * @param {HTMLImageElement} image - The image element to observe.
+     * @param {Object} imageData - The data object where interaction stats are stored.
+     * @returns {IntersectionObserver} The observer instance for later disconnection.
+     */
+    function trackImageVisibility(image, imageData) {
+        let visibleStart = null;
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                const ratio = entry.intersectionRect.height / entry.boundingClientRect.height;
+
+                if (entry.isIntersecting && ratio >= 0.5) {
+                    if (!visibleStart) {
+                        visibleStart = Date.now();
+                        imageData.interactions.visible.count++;
+                    }
+                } else {
+                    if (visibleStart) {
+                        imageData.interactions.visible.total_time +=
+                            (Date.now() - visibleStart) / 1000;
+                        visibleStart = null;
+                    }
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: `${IMAGE_MARGIN}px 0px ${IMAGE_MARGIN}px 0px`,
+            threshold: [0.5]
+        });
+
+        observer.observe(image);
+
+        return observer;
+    }
+
+    /**
+     * Determine whether a given point (x,y) lies within a margin around a rect.
+     * @param {DOMRect} rect - Bounding rect to compare against.
+     * @param {number} x - X coordinate of the point.
+     * @param {number} y - Y coordinate of the point.
+     * @param {number} margin - Margin in pixels to expand the rect.
+     * @returns {boolean} True if point is within the expanded rect.
+     */
+    function isNear(rect, x, y, margin) {
+        return (
+            x >= rect.left - margin &&
+            x <= rect.right + margin &&
+            y >= rect.top - margin &&
+            y <= rect.bottom + margin
+        );
+    }
+
+    /**
+     * Check whether a y coordinate falls approximately on the same vertical
+     * band as the rect (within a tolerance).
+     * @param {DOMRect} rect - Bounding rect to compare against.
+     * @param {number} y - Y coordinate to test.
+     * @param {number} [tolerance=10] - Vertical tolerance in pixels.
+     * @returns {boolean}
+     */
+    function isSameY(rect, y, tolerance = 10) {
+        return y >= rect.top - tolerance && y <= rect.bottom + tolerance;
+    }
+
+    /**
+     * Track mouse movement relative to an image to record hover-on,
+     * hover-near and same-row hover interactions.
+     * Returns a cleanup function that removes the attached listener.
+     * @param {HTMLImageElement} image - The image element to track.
+     * @param {Object} imageData - Object where interaction stats are stored.
+     * @returns {Function} Cleanup function to detach the mousemove listener.
+     */
+    function trackImageHover(image, imageData) {
+        let nearStart = null;
+        let sameYStart = null;
+        let onStart = null;
+
+        function onMove(e) {
+            const rect = image.getBoundingClientRect();
+            const x = e.clientX;
+            const y = e.clientY;
+
+            const isOn =
+                x >= rect.left &&
+                x <= rect.right &&
+                y >= rect.top &&
+                y <= rect.bottom;
+
+            // hover on
+            if (isOn) {
+                if (!onStart) {
+                    onStart = Date.now();
+                    imageData.interactions.hover_on.count++;
+                }
+            } else if (onStart) {
+                imageData.interactions.hover_on.total_time +=
+                    (Date.now() - onStart) / 1000;
+                onStart = null;
+            }
+
+            // hover near (not on image)
+            if (!isOn && isNear(rect, x, y, HOVER_MARGIN)) {
+                if (!nearStart) {
+                    nearStart = Date.now();
+                    imageData.interactions.hover_near.count++;
+                }
+            } else if (nearStart) {
+                imageData.interactions.hover_near.total_time +=
+                    (Date.now() - nearStart) / 1000;
+                nearStart = null;
+            }
+
+            // same y
+            if (!isOn && isSameY(rect, y)) {
+                if (!sameYStart) {
+                    sameYStart = Date.now();
+                    imageData.interactions.hover_same_y.count++;
+                }
+            } else if (sameYStart) {
+                imageData.interactions.hover_same_y.total_time +=
+                    (Date.now() - sameYStart) / 1000;
+                sameYStart = null;
+            }
+        }
+
+        document.addEventListener('mousemove', onMove);
+
+        return () => document.removeEventListener('mousemove', onMove);
+    }
+
+    /**
+     * Attach click listener to an image to count click attempts.
+     * @param {HTMLImageElement} image - The image element to observe clicks on.
+     * @param {Object} imageData - Data object where click attempts are recorded.
+     */
+    function trackImageClicks(image, imageData) {
+        image.addEventListener('click', (e) => {
+            imageData.interactions.click_attempts++;
+        }, true);
+    }
+
+    /**
+     * Initialize tracking for all relevant images in the current article.
+     * Populates `currentPage.images` and attaches observers/listeners.
+     */
+    function initImageTracking() {
+        const images = getArticleImages();
+        currentPage.images = [];
+
+        images.forEach(img => {
+            const imageData = {
+                photo_url: img.src,
+                interactions: {
+                    visible: { total_time: 0, count: 0 },
+                    hover_on: { total_time: 0, count: 0 },
+                    hover_near: { total_time: 0, count: 0 },
+                    hover_same_y: { total_time: 0, count: 0 },
+                    click_attempts: 0
+                }
+            };
+
+            currentPage.images.push(imageData);
+
+            trackImageVisibility(img, imageData);
+            trackImageHover(img, imageData);
+            trackImageClicks(img, imageData);
+        });
+    }
+
+    /* ------------------------------
+       RUCHY KURSORA
+    --------------------------------*/
+    /**
+     * Begin sampling cursor movement for the current page. Samples are
+     * throttled and stored into `currentPage.cursor`.
+     */
+    function startCursorTracking() {
+        pageCursorStartTime = performance.now();
+        lastCursorSample = null;
+        lastCursorLogTime = 0;
+        cursorTrackingActive = true;
+
+        if (!currentPage.cursor) {
+            currentPage.cursor = [];
+        }
+
+        document.addEventListener('mousemove', onCursorMove, { passive: true });
+    }
+
+    /**
+     * Stop sampling cursor movement for the current page.
+     */
+    function stopCursorTracking() {
+        cursorTrackingActive = false;
+        document.removeEventListener('mousemove', onCursorMove);
+    }
+
+    /**
+     * Mousemove handler that samples cursor deltas and velocity at a
+     * coarse interval and appends them to the current page cursor log.
+     * @param {MouseEvent} e - Mouse event.
+     */
+    function onCursorMove(e) {
+        if (!session.active || !currentPage || !cursorTrackingActive) return;
+
+        const now = performance.now();
+        if (now - lastCursorLogTime < CURSOR_SAMPLE_MS) return;
+        lastCursorLogTime = now;
+
+        const x = e.clientX + window.scrollX;
+        const y = e.clientY + window.scrollY;
+
+        if (!lastCursorSample) {
+            lastCursorSample = { x, y, t: now };
+            return;
+        }
+
+        const dt = (now - lastCursorSample.t) / 1000;
+        if (dt <= 0) return;
+
+        const dx = x - lastCursorSample.x;
+        const dy = y - lastCursorSample.y;
+
+        const vx = dx / dt;
+        const vy = dy / dt;
+
+        const t = (now - pageCursorStartTime) / 1000;
+
+        currentPage.cursor.push(
+            Math.round(dx),
+            Math.round(dy),
+            +vx.toFixed(6),
+            +vy.toFixed(6),
+            +t.toFixed(2)
+        );
+
+        lastCursorSample = { x, y, t: now };
+    }
+
+    /* ------------------------------
         WYKRYWANIE KOŃCA GRY
     --------------------------------*/
     let gameEnded = false;
@@ -278,9 +622,9 @@
                 if (!(node instanceof HTMLElement)) continue;
 
                 const dialog =
-                      node.getAttribute?.('role') === 'dialog'
-                ? node
-                : node.querySelector?.('[role="dialog"]');
+                    node.getAttribute?.('role') === 'dialog'
+                        ? node
+                        : node.querySelector?.('[role="dialog"]');
 
                 if (!dialog) continue;
 
@@ -304,6 +648,13 @@
     /* ------------------------------
        KONIEC SESJI
     --------------------------------*/
+    /**
+     * Merge consecutive or duplicate room entries by name into a single
+     * aggregated room, preserving enter/exit times, links and combining
+     * 'Introduction' events.
+     * @param {Array} rooms - Array of room objects to merge.
+     * @returns {Array} Array of merged room objects.
+     */
     function mergeDuplicateRooms(rooms) {
         const byName = new Map();
 
@@ -384,6 +735,13 @@
         return mergedRooms;
     }
 
+    /**
+     * Convert internal room objects to a compact session log format that
+     * uses seconds relative to the session start.
+     * @param {Array} rooms - Array of room objects.
+     * @param {string} sessionStartISO - ISO timestamp of session start.
+     * @returns {Array} Array of mapped session log objects.
+     */
     function mapRoomsToSessionLogs(rooms, sessionStartISO) {
         const sessionStartMs = Date.parse(sessionStartISO);
 
@@ -410,6 +768,31 @@
                     clickTime:
                         (Date.parse(link.click_time) - sessionStartMs) / 1000,
                 })),
+
+                imageLogs: (room.images || []).map(img => ({
+                    photoUrl: img.photo_url,
+                    interactions: {
+                        visible: {
+                            totalTime: +img.interactions.visible.total_time.toFixed(3),
+                            count: img.interactions.visible.count,
+                        },
+                        hoverOn: {
+                            totalTime: +img.interactions.hover_on.total_time.toFixed(3),
+                            count: img.interactions.hover_on.count,
+                        },
+                        hoverNear: {
+                            totalTime: +img.interactions.hover_near.total_time.toFixed(3),
+                            count: img.interactions.hover_near.count,
+                        },
+                        hoverSameY: {
+                            totalTime: +img.interactions.hover_same_y.total_time.toFixed(3),
+                            count: img.interactions.hover_same_y.count,
+                        },
+                        clickAttempts: img.interactions.click_attempts,
+                    },
+                })),
+
+                cursorLog: room.cursor || [],
             };
         });
     }
@@ -432,6 +815,11 @@
         endSession('surrender_modal_button');
     });
 
+    /**
+     * Finalize and send the session to the configured API endpoint.
+     * Merges rooms, maps logs and issues a POST request.
+     * @param {string} [reason='unknown'] - Reason code for session end.
+     */
     function endSession(reason = 'unknown') {
         if (!session.active) return;
 
@@ -449,6 +837,8 @@
 
         const data = {
             user_name: username,
+            group: group,
+            surrendered: reason === 'surrender_modal_button',
             session_logs: mapRoomsToSessionLogs(session.rooms, session.start_time),
         };
 
@@ -470,6 +860,10 @@
     /* ------------------------------
        UŻYTKOWNIK
     --------------------------------*/
+    /**
+     * Set the username used for session reporting. Validates input type.
+     * @param {string} name - Username to set.
+     */
     function setName(name) {
         if (!name || typeof name !== 'string') {
             console.error('setName(name): name musi być stringiem');
@@ -480,8 +874,26 @@
         console.log(`WikiTracker: ustawiono username = "${username}"`);
     }
 
+    /**
+     * Set the group used for session reporting. Validates input type.
+     * @param {string} name - Group name to set.
+     */
+    function setGroup(name) {
+        if (!name || typeof name !== 'string') {
+            console.error('setGroup(name): name musi być stringiem');
+            return;
+        }
+
+        group = name.trim();
+        console.log(`WikiTracker: ustawiono group = "${group}"`);
+    }
+
     unsafeWindow.setName = setName;
 
+    /**
+     * Inject a username input field into the game's start form if not
+     * already present. Persists value to localStorage and wires change events.
+     */
     function injectUsernameField() {
         const form = document.querySelector(
             'form.flex.max-w-\\[650px\\].flex-col.gap-4'
@@ -575,8 +987,106 @@
         console.log('%cWikiTracker: dodano pole Username', 'color: cyan');
     }
 
+    /**
+     * Inject a group input field into the game's start form if not
+     * already present. Persists value to localStorage and wires change events.
+     */
+    function injectGroupField() {
+        const form = document.querySelector(
+            'form.flex.max-w-\\[650px\\].flex-col.gap-4'
+        );
+        if (!form) return;
+        if (form.querySelector('#ws-group')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex min-w-52 flex-1 flex-col';
+
+        const label = document.createElement('label');
+        label.innerText = 'Grupa';
+        label.htmlFor = 'ws-group';
+
+        const container = document.createElement('div');
+        container.className = 'css-b62m3t-container';
+
+        // accessibility spans
+        const liveRegion1 = document.createElement('span');
+        liveRegion1.className = 'css-7pg0cj-a11yText';
+        liveRegion1.id = 'ws-group-live-region';
+
+        const liveRegion2 = document.createElement('span');
+        liveRegion2.className = 'css-7pg0cj-a11yText';
+        liveRegion2.setAttribute('aria-live', 'polite');
+        liveRegion2.setAttribute('aria-atomic', 'false');
+        liveRegion2.setAttribute('aria-relevant', 'additions text');
+        liveRegion2.setAttribute('role', 'log');
+
+        // input wrapper
+        const controlDiv = document.createElement('div');
+        controlDiv.className = 'dark:bg-dark-surface dark:text-dark-primary css-1a3xvlw-control';
+
+        const innerDiv = document.createElement('div');
+        innerDiv.className = 'css-hlgwow';
+
+        const inputDiv = document.createElement('div');
+        inputDiv.className = 'dark:text-dark-primary';
+
+        const input = document.createElement('input');
+        input.id = 'ws-group';
+        input.type = 'text';
+        input.placeholder = 'Wpisz swoją grupę';
+        input.autocomplete = 'off';
+        input.className = '';
+        input.style.color = 'inherit';
+        input.style.background = '0px center';
+        input.style.opacity = '1';
+        input.style.width = '100%';
+        input.style.gridArea = '1 / 2';
+        input.style.font = 'inherit';
+        input.style.minWidth = '2px';
+        input.style.border = '0px';
+        input.style.margin = '0px';
+        input.style.outline = '0px';
+        input.style.padding = '0px';
+
+        // wczytanie ostatniej wartości
+        const saved = localStorage.getItem('wikispeedrun_group');
+        if (saved) {
+            input.value = saved;
+            setGroup(saved);
+        }
+
+        input.addEventListener('input', () => {
+            const val = input.value.trim();
+            localStorage.setItem('wikispeedrun_group', val);
+            setGroup(val);
+        });
+
+        inputDiv.appendChild(input);
+        innerDiv.appendChild(inputDiv);
+        controlDiv.appendChild(innerDiv);
+
+        const indicatorDiv = document.createElement('div');
+        indicatorDiv.className = 'css-1wy0on6';
+        const indicatorInner = document.createElement('div');
+        indicatorInner.className = 'css-1xc3v61-indicatorContainer';
+        indicatorDiv.appendChild(indicatorInner);
+        controlDiv.appendChild(indicatorDiv);
+
+        container.appendChild(liveRegion1);
+        container.appendChild(liveRegion2);
+        container.appendChild(controlDiv);
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(container);
+
+        form.prepend(wrapper);
+
+        console.log('%cWikiTracker: dodano pole Group', 'color: cyan');
+    }
+
     const formObserver = new MutationObserver(() => {
         injectUsernameField();
+        injectGroupField();
     });
 
     formObserver.observe(document.body, {
@@ -589,6 +1099,9 @@
        UKRYWANIE UI
     --------------------------------*/
 
+    /**
+     * Hide the main UI elements used by the game (used when session starts).
+     */
     function hideUI() {
         const elements = document.querySelectorAll('.flex.h-full.w-full.flex-col.items-center.justify-start.gap-8');
         elements.forEach(el => {
@@ -596,6 +1109,9 @@
         })
     }
 
+    /**
+     * Show the main UI elements (reverses `hideUI`).
+     */
     function showUI() {
         const elements = document.querySelectorAll('.flex.h-full.w-full.flex-col.items-center.justify-start.gap-8');
         elements.forEach(el => {
@@ -605,4 +1121,69 @@
 
     unsafeWindow.hideUI = hideUI;
     unsafeWindow.showUI = showUI;
+
+    /* ------------------------------
+       UKRYWANIE SEKCJI
+    --------------------------------*/
+
+    /**
+     * Remove undesired sections from the article (references, notes,
+     * external links, etc.) and optionally remove tables.
+     */
+    function hideUnwantedSections() {
+        const titles = [
+            'references',
+            'notes',
+            'sources',
+            'external links',
+            'see also',
+        ];
+
+        const container = document.querySelector('.mw-parser-output');
+        if (!container) return;
+
+        const headings = container.querySelectorAll('h2');
+
+        headings.forEach(h2 => {
+            const title = h2.innerText.trim().toLowerCase();
+
+            if (!titles.includes(title)) return;
+
+            let el = h2.parentElement.nextElementSibling;
+
+            h2.remove();
+
+            while (el) {
+                const next = el.nextElementSibling;
+
+                if (
+                    el.nodeType === Node.ELEMENT_NODE &&
+                    el.tagName === 'H2'
+                ) {
+                    break;
+                }
+
+                el.remove();
+                el = next;
+            }
+        });
+
+        removeTables();  // optional
+    }
+
+    /**
+     * Remove non-infobox tables from the article container to reduce noise
+     * during section tracking.
+     */
+    function removeTables() {
+        const container = document.querySelector('.mw-parser-output');
+        if (!container) return;
+
+        const tables = container.querySelectorAll('table');
+
+        tables.forEach(table => {
+            if (table.classList.contains('infobox')) return;
+            table.remove();
+        });
+    }
 })();
