@@ -1,8 +1,8 @@
-"""wikipedia-web-tracker
+"""empty message
 
-Revision ID: 8c4c87216291
-Revises: 4f693eba4505
-Create Date: 2026-01-28 19:43:33.116834
+Revision ID: b722dd3b4e7f
+Revises: 6d4205e8174f
+Create Date: 2026-01-10 17:09:29.606810
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8c4c87216291'
-down_revision: Union[str, None] = '4f693eba4505'
+revision: str = 'b722dd3b4e7f'
+down_revision: Union[str, None] = '6d4205e8174f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
