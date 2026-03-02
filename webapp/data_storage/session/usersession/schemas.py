@@ -6,9 +6,11 @@ from ..room.schemas import RoomInfo, RoomLog
 
 class SessionInfo(BaseModel):
     id: int
+    group_name: str | None
     start_time: datetime
     end_time: datetime | None
     is_web: bool
+    surrendered: bool | None
     rooms: list[RoomInfo]
 
     class Config:
@@ -25,10 +27,21 @@ class UserGroupedSessions(BaseModel):
     web_sessions: list[SessionInfo]
 
 
-class AllSessionsGroupedResponse(BaseModel):
+class GroupGroupedSessions(BaseModel):
+    group_name: str
     users: list[UserGroupedSessions]
+
+
+class AllSessionsGroupedResponse_old(BaseModel):
+    users: list[UserGroupedSessions]
+
+
+class AllSessionsGroupedResponse(BaseModel):
+    groups: list[GroupGroupedSessions]
 
 
 class FullSessionRequest(BaseModel):
     user_name: str
+    group: str | None
+    surrendered: bool | None
     session_logs: list[RoomLog]

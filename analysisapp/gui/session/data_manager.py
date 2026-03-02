@@ -16,13 +16,14 @@ class DataManager:
         self.filename = None
         self.api_base_url = "http://localhost:80"
 
-    def load_from_api(self, user_name: str = None):
+    def load_from_api(self, user_name: str = None, group_name: str = None):
         """
         Load session data from API.
         
         Args:
             user_name: Optional user name to filter sessions
-            
+            group_name: Optional group name to filter sessions
+
         Returns:
             dict: Loaded and processed data
             
@@ -30,7 +31,10 @@ class DataManager:
             Exception: If API call fails
         """
         try:
-            if user_name:
+            if group_name:
+                # Load sessions for specific group
+                response = requests.get(f"{self.api_base_url}/session/group/{group_name}")
+            elif user_name:
                 # Load sessions for specific user
                 response = requests.get(f"{self.api_base_url}/session/{user_name}")
             else:
