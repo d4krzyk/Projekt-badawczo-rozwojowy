@@ -13,6 +13,7 @@ import wikipedia_dumps
 import data_storage
 from wikipedia_webscraping.category import CategoryScraper
 import wikipedia_tracker
+import wikipedia_cache
 
 # Local
 from router import router as main_router
@@ -84,4 +85,5 @@ app.include_router(wikipedia_api.router.router_images)
 app.include_router(wikipedia_dumps.router.router)
 app.include_router(wikipedia_webscraping.router.router)
 app.include_router(wikipedia_tracker.router.router)
+app.include_router(wikipedia_cache.router.router)
 app.include_router(main_router)
