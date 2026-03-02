@@ -30,6 +30,19 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
 
     private void Awake()
     {
+        if (userTransform == null)
+        {
+            try
+            {
+                GameObject player = GameObject.FindWithTag("Player");
+                if (player != null)
+                    userTransform = player.transform;
+            }
+            catch (UnityException)
+            {
+            }
+        }
+
         GetComponent<TextLinkHelper>().OnLinkClicked += ClickOnLink;
         logger = FindAnyObjectByType<Logger>();
     }
