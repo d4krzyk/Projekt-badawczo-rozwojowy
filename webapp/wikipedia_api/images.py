@@ -13,7 +13,6 @@ images_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=images&format
 pageimages_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&formatversion=2&format=json&pithumbsize=1280&titles='
 
 EXCLUDED_SUBSTRINGS = {
-    "wikipedia/en/thumb",
     "Wikisource-logo.svg",
     "Wiki_letter_w_cropped.svg",
     "Wikimedia-logo.svg",
@@ -39,13 +38,19 @@ EXCLUDED_SUBSTRINGS = {
 }
 
 EXCLUDED_CONTAINERS = [
-    "table.infobox",
-    "table.sidebar",
-    "div.navbox",
-    "div.vertical-navbox",
-    "div.metadata",
-    "table.ambox",
-    "div.mw-references-wrap",
+    ("table", "infobox"),
+    ("table", "sidebar"),
+    ("div", "navbox"),
+    ("div", "vertical-navbox"),
+    ("div", "metadata"),
+    ("table", "ambox"),
+    ("div", "mw-references-wrap"),
+    ("div", "portal-bar"),
+    ("div", "noprint"),
+    ("div", "noviewer"),
+    ("div", "authority-control"),
+    ("div", "sistersitebox"),
+    ("div", "printfooter"),
 ]
 
 def format_output(page_name: str, images: dict) -> dict:
@@ -64,8 +69,9 @@ def is_valid_image_url(url: str) -> bool:
     return not any(bad in url for bad in EXCLUDED_SUBSTRINGS)
 
 def is_valid_container(tag) -> bool:
-    for selector in EXCLUDED_CONTAINERS:
-        if tag.find_parent(selector):
+    for tag_name, class_name in EXCLUDED_CONTAINERS:
+        parent = tag.find_parent(tag_name, class_=class_name)
+        if parent:
             return True
     return False
 
@@ -215,27 +221,32 @@ def extract_image_captions(article_url: str) -> list[dict]:
     ordered = []
 
     def handle(img, caption):
-        if is_valid_container(img):
-            return
-
         file_link = img.find_parent("a")
         if not file_link:
             return
 
-        href = file_link.get("href", "")
+        href = file_link.get("href")
+        if not href:
+            return
+
         if not href.startswith("/wiki/File:"):
             return
 
-        filename = unquote(href.split("File:", 1)[1])
-        file_title = canonical_file_title(filename)
+        try:
+            filename = unquote(href.split("File:", 1)[1])
+        except IndexError:
+            return
 
         canonical = canonical_file_title(filename)
         normalized = normalize_filename(filename)
 
+        in_excluded = is_valid_container(img)
+
         ordered.append({
-            "canonical": canonical_file_title(filename),
-            "normalized": normalize_filename(filename),
-            "caption": clean_caption(caption)
+            "canonical": canonical,
+            "normalized": normalized,
+            "caption": clean_caption(caption),
+            "in_excluded_container": in_excluded
         })
 
     for figure in content_div.find_all("figure"):
@@ -245,16 +256,47 @@ def extract_image_captions(article_url: str) -> list[dict]:
             handle(img, cap)
 
     for thumb in content_div.find_all("div", class_="thumb"):
-        img = thumb.find("img")
-        cap = thumb.find("div", class_="thumbcaption")
-        if img and cap:
-            handle(img, cap)
+
+        if "tmulti" in thumb.get("class", []):
+            singles = thumb.find_all("div", class_="tsingle")
+            for single in singles:
+                img = single.find("img")
+                cap = single.find("div", class_="thumbcaption")
+                if img and cap:
+                    handle(img, cap)
+
+        else:
+            img = thumb.find("img")
+            cap = thumb.find("div", class_="thumbcaption")
+            if img and cap:
+                handle(img, cap)
 
     for gallery in content_div.find_all("div", class_="gallerybox"):
         img = gallery.find("img")
         cap = gallery.find("div", class_="gallerytext")
         if img and cap:
             handle(img, cap)
+
+    for img in content_div.select("p a[href^='/wiki/File:'] img, \
+                                   li a[href^='/wiki/File:'] img, \
+                                   dd a[href^='/wiki/File:'] img"):
+
+        if img.find_parent("figure") \
+           or img.find_parent("div", class_="thumb") \
+           or img.find_parent("div", class_="gallerybox"):
+            continue
+
+        if is_valid_container(img):
+            continue
+
+        alt_text = img.get("alt", "").strip()
+        if not alt_text:
+            alt_text = "[no caption]"
+
+        fake_tag = soup.new_tag("span")
+        fake_tag.string = alt_text
+
+        handle(img, fake_tag)
 
     return ordered
 
@@ -289,7 +331,9 @@ def images_one_by_one(page_name: str) -> dict:
             continue
 
         url = pages[0]["thumbnail"]["source"]
-        if not is_valid_image_url(url):
+        caption_data = captions.get(filename)
+        if caption_data and caption_data["in_excluded_container"] \
+           and not is_valid_image_url(url):
             continue
 
         filename = extract_commons_filename(url)
@@ -321,14 +365,25 @@ def images_generator(page_name: str) -> dict:
         caption = item["caption"]
 
         pageid = file_to_pageid.get(canonical)
+
         if not pageid:
+            response = requests.get(
+                pageimages_url + "File:" + canonical,
+                headers=get_headers()
+            ).json()
+
+            pages = response.get("query", {}).get("pages", [])
+            if pages and "thumbnail" in pages[0]:
+                url = pages[0]["thumbnail"]["source"]
+                if not (item["in_excluded_container"] and not is_valid_image_url(url)):
+                    images.append({url: item["caption"]})
             continue
 
         url = pageid_to_thumb.get(pageid)
         if not url:
             continue
 
-        if not is_valid_image_url(url):
+        if item["in_excluded_container"] and not is_valid_image_url(url):
             continue
 
         images.append({url: caption})
