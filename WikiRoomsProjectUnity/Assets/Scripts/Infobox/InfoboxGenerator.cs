@@ -128,7 +128,7 @@ public class InfoboxGenerator : MonoBehaviour
                 Debug.LogWarning($"Expected string value for text class, instead got {valueRaw.value.GetType()}");
                 break;
             case "link":
-                if (!string.IsNullOrEmpty(valueRaw.text)) return $"[{valueRaw.text}]({valueRaw.href})";
+                if (!string.IsNullOrEmpty(valueRaw.text)) return $"[{valueRaw.text}](https://en.wikipedia.org/wiki/{valueRaw.href.Substring(2)})";
                 Debug.LogWarning($"Expected correct text for link class");
                 break;
             case "ulist":
@@ -171,7 +171,7 @@ public class InfoboxGenerator : MonoBehaviour
                 Debug.LogWarning($"Expected string value for text class, instead got {labelRaw.value.GetType()}");
                 break;
             case "link":
-                if (!string.IsNullOrEmpty(labelRaw.value)) return $"[{labelRaw.value}]({labelRaw.value})";
+                if (!string.IsNullOrEmpty(labelRaw.value)) return $"[{labelRaw.value}](https://en.wikipedia.org/wiki/{labelRaw.value.Substring(2)})";
                 Debug.LogWarning($"Expected correct text for link class");
                 break;
             default:
@@ -247,5 +247,4 @@ public class InfoboxGenerator : MonoBehaviour
         }
         return null;
     }
-
 }
