@@ -454,7 +454,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         }
         else
         {
-            string texturesJson = await GetTexturesJsonAsync(ArticleData.category);
+            string texturesJson = await GetTexturesJsonAsync(articleName, ArticleData.category);
             TexturesStructure texturesData;
             if (string.IsNullOrEmpty(texturesJson)) Debug.LogWarning("Failed to retrieve textures data.");
             else
@@ -546,15 +546,21 @@ public class ElongatedRoomGenerator : MonoBehaviour
         }
     }
 
-    public async Task<string> GetTexturesJsonAsync(string category)
+    public async Task<string> GetTexturesJsonAsync(string article, string category)
     {
-        string url = $"http://localhost:8000/gen2DTextures";
-        string requestBody = "{\"category\": \"" + category + "\"}";
+        string encodedArticle = UnityWebRequest.EscapeURL(article);
+        string encodedCategory = UnityWebRequest.EscapeURL(category);
+        string url = $"{backendConfig.baseURL}/cache/get_cached_texture?article={encodedArticle}&category={encodedCategory}";
 
-        using (UnityWebRequest request = UnityWebRequest.Post(url, requestBody, "application/json"))
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
+            request.SetRequestHeader("accept", "application/json");
+            request.SetRequestHeader("Authorization", auth_header);
+
             var operation = request.SendWebRequest();
-            while (!operation.isDone) await Task.Yield();
+
+            while (!operation.isDone)
+                await Task.Yield();
 
             if (request.result == UnityWebRequest.Result.Success)
             {
@@ -562,7 +568,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"Request error (textures): {request.error}");
+                Debug.LogError("Request error (textures): " + request.error);
                 return null;
             }
         }
