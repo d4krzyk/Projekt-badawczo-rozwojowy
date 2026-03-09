@@ -124,7 +124,7 @@ public class PauseController : MonoBehaviour
         int minutes = Mathf.FloorToInt(duration / 60 % 60);
         int seconds = Mathf.FloorToInt(duration % 60);
         finalUITime.text = $"{hours:00} h {minutes:00} min {seconds:00} s";
-        logger.SendLogs();
+        logger.SendLogs(true);
     }
 
     void EnterFinalState()

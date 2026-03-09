@@ -1,8 +1,6 @@
 using System;
 using LogicUI.FancyTextRendering;
-using UnityEditor.Callbacks;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {

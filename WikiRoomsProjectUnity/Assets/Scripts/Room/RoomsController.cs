@@ -77,6 +77,7 @@ public class RoomsController : MonoBehaviour
         }
         if(targetArticleName != null)
         {
+            // TODO: sprawdzenie alternatywnych nazw targetu (Odpytanie api i zapisanie i nadpisanie "głównej" nazwy jako target)
             if(elongatedRoom.ArticleData.name.ToLower() == targetArticleName.ToLower())
             {
                 EnterFinalState();
@@ -88,7 +89,7 @@ public class RoomsController : MonoBehaviour
                 int minutes = Mathf.FloorToInt(duration / 60 % 60);
                 int seconds = Mathf.FloorToInt(duration % 60);
                 finalUITime.text = $"{hours:00} h {minutes:00} min {seconds:00} s";
-                logger.SendLogs();
+                logger.SendLogs(false);
             }
         }
         elongatedRoom.SetActivePortalPrevious(true);
