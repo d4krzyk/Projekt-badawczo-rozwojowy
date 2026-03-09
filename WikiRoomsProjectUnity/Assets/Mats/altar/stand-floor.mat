@@ -22,7 +22,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: stand-floor
   m_Shader: {fileID: 10752, guid: 0000000000000000f000000000000000, type: 0}
-  m_Parent: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
+  m_Parent: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:

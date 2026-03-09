@@ -44,17 +44,19 @@ public class ElongatedRoomGenerator : MonoBehaviour
     static DateTime imageDownloadCooldownUntilUtc = DateTime.MinValue;
     static float dynamicImageExtraThrottleSeconds = 0f;
 
-    public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf, imageHolder;
+    public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf, imageHolder, stand, Altar;
     public Transform initialRoomPosition;
     public Material sampleImageMat; 
     [Header("Room materials")]
     public Material bookshelfMat;
     public Material floorMat;
     public Material wallMat;
+    public Material standMat;
     [Header("Default materials")]
     public Material defBookcaseMat;
     public Material defFloorMat;
     public Material defWallMat;
+    public Material defStandMat;
     [Space]
     public string articleName;
     public int maxBooksPerBookshelf;
@@ -503,15 +505,70 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     void SetDefaultMaterials()
     {
-        ApplyRoomMaterials(defWallMat, defFloorMat, defBookcaseMat);
+        ApplyRoomMaterials(defWallMat, defFloorMat, defBookcaseMat, defStandMat);
     }
 
-    void ApplyRoomMaterials(Material wallMaterial, Material floorMaterial, Material shelfMaterial)
+    void ApplyRoomMaterials(Material wallMaterial, Material floorMaterial, Material shelfMaterial, Material standMaterial = null)
     {
-        spawnRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMaterial, floorMaterial, floorMaterial });
-        extensionRoom.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMaterial, floorMaterial });
-        extensionRoomClosure.GetComponent<MeshRenderer>().SetMaterials(new List<Material> { wallMaterial });
-        bookshelf.GetComponent<MeshRenderer>().sharedMaterial = shelfMaterial;
+        Vector2 defaultScale = Vector2.one;
+        Vector2 defaultOffset = Vector2.zero;
+
+        MeshRenderer spawnRenderer = spawnRoom.GetComponent<MeshRenderer>();
+        MeshRenderer extensionRenderer = extensionRoom.GetComponent<MeshRenderer>();
+        MeshRenderer closureRenderer = extensionRoomClosure.GetComponent<MeshRenderer>();
+        MeshRenderer bookshelfRenderer = bookshelf.GetComponent<MeshRenderer>();
+        MeshRenderer standRenderer = stand.GetComponent<MeshRenderer>();
+        MeshRenderer altarRenderer = Altar.GetComponent<MeshRenderer>();
+
+        spawnRenderer.SetMaterials(new List<Material> { wallMaterial, floorMaterial, floorMaterial });
+        extensionRenderer.SetMaterials(new List<Material> { wallMaterial, floorMaterial });
+        closureRenderer.SetMaterials(new List<Material> { wallMaterial });
+
+        SetRendererMaterialTransform(closureRenderer, 0, defaultScale, defaultOffset);
+        SetRendererMaterialTransform(extensionRenderer, 1, defaultScale, defaultOffset);
+        SetRendererMaterialTransform(spawnRenderer, 0, defaultScale, defaultOffset);
+        SetRendererMaterialTransform(spawnRenderer, 1, defaultScale, defaultOffset);
+
+        bookshelfRenderer.sharedMaterial = shelfMaterial;
+        standRenderer.sharedMaterial = standMaterial;
+        SetMaterialTextureScaleAndOffset(standRenderer.sharedMaterial, new Vector2(0.65f, 0.58f), new Vector2(0.24f, 0f));
+
+
+        altarRenderer.SetMaterials(new List<Material> { shelfMaterial, wallMaterial, shelfMaterial });
+        SetRendererMaterialTransform(altarRenderer, 0, defaultScale, defaultOffset);
+        SetRendererMaterialTransform(altarRenderer, 1, defaultScale, defaultOffset);
+    }
+
+    void SetRendererMaterialTransform(Renderer renderer, int materialIndex, Vector2 scale, Vector2 offset)
+    {
+        Material material = GetRendererMaterial(renderer, materialIndex);
+        if (material == null) return;
+        SetMaterialTextureScaleAndOffset(material, scale, offset);
+    }
+
+    Material GetRendererMaterial(Renderer renderer, int materialIndex)
+    {
+        if (renderer == null || materialIndex < 0) return null;
+        Material[] materials = renderer.sharedMaterials;
+        if (materials == null || materialIndex >= materials.Length) return null;
+        return materials[materialIndex];
+    }
+
+    void SetMaterialTextureScaleAndOffset(Material material, Vector2 scale, Vector2 offset)
+    {
+        if (material == null) return;
+
+        if (material.HasProperty("_BaseMap"))
+        {
+            material.SetTextureScale("_BaseMap", scale);
+            material.SetTextureOffset("_BaseMap", offset);
+        }
+
+        if (material.HasProperty("_MainTex"))
+        {
+            material.SetTextureScale("_MainTex", scale);
+            material.SetTextureOffset("_MainTex", offset);
+        }
     }
 
     bool IsGenAITexturesEnabled()
@@ -625,7 +682,13 @@ public class ElongatedRoomGenerator : MonoBehaviour
         floorTexture.Apply(false, false);
         floorMat.mainTexture = floorTexture;
 
-        ApplyRoomMaterials(wallMat, floorMat, bookshelfMat);
+        Texture2D standTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        standTexture.LoadImage(textureByteData);
+        standTexture.filterMode = FilterMode.Point;
+        standTexture.Apply(false, false);
+        standMat.mainTexture = standTexture;
+
+        ApplyRoomMaterials(wallMat, floorMat, bookshelfMat, standMat);
     }
 
     Texture2D CreateNormalMapFromGrayscale(Texture2D source, float strength = 1.0f)

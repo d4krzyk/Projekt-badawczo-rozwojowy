@@ -1648,7 +1648,7 @@ PrefabInstance:
     - target: {fileID: 1191136884141656051, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 779e44c3ebce89744965de35d6cdec3d, type: 2}
+      objectReference: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
     - target: {fileID: 6953195339864691362, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
       propertyPath: m_LocalPosition.z
       value: 167.3
@@ -6455,7 +6455,7 @@ PrefabInstance:
     - target: {fileID: 1191136884141656051, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 779e44c3ebce89744965de35d6cdec3d, type: 2}
+      objectReference: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
     - target: {fileID: 6953195339864691362, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
       propertyPath: m_LocalPosition.z
       value: 167.3
@@ -14178,14 +14178,18 @@ MonoBehaviour:
   extensionRoomClosure: {fileID: 690143747799167353, guid: c544f46c538b63849b2f5f06a3cc6b03, type: 3}
   bookshelf: {fileID: 2039724192458736144, guid: 10d8801b655cab449bd84855f00560db, type: 3}
   imageHolder: {fileID: 8287182961661605087, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
+  stand: {fileID: 228405786}
+  Altar: {fileID: 1335939396}
   initialRoomPosition: {fileID: 942533381}
   sampleImageMat: {fileID: 2100000, guid: 9713a1a792e340f4c8d4699eb97edb5f, type: 2}
   bookshelfMat: {fileID: 2100000, guid: b54182df40daf63449af1aa243fa2e4c, type: 2}
   floorMat: {fileID: 2100000, guid: d9aeccf606d064e4fb69b0626b49f159, type: 2}
   wallMat: {fileID: 2100000, guid: 5d4af03f1ee0c3e4da754b36074f2baf, type: 2}
+  standMat: {fileID: 2100000, guid: 081339dbb98f1954aaeb1839008d9843, type: 2}
   defBookcaseMat: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
   defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
+  defStandMat: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
   articleName: Franklin D. Roosevelt
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
@@ -14470,14 +14474,18 @@ MonoBehaviour:
   extensionRoomClosure: {fileID: 690143747799167353, guid: c544f46c538b63849b2f5f06a3cc6b03, type: 3}
   bookshelf: {fileID: 2039724192458736144, guid: 10d8801b655cab449bd84855f00560db, type: 3}
   imageHolder: {fileID: 8287182961661605087, guid: 51eb0ae7f2589a04dab8f9bf1ff020f7, type: 3}
+  stand: {fileID: 1046577999}
+  Altar: {fileID: 282895782}
   initialRoomPosition: {fileID: 2030654681}
   sampleImageMat: {fileID: 2100000, guid: 9713a1a792e340f4c8d4699eb97edb5f, type: 2}
   bookshelfMat: {fileID: 2100000, guid: 6f882a15a3bb0db4b912def8abfe08cf, type: 2}
   floorMat: {fileID: 2100000, guid: 040da6a099a516b4da97385cac421e9c, type: 2}
   wallMat: {fileID: 2100000, guid: d601d88d90e262448b2afbdec0872f44, type: 2}
+  standMat: {fileID: 2100000, guid: 26c150904fc8141468bbe9e971134d87, type: 2}
   defBookcaseMat: {fileID: 2100000, guid: 80f3f3d6a47dc0c4482ffa4f7e5f6254, type: 2}
   defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
+  defStandMat: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
   articleName: Pope
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
