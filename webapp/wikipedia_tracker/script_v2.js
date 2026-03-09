@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.4
+// @version      2.5
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
-// @connect      localhost
+// @connect      wikirooms.duckdns.org
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -14,7 +14,14 @@
     /* ------------------------------
        KONFIGURACJA
     --------------------------------*/
-    const API_LOG = 'http://localhost/session/';
+
+    // Testowanie lokalne
+    // const API_LOG = 'http://localhost/session/';
+
+    // Produkcja
+    const API_LOG = 'http://wikirooms.duckdns.org/session/';
+    const USERNAME = "projektBR";
+    const PASSWORD = "PROJEKTbr";
 
     /* ------------------------------
        UŻYTKOWNIK
@@ -844,14 +851,23 @@
 
         console.log('Wysyłam sesję:', data);
 
-        fetch(API_LOG, {
-            method: 'POST',
+        const authHeader = 'Basic ' + btoa(USERNAME + ':' + PASSWORD);
+
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: API_LOG,
             headers: {
-                'Content-Type': 'application/json',
-                'X-Web': 'true'
+                "Content-Type": "application/json",
+                "X-Web": "true",
+                "Authorization": authHeader
             },
-            body: JSON.stringify(data),
-            keepalive: true
+            data: JSON.stringify(data),
+            onload: function(response) {
+                console.log("Sukces:", response.responseText);
+            },
+            onerror: function(error) {
+                console.error("Błąd:", error);
+            }
         });
     }
 
