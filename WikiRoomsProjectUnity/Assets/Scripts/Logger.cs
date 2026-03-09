@@ -105,11 +105,13 @@ public class Logger : MonoBehaviour
         currentPath += currentMove;
     }
 
-    public void SendLogs()
+    public void SendLogs(bool surrender)
     {
         AppLog logs = new AppLog();
         logs.user_name = playerNick;
         logs.session_logs = roomLogs;
+        logs.group = "1";
+        logs.surrendered = surrender;
 
         SendRoomLogToDB(logs, false); // ustaw true/false wg potrzeby
     }

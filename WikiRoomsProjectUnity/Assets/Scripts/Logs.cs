@@ -39,5 +39,7 @@ public class LinkLog
 public class AppLog
 {
     public string user_name;
+    public string group;
+    public bool surrendered;
     public List<RoomLog> session_logs;
 }
