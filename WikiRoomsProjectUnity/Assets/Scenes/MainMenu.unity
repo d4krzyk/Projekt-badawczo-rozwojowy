@@ -1750,7 +1750,7 @@ MonoBehaviour:
   targetArticleTextField: {fileID: 496060158}
   SearchButton: {fileID: 591573661}
   gameController: {fileID: 1839466777}
-  backendConfig: {fileID: 11400000, guid: 96e35c64637476d4bb7b2b81985a7058, type: 2}
+  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
   requireTargetArticle: 1
   useAuthorizationHeader: 1
 --- !u!1 &623048389

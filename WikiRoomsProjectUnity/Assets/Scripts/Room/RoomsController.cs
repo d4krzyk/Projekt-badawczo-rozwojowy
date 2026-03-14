@@ -17,7 +17,7 @@ public class RoomsController : MonoBehaviour
     public TMPro.TMP_Text finalUITime;
     public TMPro.TMP_Text goalUI;
     public Logger logger;
-
+    
     Dictionary<string, TexturesStructure> textureCache;
     Dictionary<string, ArticleStructure> articleCache;
     Dictionary<string, List<CachedImageData>> imageCache;
@@ -34,7 +34,7 @@ public class RoomsController : MonoBehaviour
         articleCache = new Dictionary<string, ArticleStructure>();
         imageCache = new Dictionary<string, List<CachedImageData>>();
         roomHistory = new LinkedList<string>();
-        elongatedRoom.GenerateRoom(elongatedRoom.articleName, this);
+        elongatedRoom.GenerateRoom(elongatedRoom.articleName, this, true);
         elongatedRoom.PreviousRoom = "";
         currentRoomNode = roomHistory.AddFirst(elongatedRoom.articleName);
         targetArticleName = FindAnyObjectByType<GameController>()?.TargetArticleName;

@@ -64,6 +64,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public GameObject portalNext;
     public GameObject portalPrevious;
     public InfoboxGenerator infoboxGenerator;
+    public InfoboxGenerator secInfoboxGenerator;
     public BackendConfig backendConfig;
     public GameObject loadingScreen;
 
@@ -175,7 +176,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         if(gameController != null) articleName = gameController.ArticleName;
     }
 
-    public async void GenerateRoom(string articleName, RoomsController roomsController)
+    public async void GenerateRoom(string articleName, RoomsController roomsController, bool firstRoom = false)
     {
         EnsureSettings();
         EnsureImageDownloadParallelGate();
@@ -423,7 +424,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     }
 
 
-    private async Task HandleInfobox(string articleName)
+    private async Task HandleInfobox(string articleName, bool firstRoom = false)
     {
         string infoboxJson = await GetInfoboxAsync(articleName);
         if (string.IsNullOrEmpty(infoboxJson))
@@ -433,7 +434,14 @@ public class ElongatedRoomGenerator : MonoBehaviour
         else
         {
             WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
-            await infoboxGenerator.PopulateUI(infoboxData);
+            if (firstRoom)
+            {
+                await infoboxGenerator.PopulateUI(infoboxData);
+            }
+            else
+            {
+                await secInfoboxGenerator.PopulateUI(infoboxData);
+            }    
         }
     }
 

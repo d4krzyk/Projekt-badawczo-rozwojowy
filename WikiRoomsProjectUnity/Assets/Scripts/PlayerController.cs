@@ -64,6 +64,7 @@ public class PlayerController : MonoBehaviour
     public GameObject BookUI;
     public GameObject ImageUI;
     public GameObject InfoBoxUI;
+    public GameObject SecondaryInfoBoxUI;
     public GameObject PauseUI;
 
     void Start()
@@ -245,6 +246,7 @@ public class PlayerController : MonoBehaviour
                 isReading = false;
                 if (BookUI != null) BookUI.SetActive(false);
                 if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
+                if (SecondaryInfoBoxUI != null) SecondaryInfoBoxUI.SetActive(false);
                 currentBook?.OnInteraction();
                 LockCursor();
                 if (currentBook != null && logger != null)
@@ -303,7 +305,17 @@ public class PlayerController : MonoBehaviour
                             infoboxGenerator.contentTransform.anchoredPosition = anchoredPos;
                         }
 
-                        if (InfoBoxUI != null) InfoBoxUI.SetActive(true);
+                        if (InfoBoxUI != null) 
+                        {
+                            if (infoComp.content == "1")
+                            {
+                                InfoBoxUI.SetActive(true);
+                            }
+                            else
+                            {
+                                SecondaryInfoBoxUI.SetActive(true);
+                            }
+                        }
                         if (BookUI != null) BookUI.SetActive(false);
                         currentBook = null;
                         isReading = true;

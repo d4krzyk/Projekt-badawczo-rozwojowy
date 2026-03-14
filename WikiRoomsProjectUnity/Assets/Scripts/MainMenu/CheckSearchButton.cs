@@ -86,11 +86,12 @@ public class CheckSearchButton : MonoBehaviour
         isValidating = true;
         SetSearchInteractable(false);
         ShowMessage("Validating data...");
+        string targetName = null;
 
         try
         {
-            bool articleExists = await ValidateArticleExistsAsync(article);
-            if (!articleExists)
+            string articleExists = await ValidateArticleExistsAsync(article);
+            if (articleExists == "")
             {
                 ShowMessage($"Starting article '{article}' does not exist or is unavailable.");
                 return;
@@ -98,26 +99,27 @@ public class CheckSearchButton : MonoBehaviour
 
             if (!string.IsNullOrWhiteSpace(targetArticle))
             {
-                bool targetExists = await ValidateArticleExistsAsync(targetArticle);
-                if (!targetExists)
+                targetName = await ValidateArticleExistsAsync(targetArticle);
+                if (targetName == "")
                 {
-                    ShowMessage($"Target article '{targetArticle}' does not exist or is unavailable.");
+                    ShowMessage($"Target article '{targetName}' does not exist or is unavailable.");
                     return;
                 }
             }
 
-            NicknameValidationResult nickResult = await ValidateNicknameAvailabilityAsync(nick);
-            if (!nickResult.success)
-            {
-                ShowMessage("Could not verify nickname availability. Please try again.");
-                return;
-            }
+            // Nick validation turned off
+            // NicknameValidationResult nickResult = await ValidateNicknameAvailabilityAsync(nick);
+            // if (!nickResult.success)
+            // {
+            //     ShowMessage("Could not verify nickname availability. Please try again.");
+            //     return;
+            // }
 
-            if (!nickResult.available)
-            {
-                ShowMessage("This nickname is already taken.");
-                return;
-            }
+            // if (!nickResult.available)
+            // {
+            //     ShowMessage("This nickname is already taken.");
+            //     return;
+            // }
         }
         catch (Exception ex)
         {
@@ -133,7 +135,7 @@ public class CheckSearchButton : MonoBehaviour
 
         gameController.ArticleName = article;
         gameController.PlayerNick = nick;
-        gameController.TargetArticleName = targetArticle;
+        gameController.TargetArticleName = targetName;
         // wszystko ok -> ukryj komunikat i wywołaj akcję startu (onClick przycisku)
         ClearMessage();
         messagePlayPanelText.SetActive(false);
@@ -187,7 +189,7 @@ public class CheckSearchButton : MonoBehaviour
             SearchButton.interactable = interactable;
     }
 
-    async Task<bool> ValidateArticleExistsAsync(string article)
+    async Task<string> ValidateArticleExistsAsync(string article)
     {
         string encodedArticle = UnityWebRequest.EscapeURL(article);
         string url = $"{backendConfig.baseURL}/article?article={encodedArticle}&category_strategy=api";
@@ -204,22 +206,26 @@ public class CheckSearchButton : MonoBehaviour
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning($"[CheckSearchButton] Article validation failed ({request.responseCode}): {request.error}");
-                return false;
+                return "";
             }
 
             if (string.IsNullOrWhiteSpace(request.downloadHandler.text))
-                return false;
+                return "";
 
             try
             {
                 var json = JObject.Parse(request.downloadHandler.text);
                 JToken nameToken = json["name"];
                 JToken contentToken = json["content"];
-                return nameToken != null && contentToken != null;
+                if (nameToken != null && nameToken.Type == JTokenType.String)
+                {
+                    return nameToken.Value<string>();
+                }
+                return "";
             }
             catch
             {
-                return false;
+                return "";
             }
         }
     }
