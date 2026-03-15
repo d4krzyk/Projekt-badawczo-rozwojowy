@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 
 from database.engine import Base
@@ -10,6 +10,8 @@ class Room(Base):
     name = Column(String, nullable=False)
     enter_time = Column(DateTime, nullable=False)
     exit_time = Column(DateTime, nullable=False)
+    cursor_log = Column(JSON, nullable=False, default=list)
+    image_logs = Column(JSON, nullable=False, default=list)
 
     user_session_id = Column(
         Integer, ForeignKey("user_sessions.id", ondelete="CASCADE", name="fk_rooms_user_session_id"), nullable=False
