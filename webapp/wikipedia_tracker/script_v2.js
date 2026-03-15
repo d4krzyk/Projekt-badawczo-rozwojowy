@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.4
+// @version      2.5
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
-// @connect      localhost
+// @connect      wikirooms.duckdns.org
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -14,7 +14,14 @@
     /* ------------------------------
        KONFIGURACJA
     --------------------------------*/
-    const API_LOG = 'http://localhost/session/';
+
+    // Testowanie lokalne
+    // const API_LOG = 'http://localhost/session/';
+
+    // Produkcja
+    const API_LOG = 'http://wikirooms.duckdns.org/session/';
+    const USERNAME = "projektBR";
+    const PASSWORD = "PROJEKTbr";
 
     /* ------------------------------
        UŻYTKOWNIK
@@ -590,19 +597,13 @@
         const dt = (now - lastCursorSample.t) / 1000;
         if (dt <= 0) return;
 
-        const dx = x - lastCursorSample.x;
-        const dy = y - lastCursorSample.y;
-
-        const vx = dx / dt;
-        const vy = dy / dt;
-
         const t = (now - pageCursorStartTime) / 1000;
 
         currentPage.cursor.push(
-            Math.round(dx),
-            Math.round(dy),
-            +vx.toFixed(6),
-            +vy.toFixed(6),
+            x,
+            y,
+            x,
+            y,
             +t.toFixed(2)
         );
 
@@ -844,14 +845,23 @@
 
         console.log('Wysyłam sesję:', data);
 
-        fetch(API_LOG, {
-            method: 'POST',
+        const authHeader = 'Basic ' + btoa(USERNAME + ':' + PASSWORD);
+
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: API_LOG,
             headers: {
-                'Content-Type': 'application/json',
-                'X-Web': 'true'
+                "Content-Type": "application/json",
+                "X-Web": "true",
+                "Authorization": authHeader
             },
-            body: JSON.stringify(data),
-            keepalive: true
+            data: JSON.stringify(data),
+            onload: function (response) {
+                console.log("Sukces:", response.responseText);
+            },
+            onerror: function (error) {
+                console.error("Błąd:", error);
+            }
         });
     }
 

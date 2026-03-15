@@ -9,8 +9,6 @@ import requests
 from utils import get_headers, get_redirect_name
 
 query_url = 'https://en.wikipedia.org/w/api.php?action=query&prop=categories&clshow=!hidden&formatversion=2&cllimit=100&format=json&titles='
-redirect_url = 'https://en.wikipedia.org/w/rest.php/v1/search/page?limit=1&q='
-
 
 categories_shortcut = dict()
 stop_list = []
