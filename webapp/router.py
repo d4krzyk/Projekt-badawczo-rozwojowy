@@ -13,6 +13,7 @@ from fastapi.exceptions import HTTPException
 import wikipedia_webscraping
 import wikipedia_api
 import wikipedia_dumps
+import utils
 
 router = APIRouter(prefix="", tags=["Main"])
 
@@ -35,20 +36,25 @@ def get_article_data(
         raise HTTPException(status_code=404, detail="Podałeś puste article")
 
     is_name = (
-        True if not wikipedia_webscraping.utils.article_name_by_url(article) else False
+        True if not wikipedia_webscraping.utils.article_name_by_url(
+            article) else False
     )
 
     if is_name:
         article_name = article.strip()
-        article_url = wikipedia_webscraping.utils.article_url_by_name(article_name)
+        article_name = utils.get_redirect_name(article_name)
+        article_url = wikipedia_webscraping.utils.article_url_by_name(
+            article_name)
     else:
-        article_name = wikipedia_webscraping.utils.article_name_by_url(article)
+        article_name = utils.get_redirect_name(
+            wikipedia_webscraping.utils.article_name_by_url(article))
         article_url = article
 
     # wybór strategii
     match category_strategy:
         case "api":
-            category = wikipedia_api.category_batching.main_category(article_name)
+            category = wikipedia_api.category_batching.main_category(
+                article_name)
         case "dumps":
             with request.app.state.cache as scraper:
                 first_category, link = scraper.get_first_category(article_name)
@@ -61,7 +67,8 @@ def get_article_data(
             raise HTTPException(status_code=404, detail="Strategy not found")
 
     # pobranie treści
-    content = wikipedia_webscraping.content.extract_sections_as_nested_list(article_url)
+    content = wikipedia_webscraping.content.extract_sections_as_nested_list(
+        article_url)
     if not content:
         raise HTTPException(status_code=404, detail="Article not found")
 
