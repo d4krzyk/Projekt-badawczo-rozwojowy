@@ -176,7 +176,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         if(gameController != null) articleName = gameController.ArticleName;
     }
 
-    public async void GenerateRoom(string articleName, RoomsController roomsController, bool firstRoom = false)
+    public async void GenerateRoom(string articleName, RoomsController roomsController)
     {
         EnsureSettings();
         EnsureImageDownloadParallelGate();

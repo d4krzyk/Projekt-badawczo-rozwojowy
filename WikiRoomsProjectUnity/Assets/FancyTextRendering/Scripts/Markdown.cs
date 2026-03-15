@@ -109,8 +109,8 @@ namespace LogicUI.FancyTextRendering
             new AutoLinksHttps(),
             new UnorderedLists(),
             new OrderedLists(),
-            new Bold(),
-            new Italics(),
+            // new Bold(),
+            // new Italics(),
             new Strikethrough(),
             new SuperscriptChain(), // Important to process chain before single!
             new SuperscriptSingle(),

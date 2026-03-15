@@ -34,7 +34,7 @@ public class RoomsController : MonoBehaviour
         articleCache = new Dictionary<string, ArticleStructure>();
         imageCache = new Dictionary<string, List<CachedImageData>>();
         roomHistory = new LinkedList<string>();
-        elongatedRoom.GenerateRoom(elongatedRoom.articleName, this, true);
+        elongatedRoom.GenerateRoom(elongatedRoom.articleName, this);
         elongatedRoom.PreviousRoom = "";
         currentRoomNode = roomHistory.AddFirst(elongatedRoom.articleName);
         targetArticleName = FindAnyObjectByType<GameController>()?.TargetArticleName;
