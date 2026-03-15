@@ -597,19 +597,13 @@
         const dt = (now - lastCursorSample.t) / 1000;
         if (dt <= 0) return;
 
-        const dx = x - lastCursorSample.x;
-        const dy = y - lastCursorSample.y;
-
-        const vx = dx / dt;
-        const vy = dy / dt;
-
         const t = (now - pageCursorStartTime) / 1000;
 
         currentPage.cursor.push(
-            Math.round(dx),
-            Math.round(dy),
-            +vx.toFixed(6),
-            +vy.toFixed(6),
+            x,
+            y,
+            x,
+            y,
             +t.toFixed(2)
         );
 
@@ -862,10 +856,10 @@
                 "Authorization": authHeader
             },
             data: JSON.stringify(data),
-            onload: function(response) {
+            onload: function (response) {
                 console.log("Sukces:", response.responseText);
             },
-            onerror: function(error) {
+            onerror: function (error) {
                 console.error("Błąd:", error);
             }
         });
