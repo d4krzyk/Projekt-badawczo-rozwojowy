@@ -176,7 +176,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         if(gameController != null) articleName = gameController.ArticleName;
     }
 
-    public async void GenerateRoom(string articleName, RoomsController roomsController)
+    public async void GenerateRoom(string articleName, RoomsController roomsController, bool onClick = false)
     {
         EnsureSettings();
         EnsureImageDownloadParallelGate();
@@ -216,6 +216,14 @@ public class ElongatedRoomGenerator : MonoBehaviour
         // Pobieranie artykułu
         bool flowControl = await HandleArticle(articleName);
         if (!flowControl) return;
+
+        Debug.Log($"Loaded {articleName} data");
+
+
+        if (onClick) 
+        {
+            roomsController.elongatedRoom.SetActivePortalNext(true);
+        }
 
         // Bezpieczne użycie category
         Task textureTask = HandleTextures(articleName, roomsController);

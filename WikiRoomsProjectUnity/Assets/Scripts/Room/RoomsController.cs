@@ -77,7 +77,6 @@ public class RoomsController : MonoBehaviour
         }
         if(targetArticleName != null)
         {
-            // TODO: sprawdzenie alternatywnych nazw targetu (Odpytanie api i zapisanie i nadpisanie "głównej" nazwy jako target)
             if(elongatedRoom.ArticleData.name.ToLower() == targetArticleName.ToLower())
             {
                 EnterFinalState();
@@ -188,7 +187,6 @@ public class RoomsController : MonoBehaviour
             roomHistory.RemoveLast();
         }
         roomHistory.AddAfter(currentRoomNode, articleName);
-        elongatedRoom.SetActivePortalNext(true);
     }
 
     // Zwraca nazwę następnego generatora pokoju (prosta wersja)

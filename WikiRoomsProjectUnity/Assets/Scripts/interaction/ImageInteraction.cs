@@ -10,7 +10,7 @@ public class ImageInteraction : MonoBehaviour, IInteractable
     public void OnInteraction()
     {
         // Pobierz ImageUI z PlayerController
-        PlayerController player = FindObjectOfType<PlayerController>();
+        PlayerController player = FindAnyObjectByType<PlayerController>();
         if (player == null)
         {
             Debug.LogError("Nie znaleziono PlayerController!");

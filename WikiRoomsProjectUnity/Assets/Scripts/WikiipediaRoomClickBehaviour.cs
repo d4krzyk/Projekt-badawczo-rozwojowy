@@ -62,7 +62,8 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         {
             roomsController.secondElongatedRoom.articleName = match.Groups[1].Value.Replace('_', ' ');
             roomsController.secondElongatedRoom.ResetRoom();
-            roomsController.secondElongatedRoom.GenerateRoom(roomsController.secondElongatedRoom.articleName, roomsController);
+            roomsController.elongatedRoom.SetActivePortalNext(false);
+            roomsController.secondElongatedRoom.GenerateRoom(roomsController.secondElongatedRoom.articleName, roomsController, onClick: true);
             roomsController.AddNextRoomToHistory(roomsController.secondElongatedRoom.articleName);
         }
     }
