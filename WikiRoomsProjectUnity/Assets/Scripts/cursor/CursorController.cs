@@ -241,7 +241,14 @@ public class CursorController : MonoBehaviour
                     }
 
                     SetCrosshair(highlightedCrosshair);
-                    ShowHoverUI(!string.IsNullOrEmpty(roomsController.elongatedRoom.articleName) ? "Info about " + roomsController.elongatedRoom.articleName : string.Empty);
+                    if(roomsController.elongatedRoom.infoboxGenerator.HasFailed)
+                    {
+                        ShowHoverUI("No infobox data.");
+                    }
+                    else
+                    {
+                        ShowHoverUI(!string.IsNullOrEmpty(roomsController.elongatedRoom.articleName) ? "Info about " + roomsController.elongatedRoom.articleName : string.Empty);
+                    }
                     return;
                 }
 

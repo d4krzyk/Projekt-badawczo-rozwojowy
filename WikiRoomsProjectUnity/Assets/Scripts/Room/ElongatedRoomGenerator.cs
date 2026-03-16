@@ -437,17 +437,57 @@ public class ElongatedRoomGenerator : MonoBehaviour
         string infoboxJson = await GetInfoboxAsync(articleName);
         if (string.IsNullOrEmpty(infoboxJson))
         {
-            Debug.LogError("Failed to retrieve infobox data.");
+            Debug.Log("Failed to retrieve infobox data.");
+            if(firstRoom)
+            {
+                infoboxGenerator.HasFailed = true;
+            }
+            else
+            {
+                secInfoboxGenerator.HasFailed = true;
+            }
         }
         else
         {
             WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
+            if (infoboxData.infobox == null)            {
+                Debug.Log("Infobox parsing returned null.");
+                if(firstRoom)
+                {
+                    secInfoboxGenerator.HasFailed = true;
+                    await infoboxGenerator.PopulateUI(infoboxData);
+                }
+                else
+                {
+                    infoboxGenerator.HasFailed = true;
+                    await secInfoboxGenerator.PopulateUI(infoboxData);
+                }
+                return;
+            }
+            if(infoboxData.infobox.Count == 0)
+            {
+                Debug.Log("Infobox parsing returned empty data.");
+                if(firstRoom)
+                {
+                    secInfoboxGenerator.HasFailed = true;
+                    await infoboxGenerator.PopulateUI(infoboxData);
+                }
+                else
+                {
+                    infoboxGenerator.HasFailed = true;
+                    await secInfoboxGenerator.PopulateUI(infoboxData);
+
+                }
+                return;
+            }
             if (firstRoom)
             {
+                secInfoboxGenerator.HasFailed = false;
                 await infoboxGenerator.PopulateUI(infoboxData);
             }
             else
             {
+                infoboxGenerator.HasFailed = false;
                 await secInfoboxGenerator.PopulateUI(infoboxData);
             }    
         }

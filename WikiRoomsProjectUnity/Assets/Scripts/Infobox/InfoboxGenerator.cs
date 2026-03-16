@@ -16,7 +16,9 @@ public class InfoboxGenerator : MonoBehaviour
     public GameObject labelPrefab;
     
     [Header("Content")]
-    public RectTransform contentTransform; 
+    public RectTransform contentTransform;
+
+    [HideInInspector] public bool HasFailed = false;
 
     public async Task PopulateUI(WikiPageRaw infoboxesData)
     {
