@@ -12,18 +12,6 @@
     'use strict';
 
     /* ------------------------------
-       KONFIGURACJA
-    --------------------------------*/
-
-    // Testowanie lokalne
-    // const API_LOG = 'http://localhost/session/';
-
-    // Produkcja
-    const API_LOG = 'http://wikirooms.duckdns.org/session/';
-    const USERNAME = "projektBR";
-    const PASSWORD = "PROJEKTbr";
-
-    /* ------------------------------
        UŻYTKOWNIK
     --------------------------------*/
     let username = '';
@@ -883,15 +871,13 @@
 
         console.log('Wysyłam sesję:', data);
 
-        const authHeader = 'Basic ' + btoa(USERNAME + ':' + PASSWORD);
-
         GM_xmlhttpRequest({
             method: "POST",
-            url: API_LOG,
+            url: 'http://wikirooms.duckdns.org/session/',
             headers: {
                 "Content-Type": "application/json",
                 "X-Web": "true",
-                "Authorization": authHeader
+                "Authorization": 'Basic cHJvamVrdEJSOlBST0pFS1Ricg=='
             },
             data: JSON.stringify(data),
             onload: function (response) {
