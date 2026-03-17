@@ -220,6 +220,17 @@ public class Outline : MonoBehaviour {
 
   List<Vector3> SmoothNormals(Mesh mesh) {
 
+    // Validate mesh data
+    if (mesh == null || mesh.vertices.Length == 0 || mesh.normals.Length == 0) {
+      return new List<Vector3>();
+    }
+
+    // Ensure normals array matches vertices array
+    if (mesh.normals.Length != mesh.vertices.Length) {
+      // If mismatch, recalculate normals
+      mesh.RecalculateNormals();
+    }
+
     // Group vertices by location
     var groups = mesh.vertices.Select((vertex, index) => new KeyValuePair<Vector3, int>(vertex, index)).GroupBy(pair => pair.Key);
 
@@ -238,14 +249,18 @@ public class Outline : MonoBehaviour {
       var smoothNormal = Vector3.zero;
 
       foreach (var pair in group) {
-        smoothNormal += smoothNormals[pair.Value];
+        if (pair.Value >= 0 && pair.Value < smoothNormals.Count) {
+          smoothNormal += smoothNormals[pair.Value];
+        }
       }
 
       smoothNormal.Normalize();
 
       // Assign smooth normal to each vertex
       foreach (var pair in group) {
-        smoothNormals[pair.Value] = smoothNormal;
+        if (pair.Value >= 0 && pair.Value < smoothNormals.Count) {
+          smoothNormals[pair.Value] = smoothNormal;
+        }
       }
     }
 
