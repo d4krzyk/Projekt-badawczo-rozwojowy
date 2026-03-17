@@ -12,18 +12,6 @@
     'use strict';
 
     /* ------------------------------
-       KONFIGURACJA
-    --------------------------------*/
-
-    // Testowanie lokalne
-    // const API_LOG = 'http://localhost/session/';
-
-    // Produkcja
-    const API_LOG = 'http://wikirooms.duckdns.org/session/';
-    const USERNAME = "projektBR";
-    const PASSWORD = "PROJEKTbr";
-
-    /* ------------------------------
        UŻYTKOWNIK
     --------------------------------*/
     let username = '';
@@ -106,6 +94,45 @@
         return el.innerText.replace(/\[.*?\]/g, '').trim();
     }
 
+    /**
+     * Convert a WikiSpeedrun article URL to its canonical English Wikipedia URL.
+     * Example:
+     * https://wikispeedrun.org/wiki/Heywood%20railway%20station?... ->
+     * https://en.wikipedia.org/wiki/Heywood_railway_station
+     * @param {string} rawUrl - WikiSpeedrun URL.
+     * @returns {string} Wikipedia URL or original URL if conversion is not possible.
+     */
+    function wikispeedrunUrlToWikipediaUrl(rawUrl) {
+        try {
+            const parsed = new URL(rawUrl);
+            const match = parsed.pathname.match(/^\/wiki\/([^/?#]+)/);
+            if (!match) return rawUrl;
+
+            const decodedTitle = decodeURIComponent(match[1]).trim();
+            if (!decodedTitle) return rawUrl;
+
+            const normalizedTitle = decodedTitle.replace(/\s+/g, '_');
+            return `https://en.wikipedia.org/wiki/${encodeURIComponent(normalizedTitle)}`;
+        } catch {
+            return rawUrl;
+        }
+    }
+
+    /**
+     * Build a Wikipedia section URL from a section title.
+     * Example:
+     * sectionUrlByName('Services') ->
+     * https://en.wikipedia.org/wiki/Heywood_railway_station#Services
+     * @param {string} sectionName - Section title shown in article heading.
+     * @param {string} [baseUrl] - Optional base article URL.
+     * @returns {string} URL pointing to the section.
+     */
+    function sectionUrlByName(sectionName, baseUrl = wikispeedrunUrlToWikipediaUrl(location.href)) {
+        if (!sectionName) return baseUrl;
+        const normalizedSection = sectionName.trim().replace(/\s+/g, '_');
+        return `${baseUrl}#${encodeURIComponent(normalizedSection)}`;
+    }
+
     /* ------------------------------
        START GRY
     --------------------------------*/
@@ -170,8 +197,7 @@
     function trackPageEnter() {
         pageEnterTime = new Date();
         currentPage = {
-            name: getArticleTitle(),
-            url: location.href,
+            name: wikispeedrunUrlToWikipediaUrl(location.href),
             enter_time: pageEnterTime.toISOString(),
             exit_time: null,
             books: [],
@@ -297,7 +323,7 @@
         if (duration < 1) return;
 
         sectionTimes.push({
-            name: currentSection,
+            name: sectionUrlByName(currentSection),
             session_events: [
                 {
                     open_time: sectionStartTime.toISOString(),
@@ -336,7 +362,7 @@
         if (!lastRoom) return;
 
         lastRoom.book_links.push({
-            link: link.href,
+            link: wikispeedrunUrlToWikipediaUrl(link.href),
             click_time: nowISO(),
         });
     }
@@ -845,15 +871,13 @@
 
         console.log('Wysyłam sesję:', data);
 
-        const authHeader = 'Basic ' + btoa(USERNAME + ':' + PASSWORD);
-
         GM_xmlhttpRequest({
             method: "POST",
-            url: API_LOG,
+            url: 'http://wikirooms.duckdns.org/session/',
             headers: {
                 "Content-Type": "application/json",
                 "X-Web": "true",
-                "Authorization": authHeader
+                "Authorization": 'Basic cHJvamVrdEJSOlBST0pFS1Ricg=='
             },
             data: JSON.stringify(data),
             onload: function (response) {
