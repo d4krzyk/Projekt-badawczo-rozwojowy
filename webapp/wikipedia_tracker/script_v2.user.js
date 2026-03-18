@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.5
+// @version      2.6
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
 // @connect      wikirooms.duckdns.org
@@ -641,6 +641,26 @@
     --------------------------------*/
     let gameEnded = false;
 
+    /**
+     * Hide the score row with "Kliknięcia w artykuły" inside a results modal.
+     * @param {HTMLElement} dialog - Modal dialog element.
+     */
+    function hideArticleClicksRow(dialog) {
+        if (!dialog) return;
+
+        const rows = dialog.querySelectorAll('tr');
+        rows.forEach((row) => {
+            const labelCell = row.querySelector('td');
+            const label = labelCell?.innerText?.trim();
+            if (label === 'Kliknięcia w artykuły') {
+                const valueCell = row.querySelector('td:nth-child(2)');
+                if (valueCell) {
+                    valueCell.innerText = '[ukryte]';
+                }
+            }
+        });
+    }
+
     const endGameObserver = new MutationObserver((mutations) => {
         if (!session.active || gameEnded) return;
 
@@ -654,6 +674,7 @@
                         : node.querySelector?.('[role="dialog"]');
 
                 if (!dialog) continue;
+                hideArticleClicksRow(dialog);
 
                 const text = dialog.innerText || '';
 
