@@ -887,7 +887,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '<b>Label</b>
+  m_text: '**Label**
 
 '
   m_isRightToLeft: 0
@@ -2239,7 +2239,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '<b>Label</b>
+  m_text: '**Label**
 
 '
   m_isRightToLeft: 0
@@ -6654,20 +6654,20 @@ MonoBehaviour:
 
     <i>W/A/S/D</i> - move
 
-    <i>Mouse</i> - rotate camera
-
-    <i>Shift
-    + move</i> - sprint
-
     <i>E</i> - interact
+
+    <i>Mouse</i>
+    - rotate camera / click links
+
+    <i>Shift + move</i> - sprint
+
+    <i>Esc</i>
+    - pause menu / exit book
 
     <i>Z (hold)</i> - camera zoom
 
-    <i>Esc</i>
-    - pause menu
-
-    <i>L. Ctrl (hold, while aiming at captioned image)</i> - Hover
-    UI interactive mode'
+    <i>L. Ctrl (hold,
+    while aiming at captioned image)</i> - Hover UI interactive mode'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
   m_sharedMaterial: {fileID: 3066015743098452413, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
@@ -10754,6 +10754,7 @@ MonoBehaviour:
   captionPrefab: {fileID: 2052758601685698329, guid: dcdadb01fc357f94e9535ed19c117ea1, type: 3}
   labelPrefab: {fileID: 342741412680053659, guid: 27a17f8405c4e1b45b1b1d3831b55ae0, type: 3}
   contentTransform: {fileID: 1011621167}
+  HasFailed: 0
 --- !u!222 &1011621169
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -11094,7 +11095,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25641763, y: 0.10700001}
   m_AnchorMax: {x: 0.32122308, y: 0.21522696}
-  m_AnchoredPosition: {x: -0.8751221, y: 0.37890625}
+  m_AnchoredPosition: {x: -0.875, y: 0.37890625}
   m_SizeDelta: {x: -1.75, y: -0.75530005}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1033771092
@@ -12125,6 +12126,7 @@ MonoBehaviour:
   captionPrefab: {fileID: 2052758601685698329, guid: dcdadb01fc357f94e9535ed19c117ea1, type: 3}
   labelPrefab: {fileID: 342741412680053659, guid: 27a17f8405c4e1b45b1b1d3831b55ae0, type: 3}
   contentTransform: {fileID: 1169686108}
+  HasFailed: 0
 --- !u!1 &1172970881
 GameObject:
   m_ObjectHideFlags: 0
@@ -16626,7 +16628,7 @@ MonoBehaviour:
   portalPrevious: {fileID: 1751320008}
   infoboxGenerator: {fileID: 1169686116}
   secInfoboxGenerator: {fileID: 1011621168}
-  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
+  backendConfig: {fileID: 11400000, guid: 96e35c64637476d4bb7b2b81985a7058, type: 2}
   loadingScreen: {fileID: 1235979131}
   requestThrottling:
     infoboxMinIntervalSeconds: 0.6
@@ -16923,7 +16925,7 @@ MonoBehaviour:
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1011621168}
   secInfoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
+  backendConfig: {fileID: 11400000, guid: 96e35c64637476d4bb7b2b81985a7058, type: 2}
   loadingScreen: {fileID: 1235979131}
   requestThrottling:
     infoboxMinIntervalSeconds: 0.6

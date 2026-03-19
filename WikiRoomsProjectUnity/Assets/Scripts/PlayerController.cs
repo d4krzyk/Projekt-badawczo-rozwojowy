@@ -173,6 +173,15 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            if (isPaused)
+            {
+                TogglePause();
+                return;
+            }
+
+            if (CloseReadingView())
+                return;
+
             TogglePause();
         }
     }
@@ -225,37 +234,10 @@ public class PlayerController : MonoBehaviour
         // zablokuj interakcje gdy gra jest wstrzymana
         if (isPaused) return;
 
+        if (isReading) return;
+
         if (Input.GetKeyDown(KeyCode.E))
         {
-            
-            if (ImageUI != null && ImageUI.activeSelf)
-            {
-                ImageZoomPan zoomPan = ImageUI.GetComponentInChildren<ImageZoomPan>();
-                if (zoomPan != null) zoomPan.ResetPosition();
-                ImageUI.SetActive(false);
-                LockCursor();
-                isReading = false;
-                return;
-            }
-            if (isReading)
-            {
-                // odtwórz dźwięk zamknięcia książki / infoboxa
-                if (bookAudioSource != null && closeBookClip != null)
-                    bookAudioSource.PlayOneShot(closeBookClip, bookSoundVolume);
-
-                isReading = false;
-                if (BookUI != null) BookUI.SetActive(false);
-                if (InfoBoxUI != null) InfoBoxUI.SetActive(false);
-                if (SecondaryInfoBoxUI != null) SecondaryInfoBoxUI.SetActive(false);
-                currentBook?.OnInteraction();
-                LockCursor();
-                if (currentBook != null && logger != null)
-                    logger.LogOnBookClose(currentBook.bookArticleLink, openBookTime, Time.time);
-                currentBook = null;
-                return;
-            }
-
-
             if (cameraTransform == null) return;
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
@@ -355,6 +337,46 @@ public class PlayerController : MonoBehaviour
 
         }
 
+    }
+
+    public bool CloseReadingView(bool playCloseSound = true)
+    {
+        bool hasOpenImage = ImageUI != null && ImageUI.activeSelf;
+        bool hasOpenBook = BookUI != null && BookUI.activeSelf;
+        bool hasOpenInfoBox = InfoBoxUI != null && InfoBoxUI.activeSelf;
+        bool hasOpenSecondaryInfoBox = SecondaryInfoBoxUI != null && SecondaryInfoBoxUI.activeSelf;
+
+        if (!isReading && !hasOpenImage && !hasOpenBook && !hasOpenInfoBox && !hasOpenSecondaryInfoBox)
+            return false;
+
+        if (playCloseSound && bookAudioSource != null && closeBookClip != null)
+            bookAudioSource.PlayOneShot(closeBookClip, bookSoundVolume);
+
+        if (hasOpenImage)
+        {
+            ImageZoomPan zoomPan = ImageUI.GetComponentInChildren<ImageZoomPan>();
+            if (zoomPan != null) zoomPan.ResetPosition();
+            ImageUI.SetActive(false);
+        }
+
+        if (hasOpenBook)
+            BookUI.SetActive(false);
+        if (hasOpenInfoBox)
+            InfoBoxUI.SetActive(false);
+        if (hasOpenSecondaryInfoBox)
+            SecondaryInfoBoxUI.SetActive(false);
+
+        if (currentBook != null)
+        {
+            currentBook.OnInteraction();
+            if (logger != null)
+                logger.LogOnBookClose(currentBook.bookArticleLink, openBookTime, Time.time);
+            currentBook = null;
+        }
+
+        isReading = false;
+        LockCursor();
+        return true;
     }
 
     void HandleCameraZoom()

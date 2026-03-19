@@ -60,6 +60,12 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         Match match = Regex.Match(link, pattern);
         if (match.Success)
         {
+            PlayerController playerController = FindAnyObjectByType<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.CloseReadingView(false);
+            }
+
             roomsController.secondElongatedRoom.articleName = match.Groups[1].Value.Replace('_', ' ');
             roomsController.secondElongatedRoom.ResetRoom();
             roomsController.elongatedRoom.SetActivePortalNext(false);

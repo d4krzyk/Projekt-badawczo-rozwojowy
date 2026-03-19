@@ -118,6 +118,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public bool HasLoaded = false;
     SemaphoreSlim imageDownloadParallelGate;
     int imageDownloadParallelGateLimit = -1;
+    int generationVersion = 0;
     
     // struktura odpowiadająca JSON z /images/generator
     [Serializable]
@@ -181,8 +182,11 @@ public class ElongatedRoomGenerator : MonoBehaviour
         EnsureSettings();
         EnsureImageDownloadParallelGate();
         ResetImageDownloadAdaptiveState();
+        int generationId = BeginGeneration();
         HasLoaded = false;
-        if(roomsController.elongatedRoom == this)
+        ArticleData = null;
+        CancelInfoboxPopulation();
+        if(roomsController != null && roomsController.elongatedRoom == this)
         {
             loadingScreen.SetActive(true);
             // Zresetuj animację loading screen
@@ -214,31 +218,41 @@ public class ElongatedRoomGenerator : MonoBehaviour
         Debug.Log($"Loading {articleName}...");
 
         // Pobieranie artykułu
-        bool flowControl = await HandleArticle(articleName);
-        if (!flowControl) return;
+        bool flowControl = await HandleArticle(articleName, generationId);
+        if (!flowControl)
+        {
+            if (IsGenerationCurrent(generationId))
+                HideLoadingScreenIfNeeded();
+            return;
+        }
+        if (!IsGenerationCurrent(generationId)) return;
 
         Debug.Log($"Loaded {articleName} data");
 
 
         if (onClick) 
         {
-            roomsController.elongatedRoom.SetActivePortalNext(true);
+            this.roomsController?.elongatedRoom?.SetActivePortalNext(true);
         }
 
         // Bezpieczne użycie category
-        Task textureTask = HandleTextures(articleName, roomsController);
-        Task infoboxTask = HandleInfobox(articleName);
+        Task textureTask = HandleTextures(articleName, this.roomsController, generationId);
+        Task infoboxTask = HandleInfobox(articleName, generationId);
         await Task.WhenAll(textureTask, infoboxTask);
+        if (!IsGenerationCurrent(generationId)) return;
 
         SpawnExtensionsWithBookselfs();
         HasLoaded = true;
-        await HandleImagesProgressively(articleName, hideWhenProgressReached: true);
+        await HandleImagesProgressively(articleName, hideWhenProgressReached: true, generationId);
+        if (!IsGenerationCurrent(generationId)) return;
         HideLoadingScreenIfNeeded();
         Debug.Log($"Loaded {articleName} successfully.");
     }
 
-    private async Task HandleImagesProgressively(string articleName, bool hideWhenProgressReached)
+    private async Task HandleImagesProgressively(string articleName, bool hideWhenProgressReached, int generationId)
     {
+        if (!IsGenerationCurrent(generationId)) return;
+
         var slots = BuildImageSlots();
         if (slots.Count == 0)
         {
@@ -268,6 +282,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         {
             Debug.LogWarning($"Błąd pobierania obrazów dla {articleName}: {ex.Message}");
         }
+        if (!IsGenerationCurrent(generationId)) return;
 
         if (imagesLinks.Count == 0)
         {
@@ -300,6 +315,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             }
 
             SlotClusterResult slotResult = await CollectSlotPayloadsAsync(slotIndex, tasksForSlot);
+            if (!IsGenerationCurrent(generationId)) return;
             if (slotResult.payloads != null && slotResult.payloads.Count > 0)
             {
                 SpawnImageCluster(slots[slotResult.slotIndex], slotResult.payloads);
@@ -432,9 +448,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
     }
 
 
-    private async Task HandleInfobox(string articleName, bool firstRoom = false)
+    private async Task HandleInfobox(string articleName, int generationId, bool firstRoom = false)
     {
         string infoboxJson = await GetInfoboxAsync(articleName);
+        if (!IsGenerationCurrent(generationId)) return;
         if (string.IsNullOrEmpty(infoboxJson))
         {
             Debug.Log("Failed to retrieve infobox data.");
@@ -450,6 +467,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         else
         {
             WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
+            if (!IsGenerationCurrent(generationId)) return;
             if (infoboxData.infobox == null)            {
                 Debug.Log("Infobox parsing returned null.");
                 if(firstRoom)
@@ -493,38 +511,43 @@ public class ElongatedRoomGenerator : MonoBehaviour
         }
     }
 
-    private async Task HandleTextures(string articleName, RoomsController roomsController)
+    private async Task HandleTextures(string articleName, RoomsController roomsController, int generationId)
     {
         if (!IsGenAITexturesEnabled())
         {
             Debug.Log("GenAI textures disabled - using default materials.");
-            SetDefaultMaterials();
+            if (IsGenerationCurrent(generationId))
+                SetDefaultMaterials();
             return;
         }
 
         string category = string.IsNullOrEmpty(ArticleData?.category) ? "default" : ArticleData.category;
         Debug.Log($"Waiting for {category} textures...");
-        TexturesStructure cachedTextures = roomsController.GetCachedTextures(articleName);
+        TexturesStructure cachedTextures = roomsController != null ? roomsController.GetCachedTextures(articleName) : null;
         if (cachedTextures != null)
         {
             Debug.Log("Using cached textures.");
-            ApplyTexturesToMaterials(cachedTextures);
+            if (IsGenerationCurrent(generationId))
+                ApplyTexturesToMaterials(cachedTextures);
         }
         else
         {
             string texturesJson = await GetTexturesJsonAsync(articleName, ArticleData.category);
+            if (!IsGenerationCurrent(generationId)) return;
             TexturesStructure texturesData;
             if (string.IsNullOrEmpty(texturesJson)) Debug.LogWarning("Failed to retrieve textures data.");
             else
             {
                 texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
-                roomsController.CacheTextures(articleName, texturesData);
-                ApplyTexturesToMaterials(texturesData);
+                if (roomsController != null)
+                    roomsController.CacheTextures(articleName, texturesData);
+                if (IsGenerationCurrent(generationId))
+                    ApplyTexturesToMaterials(texturesData);
             }
         }
     }
 
-    private async Task<bool> HandleArticle(string articleName)
+    private async Task<bool> HandleArticle(string articleName, int generationId)
     {
         Debug.Log($"Waiting for {articleName} article data...");
         ArticleStructure cachedArticle = null;
@@ -536,17 +559,18 @@ public class ElongatedRoomGenerator : MonoBehaviour
         if (cachedArticle != null)
         {
             Debug.Log("Using cached article data.");
-            ArticleData = cachedArticle;
+            ArticleData = NormalizeArticleData(cachedArticle);
         }
         else
         {
             string json = await GetArticleAsync(articleName);
+            if (!IsGenerationCurrent(generationId)) return false;
             if (string.IsNullOrEmpty(json))
             {
                 Debug.LogError("Failed to retrieve article data.");
                 return false;
             }
-            ArticleData = JsonConvert.DeserializeObject<ArticleStructure>(json);
+            ArticleData = NormalizeArticleData(JsonConvert.DeserializeObject<ArticleStructure>(json));
             if (ArticleData == null)
             {
                 Debug.LogError("Article deserialization returned null.");
@@ -554,6 +578,11 @@ public class ElongatedRoomGenerator : MonoBehaviour
             }
             if (roomsController != null)
                 roomsController.CacheArticle(articleName, ArticleData);
+        }
+
+        if (ArticleData.content.Length == 0)
+        {
+            Debug.LogWarning($"Article '{articleName}' has no sections. Generating an empty room shell instead of failing.");
         }
 
         return true;
@@ -785,12 +814,20 @@ public class ElongatedRoomGenerator : MonoBehaviour
         Vector2 roomSize = new Vector2(roomBounds.x, roomBounds.z);
         Vector3 offset = new Vector3(0, 0, roomBounds.z);
         Vector3 nextExtensionPoint = initialRoomPosition.position - offset;
+        int bookshelfCount = BookshelfCountForArticle(ArticleData);
+        if (bookshelfCount <= 0)
+        {
+            SpawnExtensionClosure(nextExtensionPoint + offset / 2f);
+            return;
+        }
+
         GameObject extension = null;
-        Section nextSection = ArticleData.content[0];
+        Section[] sections = ArticleData.content;
+        Section nextSection = sections[0];
         int bookIndex = 0;
         int sectionIndex = 0;
 
-        for (int i = 0; i < BookshelfCountForArticle(ArticleData); i++)
+        for (int i = 0; i < bookshelfCount; i++)
         {
             if (i % 6 == 0)
             {
@@ -811,16 +848,16 @@ public class ElongatedRoomGenerator : MonoBehaviour
             currentBookshelf.transform.localPosition = Vector3.zero;
 
             BookshelfController currentBookshelfController = currentBookshelf.GetComponent<BookshelfController>();
-            while (nextSection.content == null && nextSection.subsections == null)
+            while (nextSection == null || (string.IsNullOrEmpty(nextSection.content) && (nextSection.subsections == null || nextSection.subsections.Length == 0)))
             {
                 sectionIndex++;
-                if (sectionIndex >= ArticleData.content.Length) break; // Sprawdź czy nie wyszliśmy poza zakres
-                nextSection = ArticleData.content[sectionIndex];
+                if (sectionIndex >= sections.Length) break; // Sprawdź czy nie wyszliśmy poza zakres
+                nextSection = sections[sectionIndex];
                 bookIndex = 0;
             }
             
             // Sprawdź czy nextSection jest prawidłowy przed użyciem
-            if (sectionIndex < ArticleData.content.Length && nextSection != null)
+            if (sectionIndex < sections.Length && nextSection != null)
             {
                 currentBookshelfController.AddSign(nextSection.name, bookshelfContainer.transform);
 
@@ -828,26 +865,26 @@ public class ElongatedRoomGenerator : MonoBehaviour
                 if (bookIndex == BookCountForSection(nextSection))
                 {
                     sectionIndex++;
-                    if (sectionIndex < ArticleData.content.Length) nextSection = ArticleData.content[sectionIndex];
+                    if (sectionIndex < sections.Length) nextSection = sections[sectionIndex];
                     bookIndex = 0;
                 }
             }
         }
-        nextExtensionPoint += offset / 2;
-        extension = Instantiate(extensionRoomClosure, nextExtensionPoint, Quaternion.identity, transform);
-        extension.name = "Extension Room Closure";
+        SpawnExtensionClosure(nextExtensionPoint + offset / 2f);
     }
 
     int BookCountForSection(Section section)
     {
+        if (section == null) return 0;
         int bookCount = 0;
-        if (string.IsNullOrEmpty(section.content) && section.subsections == null) return 0;
+        if (string.IsNullOrEmpty(section.content) && (section.subsections == null || section.subsections.Length == 0)) return 0;
         Stack<Section> subsections = new Stack<Section>();
         subsections.Push(section);
         while (subsections.Count > 0)
         {
             Section s = subsections.Pop();
-            if (string.IsNullOrEmpty(s.content) && s.subsections == null) continue;
+            if (s == null) continue;
+            if (string.IsNullOrEmpty(s.content) && (s.subsections == null || s.subsections.Length == 0)) continue;
             if (s.subsections != null)
             {
                 foreach (Section sub in s.subsections) subsections.Push(sub);
@@ -859,11 +896,17 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     int BookshelfCountForArticle(ArticleStructure article)
     {
+        if (article == null || article.content == null || article.content.Length == 0) return 0;
+
         int bookshelfCount = 0;
+        int safeMaxBooksPerBookshelf = Mathf.Max(1, maxBooksPerBookshelf);
         foreach (Section section in article.content)
         {
-            if (string.IsNullOrEmpty(section.content) && section.subsections == null) continue;
-            int bookshelfsPerSection = ((BookCountForSection(section) - 1) / maxBooksPerBookshelf) + 1;
+            if (section == null) continue;
+            if (string.IsNullOrEmpty(section.content) && (section.subsections == null || section.subsections.Length == 0)) continue;
+            int bookCountForSection = BookCountForSection(section);
+            if (bookCountForSection <= 0) continue;
+            int bookshelfsPerSection = ((bookCountForSection - 1) / safeMaxBooksPerBookshelf) + 1;
             bookshelfCount += bookshelfsPerSection;
         }
         return bookshelfCount;
@@ -872,6 +915,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
     //Zwraca liczbę książek na bookshelfie po wyknoaniu funkcji
     int AddBooksForSection(BookshelfController bookshelf, Section initialSection, Transform parent, int lastBookIndex)
     {
+        if (bookshelf == null || initialSection == null) return 0;
+
         Stack<Section> sections = new Stack<Section>();
         sections.Push(initialSection);
         int i = 0;
@@ -879,7 +924,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
         while (sections.Count > 0)
         {
             Section subsection = sections.Pop();
-            if (subsection.content != null)
+            if (subsection == null) continue;
+            if (!string.IsNullOrEmpty(subsection.content))
             {
                 if (i > lastBookIndex)
                 {
@@ -891,7 +937,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             {
                 foreach (var s in subsection.subsections.Reverse()) sections.Push(s);
             }
-            if (subsection.subsections == null && subsection.content == null) i--;
+            if ((subsection.subsections == null || subsection.subsections.Length == 0) && string.IsNullOrEmpty(subsection.content)) i--;
             i++;
             if (addedBooks == maxBooksPerBookshelf) return i;
         }
@@ -906,6 +952,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     public void ResetRoom()
     {
+        InvalidateGeneration();
+        HasLoaded = false;
+        ArticleData = null;
+        CancelInfoboxPopulation();
         spawnedExtensions.Clear();
         foreach (Transform child in transform)
         {
@@ -921,6 +971,44 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public void SetActivePortalPrevious(bool isActive)
     {
         portalPrevious.SetActive(isActive);
+    }
+
+    int BeginGeneration()
+    {
+        generationVersion++;
+        return generationVersion;
+    }
+
+    void InvalidateGeneration()
+    {
+        generationVersion++;
+    }
+
+    bool IsGenerationCurrent(int generationId)
+    {
+        return generationVersion == generationId;
+    }
+
+    void CancelInfoboxPopulation()
+    {
+        if (infoboxGenerator != null)
+            infoboxGenerator.CancelPopulation();
+        if (secInfoboxGenerator != null)
+            secInfoboxGenerator.CancelPopulation();
+    }
+
+    ArticleStructure NormalizeArticleData(ArticleStructure article)
+    {
+        if (article == null) return null;
+        if (article.content == null)
+            article.content = Array.Empty<Section>();
+        return article;
+    }
+
+    void SpawnExtensionClosure(Vector3 position)
+    {
+        GameObject closure = Instantiate(extensionRoomClosure, position, Quaternion.identity, transform);
+        closure.name = "Extension Room Closure";
     }
 
     private async Task<List<Dictionary<string, string>>> GetImagesListAsync(string pageName)

@@ -19,18 +19,33 @@ public class InfoboxGenerator : MonoBehaviour
     public RectTransform contentTransform;
 
     [HideInInspector] public bool HasFailed = false;
+    int populationVersion = 0;
 
     public async Task PopulateUI(WikiPageRaw infoboxesData)
     {
+        int populationId = BeginPopulation();
         ClearContent();
+        if (infoboxesData == null || infoboxesData.infobox == null)
+            return;
     
         foreach (var infobox in infoboxesData.infobox)
         {
+            if (!IsPopulationCurrent(populationId))
+                return;
+
             foreach (var item in infobox)
             {
-                await HandleInfoboxItemRaw(item);
+                await HandleInfoboxItemRaw(item, populationId);
+                if (!IsPopulationCurrent(populationId))
+                    return;
             }
         }
+    }
+
+    public void CancelPopulation()
+    {
+        populationVersion++;
+        ClearContent();
     }
 
     public void ClearContent()
@@ -41,8 +56,11 @@ public class InfoboxGenerator : MonoBehaviour
         }
     }
 
-    async Task HandleInfoboxItemRaw(InfoboxItemRaw item)
+    async Task HandleInfoboxItemRaw(InfoboxItemRaw item, int populationId)
     {
+        if (!IsPopulationCurrent(populationId))
+            return;
+
         bool hasLabel = item.label != null;
         GameObject instantiatedObject = null;
         string stringContent = "";
@@ -82,6 +100,12 @@ public class InfoboxGenerator : MonoBehaviour
                 url = $"https:{url}";
                 Debug.Log($"Downloading image from URL: {url}");
                 Sprite imageSprite = await GetImageFromURL(url);
+                if (!IsPopulationCurrent(populationId))
+                {
+                    if (instantiatedObject != null)
+                        Destroy(instantiatedObject);
+                    return;
+                }
                 if (imageSprite != null)
                 {
                     image.sprite = imageSprite;
@@ -98,6 +122,11 @@ public class InfoboxGenerator : MonoBehaviour
                 break;
         }
         if (instantiatedObject == null) return;
+        if (!IsPopulationCurrent(populationId))
+        {
+            Destroy(instantiatedObject);
+            return;
+        }
         instantiatedObject.transform.SetParent(this.transform, false);
         MarkdownRenderer mRenderer = null;
         if (item.@class == "header" || item.@class == "above")
@@ -112,6 +141,17 @@ public class InfoboxGenerator : MonoBehaviour
         }
         if (mRenderer == null) return;
         mRenderer.Source = stringContent;
+    }
+
+    int BeginPopulation()
+    {
+        populationVersion++;
+        return populationVersion;
+    }
+
+    bool IsPopulationCurrent(int populationId)
+    {
+        return populationVersion == populationId;
     }
 
     string HandleValueRaw(ValueRaw valueRaw)
