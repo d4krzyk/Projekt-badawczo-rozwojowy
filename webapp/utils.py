@@ -22,4 +22,4 @@ def get_redirect_name(page_name: str) -> str:
         redirect_url + page_name, headers=get_headers()).content
     json_object = json.loads(json_content)
 
-    return json_object['pages'][0]['key']
+    return json_object['pages'][0]['title']

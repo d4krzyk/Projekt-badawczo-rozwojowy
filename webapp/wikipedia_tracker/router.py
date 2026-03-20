@@ -17,17 +17,18 @@ from .tracker import save_data_to_db
 from .tracker import save_data_to_json_file
 from .models import WikipediaUserSession
 from .repository import WikipediaUserSessionRepository
+from .wikispeedrun_links import build_wikispeedrun_link
 
 router = APIRouter(prefix='/tracker', tags=['Wikipedia Tracker'])
 
 
-@router.post('/create-session')
+@router.post('/create-session', description='Create a session from Wikipedia.org')
 def create_session(username: str = Body(..., media_type="text/plain"), db: Session = Depends(get_db)):
     create_new_session(username, db)
     return {'status': 'OK'}
 
 
-@router.post('/log')
+@router.post('/log', description='Log data from Wikipedia.org')
 async def log_data(request: Request, db: Session = Depends(get_db)):
     try:
         data = await request.json()
@@ -44,7 +45,7 @@ async def log_data(request: Request, db: Session = Depends(get_db)):
         return {'status': 'Error', 'message': str(e)}
     
 
-@router.get('/get_data')
+@router.get('/get_data', description='Get data related to from Wikipedia.org')
 def get_data(
         session_ids: Optional[str] = Query(None, description="ID sesji oddzielone przecinkami, np. 1,2,5"),
         names: Optional[str] = Query(None, description="Nazwy użytkowników, rozdzielone przecinkami."),
@@ -85,3 +86,14 @@ def delete_multiple_sessions(
         'deleted_count': deleted_count,
         'deleted_ids': id_list
     }
+
+@router.get('/get-wikispeedrun-link', description='Get link for article formatted to wikispeedrun format')
+def get_wikispeedrun_link(
+        start_article: str = Query(None, description="Start article title or url"),
+        end_article: str = Query(None, description="End article title or url"),
+):
+    try:
+        link = build_wikispeedrun_link(start_article, end_article)
+    except KeyError:
+        return {'status': 'NOK', 'message': 'Article not found'}
+    return {'status': 'OK', 'link': link}

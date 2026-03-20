@@ -22,6 +22,8 @@ class RoomService:
             enter_time=session_start_time + timedelta(seconds=room_log.enterTime),
             exit_time=session_start_time + timedelta(seconds=room_log.exitTime),
             user_session_id=user_session_id,
+            cursor_log=room_log.cursorLog,
+            image_logs=[image_log.dict() for image_log in room_log.imageLogs],
         )
 
         for book_log in room_log.bookLogs:

@@ -1,20 +1,15 @@
 // ==UserScript==
 // @name         WikiSpeedrun Tracker
 // @namespace    http://tampermonkey.net/
-// @version      2.4
+// @version      2.6
 // @description  Track full WikiSpeedrun session with sections timing
 // @match        https://wikispeedrun.org/*
-// @connect      localhost
+// @connect      wikirooms.duckdns.org
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
 (function () {
     'use strict';
-
-    /* ------------------------------
-       KONFIGURACJA
-    --------------------------------*/
-    const API_LOG = 'http://localhost/session/';
 
     /* ------------------------------
        UŻYTKOWNIK
@@ -99,6 +94,45 @@
         return el.innerText.replace(/\[.*?\]/g, '').trim();
     }
 
+    /**
+     * Convert a WikiSpeedrun article URL to its canonical English Wikipedia URL.
+     * Example:
+     * https://wikispeedrun.org/wiki/Heywood%20railway%20station?... ->
+     * https://en.wikipedia.org/wiki/Heywood_railway_station
+     * @param {string} rawUrl - WikiSpeedrun URL.
+     * @returns {string} Wikipedia URL or original URL if conversion is not possible.
+     */
+    function wikispeedrunUrlToWikipediaUrl(rawUrl) {
+        try {
+            const parsed = new URL(rawUrl);
+            const match = parsed.pathname.match(/^\/wiki\/([^/?#]+)/);
+            if (!match) return rawUrl;
+
+            const decodedTitle = decodeURIComponent(match[1]).trim();
+            if (!decodedTitle) return rawUrl;
+
+            const normalizedTitle = decodedTitle.replace(/\s+/g, '_');
+            return `https://en.wikipedia.org/wiki/${encodeURIComponent(normalizedTitle)}`;
+        } catch {
+            return rawUrl;
+        }
+    }
+
+    /**
+     * Build a Wikipedia section URL from a section title.
+     * Example:
+     * sectionUrlByName('Services') ->
+     * https://en.wikipedia.org/wiki/Heywood_railway_station#Services
+     * @param {string} sectionName - Section title shown in article heading.
+     * @param {string} [baseUrl] - Optional base article URL.
+     * @returns {string} URL pointing to the section.
+     */
+    function sectionUrlByName(sectionName, baseUrl = wikispeedrunUrlToWikipediaUrl(location.href)) {
+        if (!sectionName) return baseUrl;
+        const normalizedSection = sectionName.trim().replace(/\s+/g, '_');
+        return `${baseUrl}#${encodeURIComponent(normalizedSection)}`;
+    }
+
     /* ------------------------------
        START GRY
     --------------------------------*/
@@ -163,8 +197,7 @@
     function trackPageEnter() {
         pageEnterTime = new Date();
         currentPage = {
-            name: getArticleTitle(),
-            url: location.href,
+            name: wikispeedrunUrlToWikipediaUrl(location.href),
             enter_time: pageEnterTime.toISOString(),
             exit_time: null,
             books: [],
@@ -290,7 +323,7 @@
         if (duration < 1) return;
 
         sectionTimes.push({
-            name: currentSection,
+            name: sectionUrlByName(currentSection),
             session_events: [
                 {
                     open_time: sectionStartTime.toISOString(),
@@ -329,7 +362,7 @@
         if (!lastRoom) return;
 
         lastRoom.book_links.push({
-            link: link.href,
+            link: wikispeedrunUrlToWikipediaUrl(link.href),
             click_time: nowISO(),
         });
     }
@@ -590,19 +623,13 @@
         const dt = (now - lastCursorSample.t) / 1000;
         if (dt <= 0) return;
 
-        const dx = x - lastCursorSample.x;
-        const dy = y - lastCursorSample.y;
-
-        const vx = dx / dt;
-        const vy = dy / dt;
-
         const t = (now - pageCursorStartTime) / 1000;
 
         currentPage.cursor.push(
-            Math.round(dx),
-            Math.round(dy),
-            +vx.toFixed(6),
-            +vy.toFixed(6),
+            x,
+            y,
+            x,
+            y,
             +t.toFixed(2)
         );
 
@@ -613,6 +640,26 @@
         WYKRYWANIE KOŃCA GRY
     --------------------------------*/
     let gameEnded = false;
+
+    /**
+     * Hide the score row with "Kliknięcia w artykuły" inside a results modal.
+     * @param {HTMLElement} dialog - Modal dialog element.
+     */
+    function hideArticleClicksRow(dialog) {
+        if (!dialog) return;
+
+        const rows = dialog.querySelectorAll('tr');
+        rows.forEach((row) => {
+            const labelCell = row.querySelector('td');
+            const label = labelCell?.innerText?.trim();
+            if (label === 'Kliknięcia w artykuły') {
+                const valueCell = row.querySelector('td:nth-child(2)');
+                if (valueCell) {
+                    valueCell.innerText = '[ukryte]';
+                }
+            }
+        });
+    }
 
     const endGameObserver = new MutationObserver((mutations) => {
         if (!session.active || gameEnded) return;
@@ -627,6 +674,7 @@
                         : node.querySelector?.('[role="dialog"]');
 
                 if (!dialog) continue;
+                hideArticleClicksRow(dialog);
 
                 const text = dialog.innerText || '';
 
@@ -844,14 +892,21 @@
 
         console.log('Wysyłam sesję:', data);
 
-        fetch(API_LOG, {
-            method: 'POST',
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: 'http://wikirooms.duckdns.org/session/',
             headers: {
-                'Content-Type': 'application/json',
-                'X-Web': 'true'
+                "Content-Type": "application/json",
+                "X-Web": "true",
+                "Authorization": 'Basic cHJvamVrdEJSOlBST0pFS1Ricg=='
             },
-            body: JSON.stringify(data),
-            keepalive: true
+            data: JSON.stringify(data),
+            onload: function (response) {
+                console.log("Sukces:", response.responseText);
+            },
+            onerror: function (error) {
+                console.error("Błąd:", error);
+            }
         });
     }
 
