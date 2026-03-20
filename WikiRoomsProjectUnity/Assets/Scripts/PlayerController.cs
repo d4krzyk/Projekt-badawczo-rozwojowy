@@ -234,10 +234,13 @@ public class PlayerController : MonoBehaviour
         // zablokuj interakcje gdy gra jest wstrzymana
         if (isPaused) return;
 
-        if (isReading) return;
-
         if (Input.GetKeyDown(KeyCode.E))
         {
+            if (isReading)
+            {
+                CloseReadingView();
+                return;
+            }
             if (cameraTransform == null) return;
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
