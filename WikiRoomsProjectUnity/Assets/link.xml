@@ -1,0 +1,19 @@
+<linker>
+  <assembly fullname="Newtonsoft.Json" preserve="all" />
+  <assembly fullname="Assembly-CSharp">
+    <type fullname="ArticleStructure" preserve="all" />
+    <type fullname="Section" preserve="all" />
+    <type fullname="TexturesStructure" preserve="all" />
+    <type fullname="ImagesStructure" preserve="all" />
+    <type fullname="WikiPageRaw" preserve="all" />
+    <type fullname="InfoboxItemRaw" preserve="all" />
+    <type fullname="LabelRaw" preserve="all" />
+    <type fullname="ValueRaw" preserve="all" />
+    <type fullname="ValueFlexibleConverter" preserve="all" />
+    <type fullname="RoomLog" preserve="all" />
+    <type fullname="BookLog" preserve="all" />
+    <type fullname="LinkLog" preserve="all" />
+    <type fullname="AppLog" preserve="all" />
+    <type fullname="ElongatedRoomGenerator+ImagesResponse" preserve="all" />
+  </assembly>
+</linker>

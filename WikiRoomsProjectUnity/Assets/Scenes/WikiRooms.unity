@@ -19423,7 +19423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56923283f1a5a044a800b36d8af358d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Logger
-  backendConfig: {fileID: 11400000, guid: 9e47ffdd3c1bd584a9b005e2bc93071a, type: 2}
+  backendConfig: {fileID: 11400000, guid: 96e35c64637476d4bb7b2b81985a7058, type: 2}
 --- !u!4 &2101044396
 Transform:
   m_ObjectHideFlags: 0
