@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 from datetime import datetime
 
 from ..book.schemas import BookInfoForRoom, BookLog
 from ..link.schemas import BookLinkInfo, LinkLog
+from ..utils import strip_wikipedia_prefix
 
 class ImageInteractionStats(BaseModel):
     totalTime: float
@@ -27,10 +28,14 @@ class RoomInfo(BaseModel):
     name: str
     enter_time: datetime
     exit_time: datetime
-    cursor_log: list[float] = Field(default_factory=list)
-    image_logs: list[ImageLog] = Field(default_factory=list)
+    # cursor_log: list[float] = Field(default_factory=list)
+    # image_logs: list[ImageLog] = Field(default_factory=list)
     books: list[BookInfoForRoom]
     book_links: list[BookLinkInfo]
+
+    @field_serializer("name")
+    def serialize_name(self, value: str) -> str:
+        return strip_wikipedia_prefix(value)
 
     class Config:
         from_attributes = True
