@@ -115,6 +115,7 @@ public class PauseController : MonoBehaviour
 
         Debug.Log("Give up button clicked");
         PlayClickSound();
+        FinalizeCurrentRoomLog();
         EnterFinalState();
         finalUI.SetActive(true);
         finalUIScore.text = logger.GetTotalBooksOpened().ToString("D9");
@@ -144,6 +145,25 @@ public class PauseController : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    void FinalizeCurrentRoomLog()
+    {
+        RoomsController roomsController = FindAnyObjectByType<RoomsController>();
+        if (roomsController == null)
+            return;
+
+        if (playerController == null)
+            playerController = FindAnyObjectByType<PlayerController>();
+
+        if (playerController != null)
+            playerController.CloseReadingView(false);
+
+        if (roomsController.elongatedRoom == null || logger == null)
+            return;
+
+        roomsController.elongatedRoom.ExitTime = Time.time;
+        roomsController.elongatedRoom.LogRoom();
     }
 
     void AddHoverSoundToButton(Button button)

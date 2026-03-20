@@ -185,7 +185,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         int generationId = BeginGeneration();
         HasLoaded = false;
         ArticleData = null;
-        CancelInfoboxPopulation();
+        CancelInfoboxPopulation(clearContent: true);
         if(roomsController != null && roomsController.elongatedRoom == this)
         {
             loadingScreen.SetActive(true);
@@ -450,64 +450,44 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     private async Task HandleInfobox(string articleName, int generationId, bool firstRoom = false)
     {
+        InfoboxGenerator contentGenerator = GetContentInfoboxGenerator(firstRoom);
+        InfoboxGenerator statusGenerator = GetInfoboxStatusGenerator(firstRoom);
+
         string infoboxJson = await GetInfoboxAsync(articleName);
         if (!IsGenerationCurrent(generationId)) return;
         if (string.IsNullOrEmpty(infoboxJson))
         {
             Debug.Log("Failed to retrieve infobox data.");
-            if(firstRoom)
-            {
-                infoboxGenerator.HasFailed = true;
-            }
-            else
-            {
-                secInfoboxGenerator.HasFailed = true;
-            }
+            if (statusGenerator != null)
+                statusGenerator.HasFailed = true;
         }
         else
         {
             WikiPageRaw infoboxData = InfoboxParser.Parse(infoboxJson);
             if (!IsGenerationCurrent(generationId)) return;
-            if (infoboxData.infobox == null)            {
+            if (infoboxData.infobox == null)
+            {
                 Debug.Log("Infobox parsing returned null.");
-                if(firstRoom)
-                {
-                    secInfoboxGenerator.HasFailed = true;
-                    await infoboxGenerator.PopulateUI(infoboxData);
-                }
-                else
-                {
-                    infoboxGenerator.HasFailed = true;
-                    await secInfoboxGenerator.PopulateUI(infoboxData);
-                }
+                if (statusGenerator != null)
+                    statusGenerator.HasFailed = true;
+                if (contentGenerator != null)
+                    await contentGenerator.PopulateUI(infoboxData);
                 return;
             }
             if(infoboxData.infobox.Count == 0)
             {
                 Debug.Log("Infobox parsing returned empty data.");
-                if(firstRoom)
-                {
-                    secInfoboxGenerator.HasFailed = true;
-                    await infoboxGenerator.PopulateUI(infoboxData);
-                }
-                else
-                {
-                    infoboxGenerator.HasFailed = true;
-                    await secInfoboxGenerator.PopulateUI(infoboxData);
-
-                }
+                if (statusGenerator != null)
+                    statusGenerator.HasFailed = true;
+                if (contentGenerator != null)
+                    await contentGenerator.PopulateUI(infoboxData);
                 return;
             }
-            if (firstRoom)
-            {
-                secInfoboxGenerator.HasFailed = false;
-                await infoboxGenerator.PopulateUI(infoboxData);
-            }
-            else
-            {
-                infoboxGenerator.HasFailed = false;
-                await secInfoboxGenerator.PopulateUI(infoboxData);
-            }    
+
+            if (statusGenerator != null)
+                statusGenerator.HasFailed = false;
+            if (contentGenerator != null)
+                await contentGenerator.PopulateUI(infoboxData);
         }
     }
 
@@ -848,7 +828,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             currentBookshelf.transform.localPosition = Vector3.zero;
 
             BookshelfController currentBookshelfController = currentBookshelf.GetComponent<BookshelfController>();
-            while (nextSection == null || (string.IsNullOrEmpty(nextSection.content) && (nextSection.subsections == null || nextSection.subsections.Length == 0)))
+            while (nextSection == null || !SectionHasAnyBooks(nextSection))
             {
                 sectionIndex++;
                 if (sectionIndex >= sections.Length) break; // Sprawdź czy nie wyszliśmy poza zakres
@@ -877,19 +857,18 @@ public class ElongatedRoomGenerator : MonoBehaviour
     {
         if (section == null) return 0;
         int bookCount = 0;
-        if (string.IsNullOrEmpty(section.content) && (section.subsections == null || section.subsections.Length == 0)) return 0;
         Stack<Section> subsections = new Stack<Section>();
         subsections.Push(section);
         while (subsections.Count > 0)
         {
             Section s = subsections.Pop();
             if (s == null) continue;
-            if (string.IsNullOrEmpty(s.content) && (s.subsections == null || s.subsections.Length == 0)) continue;
+            if (SectionHasBookContent(s))
+                bookCount++;
             if (s.subsections != null)
             {
-                foreach (Section sub in s.subsections) subsections.Push(sub);
+                foreach (Section sub in s.subsections.Reverse()) subsections.Push(sub);
             }
-            bookCount++;
         }
         return bookCount;
     }
@@ -903,7 +882,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
         foreach (Section section in article.content)
         {
             if (section == null) continue;
-            if (string.IsNullOrEmpty(section.content) && (section.subsections == null || section.subsections.Length == 0)) continue;
             int bookCountForSection = BookCountForSection(section);
             if (bookCountForSection <= 0) continue;
             int bookshelfsPerSection = ((bookCountForSection - 1) / safeMaxBooksPerBookshelf) + 1;
@@ -919,29 +897,39 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
         Stack<Section> sections = new Stack<Section>();
         sections.Push(initialSection);
-        int i = 0;
+        int processedBookCount = 0;
         int addedBooks = 0;
+        int safeMaxBooksPerBookshelf = Mathf.Max(1, maxBooksPerBookshelf);
         while (sections.Count > 0)
         {
             Section subsection = sections.Pop();
             if (subsection == null) continue;
-            if (!string.IsNullOrEmpty(subsection.content))
+            if (SectionHasBookContent(subsection))
             {
-                if (i > lastBookIndex)
+                if (processedBookCount > lastBookIndex)
                 {
                     bookshelf.AddBook(subsection.name, subsection.content, articleLink, parent, addedBooks);
                     addedBooks++;
                 }
+                processedBookCount++;
             }
             if (subsection.subsections != null)
             {
                 foreach (var s in subsection.subsections.Reverse()) sections.Push(s);
             }
-            if ((subsection.subsections == null || subsection.subsections.Length == 0) && string.IsNullOrEmpty(subsection.content)) i--;
-            i++;
-            if (addedBooks == maxBooksPerBookshelf) return i;
+            if (addedBooks == safeMaxBooksPerBookshelf) return processedBookCount;
         }
-        return i;
+        return processedBookCount;
+    }
+
+    bool SectionHasBookContent(Section section)
+    {
+        return section != null && !string.IsNullOrWhiteSpace(section.content);
+    }
+
+    bool SectionHasAnyBooks(Section section)
+    {
+        return BookCountForSection(section) > 0;
     }
 
     public void LogRoom()
@@ -955,7 +943,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         InvalidateGeneration();
         HasLoaded = false;
         ArticleData = null;
-        CancelInfoboxPopulation();
+        CancelInfoboxPopulation(clearContent: true);
         spawnedExtensions.Clear();
         foreach (Transform child in transform)
         {
@@ -989,12 +977,21 @@ public class ElongatedRoomGenerator : MonoBehaviour
         return generationVersion == generationId;
     }
 
-    void CancelInfoboxPopulation()
+    void CancelInfoboxPopulation(bool firstRoom = false, bool clearContent = false)
     {
-        if (infoboxGenerator != null)
-            infoboxGenerator.CancelPopulation();
-        if (secInfoboxGenerator != null)
-            secInfoboxGenerator.CancelPopulation();
+        InfoboxGenerator contentGenerator = GetContentInfoboxGenerator(firstRoom);
+        if (contentGenerator != null)
+            contentGenerator.CancelPopulation(clearContent);
+    }
+
+    InfoboxGenerator GetContentInfoboxGenerator(bool firstRoom)
+    {
+        return firstRoom ? infoboxGenerator : secInfoboxGenerator;
+    }
+
+    InfoboxGenerator GetInfoboxStatusGenerator(bool firstRoom)
+    {
+        return firstRoom ? secInfoboxGenerator : infoboxGenerator;
     }
 
     ArticleStructure NormalizeArticleData(ArticleStructure article)

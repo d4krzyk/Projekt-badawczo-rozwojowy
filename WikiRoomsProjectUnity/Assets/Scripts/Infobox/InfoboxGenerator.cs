@@ -42,10 +42,11 @@ public class InfoboxGenerator : MonoBehaviour
         }
     }
 
-    public void CancelPopulation()
+    public void CancelPopulation(bool clearContent = false)
     {
         populationVersion++;
-        ClearContent();
+        if (clearContent)
+            ClearContent();
     }
 
     public void ClearContent()

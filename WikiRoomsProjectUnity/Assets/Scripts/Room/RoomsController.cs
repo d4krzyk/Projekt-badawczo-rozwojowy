@@ -79,6 +79,7 @@ public class RoomsController : MonoBehaviour
         {
             if(elongatedRoom.ArticleData.name.ToLower() == targetArticleName.ToLower())
             {
+                FinalizeCurrentRoomLog();
                 EnterFinalState();
                 finalUI.SetActive(true);
                 finalUIScore.text = logger.GetTotalBooksOpened().ToString("D9");
@@ -215,5 +216,18 @@ public class RoomsController : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    void FinalizeCurrentRoomLog()
+    {
+        if (elongatedRoom == null || logger == null)
+            return;
+
+        PlayerController playerController = FindAnyObjectByType<PlayerController>();
+        if (playerController != null)
+            playerController.CloseReadingView(false);
+
+        elongatedRoom.ExitTime = Time.time;
+        elongatedRoom.LogRoom();
     }
 }

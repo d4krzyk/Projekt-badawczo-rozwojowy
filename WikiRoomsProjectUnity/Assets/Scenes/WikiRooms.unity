@@ -4780,7 +4780,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 150, y: -200}
+  m_AnchoredPosition: {x: 150, y: -185}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &537788023
@@ -16918,7 +16918,7 @@ MonoBehaviour:
   defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
   defStandMat: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
-  articleName: Pope
+  articleName: Australia
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
   portalNext: {fileID: 410983050840802480}

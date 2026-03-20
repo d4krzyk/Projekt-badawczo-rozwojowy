@@ -279,6 +279,9 @@ public class PlayerController : MonoBehaviour
                     var infoComp = hit.collider.GetComponent<InfoBoxInteraction>();
                     if (infoComp != null || hit.collider.CompareTag("InfoBox"))
                     {
+                        if (!CanOpenInfoBox())
+                            return;
+
                         if (bookAudioSource != null && openBookClip != null)
                             bookAudioSource.PlayOneShot(openBookClip, bookSoundVolume);
 
@@ -474,6 +477,16 @@ public class PlayerController : MonoBehaviour
         content = System.Text.RegularExpressions.Regex.Replace(content, @"\[\]\([^\)]*\)", "");
         content = System.Text.RegularExpressions.Regex.Replace(content, @"\[([^\]]+)\](?!\()", "$1");
         return content;
+    }
+
+    bool CanOpenInfoBox()
+    {
+        RoomsController roomsController = FindAnyObjectByType<RoomsController>();
+        if (roomsController == null || roomsController.elongatedRoom == null)
+            return true;
+
+        InfoboxGenerator infoboxStatus = roomsController.elongatedRoom.infoboxGenerator;
+        return infoboxStatus == null || !infoboxStatus.HasFailed;
     }
 
 }
