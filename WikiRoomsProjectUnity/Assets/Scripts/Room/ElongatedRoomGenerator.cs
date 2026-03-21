@@ -530,7 +530,11 @@ public class ElongatedRoomGenerator : MonoBehaviour
         else
         {
             string texturesJson = await GetTexturesJsonAsync(articleName, ArticleData.category);
+            Debug.Log(texturesJson);
             if (!IsGenerationCurrent(generationId)) return;
+            var obj = JObject.Parse(texturesJson);
+            string status = obj["status"]?.ToString();
+            if(status?.ToLower() != "ok") return;
             TexturesStructure texturesData;
             if (string.IsNullOrEmpty(texturesJson)) Debug.LogWarning("Failed to retrieve textures data.");
             else
