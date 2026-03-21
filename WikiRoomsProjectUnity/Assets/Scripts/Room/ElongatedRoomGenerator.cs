@@ -8,11 +8,16 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.VFX;
 using TMPro; 
 
 public class ElongatedRoomGenerator : MonoBehaviour
 {
     const string GenAIEnabledKey = "GenAITexturesEnabled";
+    static readonly int BaseColorPropertyId = Shader.PropertyToID("_BaseColor");
+    static readonly int ColorPropertyId = Shader.PropertyToID("_Color");
+    static readonly int PortalAccentColorPropertyId = Shader.PropertyToID("_PortalAccentColor");
+    static readonly int EmissionColorPropertyId = Shader.PropertyToID("_EmissionColor");
 
     [Serializable]
     public class RequestThrottlingSettings
@@ -67,6 +72,18 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public InfoboxGenerator secInfoboxGenerator;
     public BackendConfig backendConfig;
     public GameObject loadingScreen;
+
+    [Header("Portal color tuning")]
+    [Range(0f, 1f)] public float portalColorIntensity = 1f;
+    [Range(0f, 1f)] public float portalNextHueJitter = 0.7f;
+    [Range(0f, 1f)] public float portalYellowAvoidanceStrength = 0.85f;
+    [Range(10f, 90f)] public float portalYellowAvoidanceBandDegrees = 40f;
+    [Range(0f, 1f)] public float portalNextMinSaturation = 0.82f;
+    [Range(0f, 1f)] public float portalNextMinValue = 0.95f;
+    [Range(0f, 1f)] public float portalPreviousHueShift = 0.09f;
+    [Range(0f, 1f)] public float portalPreviousMinSaturation = 0.65f;
+    [Range(0f, 1f)] public float portalPreviousMinValue = 0.82f;
+    [Min(0f)] public float portalEmissionStrength = 1.35f;
 
     [Header("Request throttling")]
     public RequestThrottlingSettings requestThrottling = new RequestThrottlingSettings();
@@ -602,6 +619,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
         altarRenderer.SetMaterials(new List<Material> { shelfMaterial, wallMaterial, shelfMaterial });
         SetRendererMaterialTransform(altarRenderer, 0, defaultScale, defaultOffset);
         SetRendererMaterialTransform(altarRenderer, 1, defaultScale, defaultOffset);
+
+        UpdatePortalColorsFromRoomMaterials(wallMaterial, floorMaterial, shelfMaterial);
     }
 
     void SetRendererMaterialTransform(Renderer renderer, int materialIndex, Vector2 scale, Vector2 offset)
@@ -634,6 +653,300 @@ public class ElongatedRoomGenerator : MonoBehaviour
             material.SetTextureScale("_MainTex", scale);
             material.SetTextureOffset("_MainTex", offset);
         }
+    }
+
+    void UpdatePortalColorsFromRoomMaterials(Material wallMaterial, Material floorMaterial, Material shelfMaterial)
+    {
+        Color basePortalColor = BuildPortalBaseColor(wallMaterial, floorMaterial, shelfMaterial);
+        Color forwardPortalColor = ApplyColorIntensity(TuneForwardPortalColor(basePortalColor));
+        Color backwardPortalColor = ApplyColorIntensity(TuneBackwardPortalColor(forwardPortalColor));
+
+        ApplyPortalColor(portalNext, forwardPortalColor);
+        ApplyPortalColor(portalPrevious, backwardPortalColor);
+
+        Debug.Log($"[PortalColor] {articleName} | base={ColorToLogString(basePortalColor)} | next={ColorToLogString(forwardPortalColor)} | prev={ColorToLogString(backwardPortalColor)}", this);
+    }
+
+    Color BuildPortalBaseColor(Material wallMaterial, Material floorMaterial, Material shelfMaterial)
+    {
+        Color wallColor = GetRepresentativeMaterialColor(wallMaterial, new Color(0.42f, 0.58f, 0.66f, 1f));
+        Color floorColor = GetRepresentativeMaterialColor(floorMaterial, new Color(0.34f, 0.42f, 0.50f, 1f));
+        Color shelfColor = GetRepresentativeMaterialColor(shelfMaterial, new Color(0.52f, 0.38f, 0.26f, 1f));
+
+        Color blended = wallColor * 0.5f + floorColor * 0.35f + shelfColor * 0.15f;
+        blended.a = 1f;
+
+        Color.RGBToHSV(blended, out float hue, out float saturation, out float value);
+        saturation = Mathf.Clamp(Mathf.Max(saturation, 0.22f), 0f, 1f);
+        value = Mathf.Clamp(Mathf.Max(value, 0.35f), 0f, 1f);
+        return Color.HSVToRGB(hue, saturation, value);
+    }
+
+    Color GetRepresentativeMaterialColor(Material material, Color fallbackColor)
+    {
+        if (material == null)
+            return fallbackColor;
+
+        Color tintColor = GetMaterialTintColor(material, Color.white);
+        Texture2D sampledTexture = GetMaterialTexture(material);
+        if (TryGetAverageTextureColor(sampledTexture, out Color textureColor))
+        {
+            Color tintedTextureColor = new Color(
+                textureColor.r * tintColor.r,
+                textureColor.g * tintColor.g,
+                textureColor.b * tintColor.b,
+                1f);
+
+            if (tintedTextureColor.maxColorComponent > 0.01f)
+                return tintedTextureColor;
+        }
+
+        if (tintColor.maxColorComponent > 0.01f)
+        {
+            tintColor.a = 1f;
+            return tintColor;
+        }
+
+        return fallbackColor;
+    }
+
+    Color GetMaterialTintColor(Material material, Color fallbackColor)
+    {
+        if (material == null)
+            return fallbackColor;
+
+        if (material.HasProperty(BaseColorPropertyId))
+            return material.GetColor(BaseColorPropertyId);
+
+        if (material.HasProperty(ColorPropertyId))
+            return material.GetColor(ColorPropertyId);
+
+        return fallbackColor;
+    }
+
+    Texture2D GetMaterialTexture(Material material)
+    {
+        if (material == null)
+            return null;
+
+        Texture texture = null;
+        if (material.HasProperty("_BaseMap"))
+            texture = material.GetTexture("_BaseMap");
+
+        if (texture == null && material.HasProperty("_MainTex"))
+            texture = material.GetTexture("_MainTex");
+
+        return texture as Texture2D;
+    }
+
+    bool TryGetAverageTextureColor(Texture2D texture, out Color averageColor)
+    {
+        averageColor = Color.white;
+        if (texture == null)
+            return false;
+
+        try
+        {
+            const int sampleGrid = 6;
+            Color colorSum = Color.black;
+            int sampleCount = 0;
+
+            for (int y = 0; y < sampleGrid; y++)
+            {
+                for (int x = 0; x < sampleGrid; x++)
+                {
+                    float u = sampleGrid == 1 ? 0.5f : x / (float)(sampleGrid - 1);
+                    float v = sampleGrid == 1 ? 0.5f : y / (float)(sampleGrid - 1);
+                    colorSum += texture.GetPixelBilinear(u, v);
+                    sampleCount++;
+                }
+            }
+
+            if (sampleCount <= 0)
+                return false;
+
+            averageColor = colorSum / sampleCount;
+            averageColor.a = 1f;
+            return true;
+        }
+        catch (UnityException)
+        {
+            return false;
+        }
+    }
+
+    Color TuneForwardPortalColor(Color baseColor)
+    {
+        Color.RGBToHSV(baseColor, out float hue, out float saturation, out float value);
+
+        float jitterMagnitude = Mathf.Lerp(0.02f, 0.42f, Mathf.Clamp01(portalNextHueJitter));
+        float randomSignedHueOffset = (GetDeterministicColorSeed(hue, saturation, value) * 2f - 1f) * jitterMagnitude;
+        float jitteredHue = Mathf.Repeat(hue + randomSignedHueOffset, 1f);
+        hue = PushHueAwayFromYellow(jitteredHue, portalYellowAvoidanceBandDegrees, portalYellowAvoidanceStrength);
+
+        saturation = Mathf.Clamp01(Mathf.Max(Mathf.Lerp(saturation, 1f, 0.75f), portalNextMinSaturation));
+        value = Mathf.Clamp01(Mathf.Max(Mathf.Lerp(value, 1f, 0.65f), portalNextMinValue));
+        return Color.HSVToRGB(hue, saturation, value);
+    }
+
+    Color TuneBackwardPortalColor(Color forwardColor)
+    {
+        Color.RGBToHSV(forwardColor, out float hue, out float saturation, out float value);
+
+        float hueShiftMagnitude = Mathf.Lerp(0.06f, 0.24f, Mathf.Clamp01(portalPreviousHueShift));
+        float shiftedHue = Mathf.Repeat(hue + GetBackwardPortalHueShift(hue, saturation, value, hueShiftMagnitude), 1f);
+        shiftedHue = PushHueAwayFromYellow(shiftedHue, portalYellowAvoidanceBandDegrees, portalYellowAvoidanceStrength * 1.1f);
+
+        float targetSaturation = Mathf.Clamp01(Mathf.Max(saturation * 0.86f, portalPreviousMinSaturation));
+        float targetValue = Mathf.Clamp01(Mathf.Max(value * 0.8f, portalPreviousMinValue));
+
+        Color shiftedVariant = Color.HSVToRGB(
+            shiftedHue,
+            Mathf.Lerp(saturation, targetSaturation, 0.5f),
+            Mathf.Lerp(value, targetValue, 0.6f));
+        shiftedVariant.a = 1f;
+
+        Color blendedColor = Color.Lerp(forwardColor, shiftedVariant, 0.55f);
+        blendedColor.a = 1f;
+        return blendedColor;
+    }
+
+    float GetBackwardPortalHueShift(float hue, float saturation, float value, float magnitude)
+    {
+        float seed = Mathf.Sin((hue * 12.73f + saturation * 4.37f + value * 2.19f + GetDeterministicColorSeed(hue, saturation, value)) * Mathf.PI * 2f);
+        float signedShift = seed >= 0f ? magnitude : -magnitude;
+
+        const float yellowHue = 0.15f;
+        float currentDistanceFromYellow = Mathf.Abs(Mathf.DeltaAngle(yellowHue * 360f, hue * 360f));
+        float candidateHue = Mathf.Repeat(hue + signedShift, 1f);
+        float candidateDistanceFromYellow = Mathf.Abs(Mathf.DeltaAngle(yellowHue * 360f, candidateHue * 360f));
+
+        if (currentDistanceFromYellow < portalYellowAvoidanceBandDegrees && candidateDistanceFromYellow < currentDistanceFromYellow)
+            signedShift *= -1f;
+
+        return signedShift;
+    }
+
+    float GetDeterministicColorSeed(float hue, float saturation, float value)
+    {
+        int nameHash = 17;
+        if (!string.IsNullOrEmpty(articleName))
+        {
+            for (int i = 0; i < articleName.Length; i++)
+                nameHash = nameHash * 31 + articleName[i];
+        }
+
+        float baseNoise = Mathf.Sin((nameHash * 0.00013f + hue * 13.17f + saturation * 5.29f + value * 3.91f) * Mathf.PI * 2f);
+        return baseNoise * 0.5f + 0.5f;
+    }
+
+    float PushHueAwayFromYellow(float hue, float bandDegrees, float strength)
+    {
+        const float yellowHue = 0.15f;
+        float clampedStrength = Mathf.Clamp01(strength);
+        float clampedBand = Mathf.Clamp(bandDegrees, 1f, 120f);
+        float offsetFromYellow = Mathf.DeltaAngle(yellowHue * 360f, hue * 360f);
+        float distanceFromYellow = Mathf.Abs(offsetFromYellow);
+
+        if (distanceFromYellow >= clampedBand || clampedStrength <= 0f)
+            return hue;
+
+        float pushDirection = offsetFromYellow >= 0f ? 1f : -1f;
+        if (Mathf.Approximately(offsetFromYellow, 0f))
+            pushDirection = GetDeterministicColorSeed(hue, 1f, 1f) >= 0.5f ? 1f : -1f;
+
+        float normalizedProximity = 1f - (distanceFromYellow / clampedBand);
+        float pushDegrees = normalizedProximity * clampedBand * clampedStrength;
+        float pushedOffset = offsetFromYellow + pushDirection * pushDegrees;
+        return Mathf.Repeat(yellowHue + pushedOffset / 360f, 1f);
+    }
+
+    Color ApplyColorIntensity(Color color)
+    {
+        Color.RGBToHSV(color, out float hue, out float saturation, out float value);
+        float intensity = Mathf.Clamp01(portalColorIntensity);
+
+        // Intensity affects only the perceived vividness/brightness of the portal tint.
+        saturation = Mathf.Clamp01(Mathf.Lerp(0.05f, saturation, intensity));
+        value = Mathf.Clamp01(Mathf.Lerp(value * 0.55f, value, intensity));
+
+        Color result = Color.HSVToRGB(hue, saturation, value);
+        result.a = 1f;
+        return result;
+    }
+
+    void ApplyPortalColor(GameObject portalRoot, Color color)
+    {
+        if (portalRoot == null)
+            return;
+
+        Renderer[] renderers = portalRoot.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] is VFXRenderer)
+                continue;
+
+            Material[] materials = renderers[i].materials;
+            for (int j = 0; j < materials.Length; j++)
+            {
+                ApplyColorToMaterial(materials[j], color);
+            }
+        }
+
+        Light[] portalLights = portalRoot.GetComponentsInChildren<Light>(true);
+        for (int i = 0; i < portalLights.Length; i++)
+        {
+            portalLights[i].color = color;
+        }
+
+        PortalVignetteController[] vignetteControllers = portalRoot.GetComponentsInChildren<PortalVignetteController>(true);
+        for (int i = 0; i < vignetteControllers.Length; i++)
+        {
+            vignetteControllers[i].SetVignetteColor(color);
+        }
+
+        VisualEffect[] visualEffects = portalRoot.GetComponentsInChildren<VisualEffect>(true);
+        Vector4 portalColor = new Vector4(color.r, color.g, color.b, color.a);
+        bool appliedToVfxColor = false;
+        for (int i = 0; i < visualEffects.Length; i++)
+        {
+            if (visualEffects[i].HasVector4(PortalAccentColorPropertyId))
+            {
+                visualEffects[i].SetVector4(PortalAccentColorPropertyId, portalColor);
+                appliedToVfxColor = true;
+            }
+
+            visualEffects[i].Reinit();
+            visualEffects[i].Play();
+        }
+
+        if (visualEffects.Length > 0 && !appliedToVfxColor)
+        {
+            Debug.LogWarning($"[PortalColor] Portal '{portalRoot.name}' has VisualEffect but no exposed '_PortalAccentColor' property. Renderer tint applied only.", portalRoot);
+        }
+    }
+
+    void ApplyColorToMaterial(Material material, Color color)
+    {
+        if (material == null)
+            return;
+
+        if (material.HasProperty(BaseColorPropertyId))
+            material.SetColor(BaseColorPropertyId, color);
+
+        if (material.HasProperty(ColorPropertyId))
+            material.SetColor(ColorPropertyId, color);
+
+        if (material.HasProperty(EmissionColorPropertyId))
+        {
+            material.EnableKeyword("_EMISSION");
+            material.SetColor(EmissionColorPropertyId, color * portalEmissionStrength);
+        }
+    }
+
+    string ColorToLogString(Color color)
+    {
+        return $"({color.r:0.00}, {color.g:0.00}, {color.b:0.00})";
     }
 
     bool IsGenAITexturesEnabled()
