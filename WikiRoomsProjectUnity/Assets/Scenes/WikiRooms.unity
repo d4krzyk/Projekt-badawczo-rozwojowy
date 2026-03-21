@@ -17666,6 +17666,16 @@ MonoBehaviour:
   secInfoboxGenerator: {fileID: 1011621168}
   backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
   loadingScreen: {fileID: 1235979131}
+  portalColorIntensity: 0.8
+  portalNextHueJitter: 0.4
+  portalYellowAvoidanceStrength: 0.2
+  portalYellowAvoidanceBandDegrees: 35
+  portalNextMinSaturation: 0.82
+  portalNextMinValue: 0.95
+  portalPreviousHueShift: 0.24
+  portalPreviousMinSaturation: 0.65
+  portalPreviousMinValue: 0.82
+  portalEmissionStrength: 1.35
   requestThrottling:
     infoboxMinIntervalSeconds: 0.6
     imagesListMinIntervalSeconds: 0.5
@@ -17963,6 +17973,16 @@ MonoBehaviour:
   secInfoboxGenerator: {fileID: 1169686116}
   backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
   loadingScreen: {fileID: 1235979131}
+  portalColorIntensity: 0.8
+  portalNextHueJitter: 0.4
+  portalYellowAvoidanceStrength: 0.2
+  portalYellowAvoidanceBandDegrees: 35
+  portalNextMinSaturation: 0.82
+  portalNextMinValue: 0.95
+  portalPreviousHueShift: 0.24
+  portalPreviousMinSaturation: 0.65
+  portalPreviousMinValue: 0.82
+  portalEmissionStrength: 1.35
   requestThrottling:
     infoboxMinIntervalSeconds: 0.6
     imagesListMinIntervalSeconds: 0.5

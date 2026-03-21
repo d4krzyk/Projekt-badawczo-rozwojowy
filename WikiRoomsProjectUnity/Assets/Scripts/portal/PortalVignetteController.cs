@@ -3,6 +3,11 @@ using UnityEngine.Rendering.Universal;
 
 public class PortalVignetteController : MonoBehaviour
 {
+    private static readonly int ColorPropertyId = Shader.PropertyToID("_Color");
+    private static readonly int VignetteIntensityPropertyId = Shader.PropertyToID("_VignetteIntensity");
+    private const float VignetteIntensityStartAmount = 0.0f;
+    private const float FeatureToggleEpsilon = 0.001f;
+
     [Header("References")]
     [SerializeField] private ScriptableRendererFeature _FullScreenBlizzard;
     [SerializeField] private Material _PortalVignetteMaterial;
@@ -16,17 +21,25 @@ public class PortalVignetteController : MonoBehaviour
     [SerializeField] private string _playerTag = "Player";
 
     [Header("Placement")]
-    [SerializeField] private bool _scriptIsOnPortal = false; // zaznacz, jeśli ten skrypt jest na obiekcie portalu
+    [SerializeField] private bool _scriptIsOnPortal = false;
 
     [Header("Debug")]
     [SerializeField] private bool _logDebug = true;
 
-    private int vignetteIntensity = Shader.PropertyToID("_VignetteIntensity");
-    private const float VIGNETTE_INTENSITY_START_AMOUNT = 0.0f;
-
-    private float _currentIntensity = VIGNETTE_INTENSITY_START_AMOUNT;
-    private float _targetIntensity = VIGNETTE_INTENSITY_START_AMOUNT;
+    private float _currentIntensity = VignetteIntensityStartAmount;
+    private float _targetIntensity = VignetteIntensityStartAmount;
     private bool _featureEnabled = false;
+    private bool _hasPendingColor = false;
+    private Color _pendingColor = Color.white;
+
+    public void SetVignetteColor(Color color)
+    {
+        _pendingColor = color;
+        _hasPendingColor = true;
+
+        if (_featureEnabled || _targetIntensity > FeatureToggleEpsilon)
+            ApplyPendingVignetteColor();
+    }
 
     void Start()
     {
@@ -34,19 +47,19 @@ public class PortalVignetteController : MonoBehaviour
             _FullScreenBlizzard.SetActive(false);
 
         if (_PortalVignetteMaterial != null)
-            _PortalVignetteMaterial.SetFloat(vignetteIntensity, VIGNETTE_INTENSITY_START_AMOUNT);
+            _PortalVignetteMaterial.SetFloat(VignetteIntensityPropertyId, VignetteIntensityStartAmount);
 
         Log($"Start. OnPortal={_scriptIsOnPortal}, portalTag='{_portalTag}', playerTag='{_playerTag}'. Mat={(_PortalVignetteMaterial ? _PortalVignetteMaterial.name : "NULL")}, Feature={(_FullScreenBlizzard ? _FullScreenBlizzard.name : "NULL")}");
 
-        if (_PortalVignetteMaterial == null) LogWarning("Brak przypisanego materiału _PortalVignetteMaterial.");
-        if (_FullScreenBlizzard == null) LogWarning("Brak przypisanego ScriptableRendererFeature _FullScreenBlizzard.");
+        if (_PortalVignetteMaterial == null) LogWarning("Missing _PortalVignetteMaterial reference.");
+        if (_FullScreenBlizzard == null) LogWarning("Missing _FullScreenBlizzard reference.");
 
-        var col = GetComponent<Collider>();
-        if (col == null) LogWarning("Brak Collider na tym obiekcie (Trigger wymagany).");
-        else if (!col.isTrigger) LogWarning("Collider nie jest Triggerem (isTrigger = true).");
+        Collider col = GetComponent<Collider>();
+        if (col == null) LogWarning("Missing Collider on portal vignette object.");
+        else if (!col.isTrigger) LogWarning("Collider should have isTrigger enabled.");
 
         if (GetComponent<Rigidbody>() == null)
-            Log("Brak Rigidbody na tym obiekcie. Upewnij się, że co najmniej JEDEN z obiektów w kolizji ma Rigidbody (np. gracz lub portal).");
+            Log("No Rigidbody found here. Make sure at least one colliding object has one.");
     }
 
     void Update()
@@ -60,20 +73,19 @@ public class PortalVignetteController : MonoBehaviour
             return;
 
         _currentIntensity = Mathf.MoveTowards(_currentIntensity, _targetIntensity, _smoothSpeed * Time.deltaTime);
-        _PortalVignetteMaterial.SetFloat(vignetteIntensity, _currentIntensity);
+        _PortalVignetteMaterial.SetFloat(VignetteIntensityPropertyId, _currentIntensity);
 
-        const float epsilon = 0.001f;
-        if (!_featureEnabled && _currentIntensity > epsilon)
+        if (!_featureEnabled && _currentIntensity > FeatureToggleEpsilon)
         {
             _FullScreenBlizzard.SetActive(true);
             _featureEnabled = true;
-            Log("Włączono efekt (renderer feature ON).");
+            Log("Enabled vignette feature.");
         }
-        else if (_featureEnabled && _currentIntensity <= epsilon)
+        else if (_featureEnabled && _currentIntensity <= FeatureToggleEpsilon)
         {
             _FullScreenBlizzard.SetActive(false);
             _featureEnabled = false;
-            Log("Wyłączono efekt (renderer feature OFF).");
+            Log("Disabled vignette feature.");
         }
     }
 
@@ -82,12 +94,13 @@ public class PortalVignetteController : MonoBehaviour
         string expectedTag = _scriptIsOnPortal ? _playerTag : _portalTag;
         if (other.CompareTag(expectedTag))
         {
+            ApplyPendingVignetteColor();
             _targetIntensity = _vignetteIntensityMaxAmount;
-            Log($"OnTriggerEnter: wykryto '{other.name}' (tag='{expectedTag}') — uruchamiam efekt.");
+            Log($"OnTriggerEnter: '{other.name}' matched '{expectedTag}'.");
         }
         else
         {
-            Log($"OnTriggerEnter: ignoruję '{other.name}' (tag={other.tag}). Oczekiwano '{expectedTag}'.");
+            Log($"OnTriggerEnter: ignored '{other.name}' with tag '{other.tag}'. Expected '{expectedTag}'.");
         }
     }
 
@@ -96,14 +109,35 @@ public class PortalVignetteController : MonoBehaviour
         string expectedTag = _scriptIsOnPortal ? _playerTag : _portalTag;
         if (other.CompareTag(expectedTag))
         {
-            Log($"OnTriggerExit: '{other.name}' (tag='{expectedTag}') — wygaszam efekt.");
+            Log($"OnTriggerExit: '{other.name}' matched '{expectedTag}'.");
             ExitPortal();
         }
     }
 
     private void ExitPortal()
     {
-        _targetIntensity = VIGNETTE_INTENSITY_START_AMOUNT;
+        _targetIntensity = VignetteIntensityStartAmount;
+    }
+
+    private void ApplyPendingVignetteColor()
+    {
+        if (!_hasPendingColor)
+            return;
+
+        if (_PortalVignetteMaterial == null)
+        {
+            LogWarning("Cannot set vignette color because material is missing.");
+            return;
+        }
+
+        if (!_PortalVignetteMaterial.HasProperty(ColorPropertyId))
+        {
+            LogWarning($"Material '{_PortalVignetteMaterial.name}' does not expose _Color.");
+            return;
+        }
+
+        _PortalVignetteMaterial.SetColor(ColorPropertyId, _pendingColor);
+        Log($"Applied vignette color {_pendingColor}.");
     }
 
     private void Log(string msg)
@@ -116,7 +150,6 @@ public class PortalVignetteController : MonoBehaviour
         if (_logDebug) Debug.LogWarning($"[PortalVignette] {msg}", this);
     }
 
-    // Przy wyłączeniu komponentu / zatrzymaniu gry wyłączamy efekt, żeby nie pozostał aktywny po End Play
     private void OnDisable()
     {
         if (_FullScreenBlizzard != null)
@@ -124,19 +157,18 @@ public class PortalVignetteController : MonoBehaviour
             _FullScreenBlizzard.SetActive(false);
             _featureEnabled = false;
             if (_PortalVignetteMaterial != null)
-                _PortalVignetteMaterial.SetFloat(vignetteIntensity, VIGNETTE_INTENSITY_START_AMOUNT);
-            Log("OnDisable: wyłączono efekt (renderer feature OFF).");
+                _PortalVignetteMaterial.SetFloat(VignetteIntensityPropertyId, VignetteIntensityStartAmount);
+            Log("OnDisable: turned off vignette feature.");
         }
     }
 
-    // Dodatkowo upewniamy się przy zamykaniu aplikacji
     private void OnApplicationQuit()
     {
         if (_FullScreenBlizzard != null)
         {
             _FullScreenBlizzard.SetActive(false);
             _featureEnabled = false;
-            Log("OnApplicationQuit: wyłączono efekt (renderer feature OFF).");
+            Log("OnApplicationQuit: turned off vignette feature.");
         }
     }
 }
