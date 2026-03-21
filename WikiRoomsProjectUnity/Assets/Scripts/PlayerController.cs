@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LogicUI.FancyTextRendering;
 using UnityEngine;
 
@@ -108,7 +109,9 @@ public class PlayerController : MonoBehaviour
                 transform.position.x.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + " " +
                 transform.position.z.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + " " +
                 Time.time.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
-            if (logger != null) logger.UpdateCurrentPath(currentMove);
+
+            List<float> currentMoveFloat = new List<float> { hexPosition.x, hexPosition.y, transform.position.x, transform.position.z, Time.time };
+            if (logger != null) logger.UpdateCurrentPath(currentMoveFloat);
         }
     }
 

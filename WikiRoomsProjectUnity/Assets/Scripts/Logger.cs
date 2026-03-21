@@ -13,6 +13,7 @@ public class Logger : MonoBehaviour
     List<RoomLog> roomLogs;
     List<LinkLog> lastLinkLogs;
     List<BookLog> lastBookLogs;
+    List<float> lastPositionLogs;
     string currentPath;
     string playerNick;
     string auth_header;
@@ -25,6 +26,7 @@ public class Logger : MonoBehaviour
         roomLogs = new List<RoomLog>();
         lastLinkLogs = new List<LinkLog>();
         lastBookLogs = new List<BookLog>();
+        lastPositionLogs = new List<float>();
         currentPath = "";
         if (FindAnyObjectByType<GameController>() != null) playerNick = FindAnyObjectByType<GameController>().PlayerNick;
         else playerNick = "test_user";
@@ -40,6 +42,8 @@ public class Logger : MonoBehaviour
         log.exitTime = exitTime;
         log.bookLogs = lastBookLogs;
         log.linkLogs = lastLinkLogs;
+        log.cursorLog = lastPositionLogs;
+
         // log.previousRoomLink = previousRoom;
         // log.roomPath = currentPath.Trim();
 
@@ -47,6 +51,7 @@ public class Logger : MonoBehaviour
 
         lastLinkLogs = new List<LinkLog>();
         lastBookLogs = new List<BookLog>();
+        lastPositionLogs = new List<float>();
         currentPath = "";
     }
 
@@ -100,9 +105,9 @@ public class Logger : MonoBehaviour
         lastLinkLogs.Add(log);
     }
 
-    public void UpdateCurrentPath(string currentMove)
+    public void UpdateCurrentPath(List<float> currentMove)
     {
-        currentPath += currentMove;
+        lastPositionLogs.AddRange(currentMove);
     }
 
     public void SendLogs(bool surrender)
