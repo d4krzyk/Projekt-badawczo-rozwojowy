@@ -33,6 +33,8 @@ from .usersession.schemas import (
 
 
 class SessionService:
+    _APP_SESSION_READ_OFFSET_THRESHOLD_SECONDS = 60.0
+
     def __init__(self, db: Session):
         self.db = db
         self._init_repositories()
@@ -204,49 +206,90 @@ class SessionService:
             return None
         return (value - session_start).total_seconds()
 
+    def _normalize_relative_time(
+        self, value: float | None, time_offset: float
+    ) -> float | None:
+        if value is None:
+            return None
+        return value - time_offset
+
+    def _get_session_read_time_offset(self, session) -> float:
+        if session.is_web:
+            return 0.0
+
+        session_start = session.start_time
+        room_enter_times = [
+            self._seconds_from_session_start(session_start, room.enter_time)
+            for room in session.rooms
+            if room.enter_time is not None
+        ]
+
+        if not room_enter_times:
+            return 0.0
+
+        earliest_room_enter = min(room_enter_times)
+        if earliest_room_enter < self._APP_SESSION_READ_OFFSET_THRESHOLD_SECONDS:
+            return 0.0
+
+        return earliest_room_enter
+
     def _build_book_session_event_info(
-        self, session_start: datetime, event
+        self, session_start: datetime, event, time_offset: float = 0.0
     ) -> BookSessionEventInfoForBook:
         return BookSessionEventInfoForBook(
-            open_time=self._seconds_from_session_start(
-                session_start, event.open_time
+            open_time=self._normalize_relative_time(
+                self._seconds_from_session_start(session_start, event.open_time),
+                time_offset,
             ),
-            close_time=self._seconds_from_session_start(
-                session_start, event.close_time
+            close_time=self._normalize_relative_time(
+                self._seconds_from_session_start(session_start, event.close_time),
+                time_offset,
             ),
         )
 
-    def _build_book_info(self, session_start: datetime, book) -> BookInfoForRoom:
+    def _build_book_info(
+        self, session_start: datetime, book, time_offset: float = 0.0
+    ) -> BookInfoForRoom:
         return BookInfoForRoom(
             name=book.name,
             session_events=[
-                self._build_book_session_event_info(session_start, event)
+                self._build_book_session_event_info(
+                    session_start, event, time_offset
+                )
                 for event in book.session_events
             ],
         )
 
     def _build_book_link_info(
-        self, session_start: datetime, book_link
+        self, session_start: datetime, book_link, time_offset: float = 0.0
     ) -> BookLinkInfo:
         return BookLinkInfo(
             link=book_link.link,
-            click_time=self._seconds_from_session_start(
-                session_start, book_link.click_time
+            click_time=self._normalize_relative_time(
+                self._seconds_from_session_start(session_start, book_link.click_time),
+                time_offset,
             ),
         )
 
-    def _build_room_info(self, session_start: datetime, room) -> RoomInfo:
+    def _build_room_info(
+        self, session_start: datetime, room, time_offset: float = 0.0
+    ) -> RoomInfo:
         return RoomInfo(
             name=room.name,
-            enter_time=self._seconds_from_session_start(
-                session_start, room.enter_time
+            enter_time=self._normalize_relative_time(
+                self._seconds_from_session_start(session_start, room.enter_time),
+                time_offset,
             ),
-            exit_time=self._seconds_from_session_start(session_start, room.exit_time),
+            exit_time=self._normalize_relative_time(
+                self._seconds_from_session_start(session_start, room.exit_time),
+                time_offset,
+            ),
             books=[
-                self._build_book_info(session_start, book) for book in room.books
+                self._build_book_info(session_start, book, time_offset)
+                for book in room.books
             ],
             book_links=[
-                self._build_book_link_info(session_start, book_link)
+                self._build_book_link_info(session_start, book_link, time_offset)
                 for book_link in room.book_links
             ],
         )
@@ -282,20 +325,20 @@ class SessionService:
         return book_times
 
     def _build_group_session_duration(self, sessions: list[SessionInfo]) -> float:
-        book_times: list[float] = []
+        session_durations = [
+            session.end_time for session in sessions if session.end_time is not None
+        ]
 
-        for session in sessions:
-            book_times.extend(self._collect_book_times_from_rooms(session.rooms))
-
-        if not book_times:
+        if not session_durations:
             return 0.0
 
-        return max(book_times) - min(book_times)
+        return sum(session_durations)
 
     def _build_session_info(self, session) -> SessionInfo:
         session_start = session.start_time
+        time_offset = self._get_session_read_time_offset(session)
         rooms = [
-            self._build_room_info(session_start, room)
+            self._build_room_info(session_start, room, time_offset)
             for room in sorted(session.rooms, key=lambda room: room.enter_time)
         ]
 
