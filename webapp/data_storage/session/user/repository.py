@@ -22,6 +22,8 @@ class UserRepository:
                     func.sum(case((UserSession.is_web.is_(True), 1), else_=0)),
                     0,
                 ).label("web_sessions_count"),
+                func.min(UserSession.end_time).label("first_session_date"),
+                func.max(UserSession.end_time).label("last_session_date"),
             )
             .outerjoin(UserSession, UserSession.data_user_id == DataUser.id)
             .group_by(DataUser.id, DataUser.name)

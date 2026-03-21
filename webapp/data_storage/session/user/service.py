@@ -15,6 +15,8 @@ class UserService:
                 "name": user.name,
                 "app_sessions_count": user.app_sessions_count,
                 "web_sessions_count": user.web_sessions_count,
+                "first_session_date": user.first_session_date,
+                "last_session_date": user.last_session_date,
             }
             for user in users
         ]
