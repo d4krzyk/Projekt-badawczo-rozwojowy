@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class RoomsController : MonoBehaviour
 {
@@ -16,8 +17,10 @@ public class RoomsController : MonoBehaviour
     public TMPro.TMP_Text finalUIScore;
     public TMPro.TMP_Text finalUIRoomCount;
     public TMPro.TMP_Text finalUITime;
-    public TMPro.TMP_Text goalUI;
+    [FormerlySerializedAs("goalUI")]
+    public TMPro.TMP_Text goalArticleUI;
     public TMPro.TMP_Text startArticleUI;
+    public TMPro.TMP_Text currentArticleUI;
     public Logger logger;
     
     Dictionary<string, TexturesStructure> textureCache;
@@ -51,12 +54,14 @@ public class RoomsController : MonoBehaviour
                 : "No start article set";
         }
 
-        if (goalUI != null)
+        if (goalArticleUI != null)
         {
-            goalUI.text = !string.IsNullOrEmpty(targetArticleName)
+            goalArticleUI.text = !string.IsNullOrEmpty(targetArticleName)
                 ? FormatArticleTitle(targetArticleName)
                 : "No target article set";
         }
+
+        UpdateCurrentArticleUI();
     }
 
     public bool SwapRoomsNext()
@@ -81,6 +86,7 @@ public class RoomsController : MonoBehaviour
         elongatedRoom.PreviousRoom = secondElongatedRoom.ArticleData.name;
         secondElongatedRoom.LogRoom();
         currentRoomNode = currentRoomNode.Next;
+        UpdateCurrentArticleUI();
         if (currentRoomNode.Value != elongatedRoom.articleName)
         {
             elongatedRoom.ResetRoom();
@@ -137,6 +143,7 @@ public class RoomsController : MonoBehaviour
         elongatedRoom.PreviousRoom = secondElongatedRoom.ArticleData.name;
         secondElongatedRoom.LogRoom();
         currentRoomNode = currentRoomNode.Previous;
+        UpdateCurrentArticleUI();
         elongatedRoom.ResetRoom();
         elongatedRoom.GenerateRoom(currentRoomNode.Value, this);
         elongatedRoom.SetActivePortalNext(true);
@@ -252,5 +259,18 @@ public class RoomsController : MonoBehaviour
     string FormatArticleTitle(string articleName)
     {
         return string.IsNullOrEmpty(articleName) ? string.Empty : Uri.UnescapeDataString(articleName);
+    }
+
+    void UpdateCurrentArticleUI()
+    {
+        if (currentArticleUI == null)
+        {
+            return;
+        }
+
+        string currentArticleName = currentRoomNode != null ? currentRoomNode.Value : elongatedRoom?.articleName;
+        currentArticleUI.text = !string.IsNullOrEmpty(currentArticleName)
+            ? FormatArticleTitle(currentArticleName)
+            : "No current article set";
     }
 }
