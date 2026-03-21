@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ public class RoomsController : MonoBehaviour
     public TMPro.TMP_Text finalUIRoomCount;
     public TMPro.TMP_Text finalUITime;
     public TMPro.TMP_Text goalUI;
+    public TMPro.TMP_Text startArticleUI;
     public Logger logger;
     
     Dictionary<string, TexturesStructure> textureCache;
@@ -37,8 +39,24 @@ public class RoomsController : MonoBehaviour
         elongatedRoom.GenerateRoom(elongatedRoom.articleName, this);
         elongatedRoom.PreviousRoom = "";
         currentRoomNode = roomHistory.AddFirst(elongatedRoom.articleName);
-        targetArticleName = FindAnyObjectByType<GameController>()?.TargetArticleName;
-        goalUI.text = targetArticleName != null ? targetArticleName : "No target article set";
+
+        GameController gameController = FindAnyObjectByType<GameController>();
+        string startArticleName = gameController?.ArticleName;
+        targetArticleName = gameController?.TargetArticleName;
+
+        if (startArticleUI != null)
+        {
+            startArticleUI.text = !string.IsNullOrEmpty(startArticleName)
+                ? FormatArticleTitle(startArticleName)
+                : "No start article set";
+        }
+
+        if (goalUI != null)
+        {
+            goalUI.text = !string.IsNullOrEmpty(targetArticleName)
+                ? FormatArticleTitle(targetArticleName)
+                : "No target article set";
+        }
     }
 
     public bool SwapRoomsNext()
@@ -229,5 +247,10 @@ public class RoomsController : MonoBehaviour
 
         elongatedRoom.ExitTime = Time.time;
         elongatedRoom.LogRoom();
+    }
+
+    string FormatArticleTitle(string articleName)
+    {
+        return string.IsNullOrEmpty(articleName) ? string.Empty : Uri.UnescapeDataString(articleName);
     }
 }

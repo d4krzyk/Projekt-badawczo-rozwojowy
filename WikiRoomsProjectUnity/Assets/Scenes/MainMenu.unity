@@ -1750,7 +1750,7 @@ MonoBehaviour:
   targetArticleTextField: {fileID: 496060158}
   SearchButton: {fileID: 591573661}
   gameController: {fileID: 1839466777}
-  backendConfig: {fileID: 11400000, guid: 96e35c64637476d4bb7b2b81985a7058, type: 2}
+  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
   requireTargetArticle: 1
   useAuthorizationHeader: 1
 --- !u!1 &623048389
@@ -1980,7 +1980,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 317}
+  m_AnchoredPosition: {x: 0, y: 389.64}
   m_SizeDelta: {x: 150, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &681985502
@@ -3536,10 +3536,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1889098895}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 1500, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1124226676
 MonoBehaviour:
@@ -3588,7 +3588,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 22
+  m_fontSize: 55
   m_fontSizeBase: 10
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3626,7 +3626,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 2.9841313, z: 0.0018081665, w: -1.1036978}
+  m_margin: {x: 0, y: -14.829264, z: 0.0018081665, w: 3.4957447}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -5287,10 +5287,10 @@ RectTransform:
   - {fileID: 1124226675}
   m_Father: {fileID: 670666917}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -35}
-  m_SizeDelta: {x: 1400, y: 65}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 250}
+  m_SizeDelta: {x: 600, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1889098896
 MonoBehaviour:
@@ -6154,7 +6154,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 500.1, y: -57.825012}
+  m_AnchoredPosition: {x: 500.1, y: -57.82495}
   m_SizeDelta: {x: 125, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2130441927
