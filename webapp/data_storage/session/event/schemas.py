@@ -1,10 +1,9 @@
 from pydantic import BaseModel
-from datetime import datetime
 
 
 class BookSessionEventInfoForBook(BaseModel):
-    open_time: datetime
-    close_time: datetime | None
+    open_time: float
+    close_time: float | None
 
     class Config:
         from_attributes = True

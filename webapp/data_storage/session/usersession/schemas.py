@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from datetime import datetime
 
 from ..room.schemas import RoomInfo, RoomLog
 
@@ -7,8 +6,8 @@ from ..room.schemas import RoomInfo, RoomLog
 class SessionInfo(BaseModel):
     id: int
     group_name: str | None
-    start_time: datetime
-    end_time: datetime | None
+    start_time: float
+    end_time: float | None
     is_web: bool
     surrendered: bool | None
     rooms: list[RoomInfo]
@@ -38,6 +37,7 @@ class AllSessionsGroupedResponse_old(BaseModel):
 
 class GroupSessionAggregate(BaseModel):
     group_name: str
+    sessions_duration: float
     sessions: list[SessionInfo]
 
 

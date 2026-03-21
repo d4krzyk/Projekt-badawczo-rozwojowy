@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field, field_serializer
-from datetime import datetime
 
 from ..book.schemas import BookInfoForRoom, BookLog
 from ..link.schemas import BookLinkInfo, LinkLog
@@ -26,8 +25,8 @@ class ImageLog(BaseModel):
 
 class RoomInfo(BaseModel):
     name: str
-    enter_time: datetime
-    exit_time: datetime
+    enter_time: float
+    exit_time: float
     # cursor_log: list[float] = Field(default_factory=list)
     # image_logs: list[ImageLog] = Field(default_factory=list)
     books: list[BookInfoForRoom]

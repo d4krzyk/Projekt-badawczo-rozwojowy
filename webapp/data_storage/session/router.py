@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 
 from database.engine import get_db
-from .usersession.schemas import FullSessionRequest, AllSessionsGroupedResponse, AllSessionsGroupedResponse_old
+from .usersession.schemas import (
+    FullSessionRequest,
+    AllSessionsGroupedResponse,
+    AllSessionsGroupedResponse_old,
+    UserSessionsByTypeAndGroup,
+)
 from .user.schemas import UserSessionsResponse, GroupSessionsResponse
 from .service import SessionService
 
@@ -104,7 +109,7 @@ def check_group_exists_endpoint(
         )
 
 
-@session_router.get("/user/{user_name}", response_model=UserSessionsResponse)
+@session_router.get("/user/{user_name}", response_model=UserSessionsByTypeAndGroup)
 def get_user_sessions_endpoint(user_name: str, db: Session = Depends(get_db)):
     try:
         service = SessionService(db)

@@ -1,5 +1,4 @@
 from pydantic import BaseModel, field_serializer
-from datetime import datetime
 
 from ..event.schemas import BookSessionEventInfoForBook
 from ..utils import strip_wikipedia_prefix
