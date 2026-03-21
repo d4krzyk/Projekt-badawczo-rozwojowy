@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from database.engine import get_db
 from .usersession.schemas import FullSessionRequest, AllSessionsGroupedResponse, AllSessionsGroupedResponse_old
-from .user.schemas import UserSessionsResponse, GroupSessionsResponse
+from .user.schemas import UserSessionsResponse, GroupSessionsResponse, DataUserResponse
 from .service import SessionService
 
 session_router = APIRouter(prefix="/session", tags=["Session"])
@@ -53,6 +53,17 @@ def check_group_exists_endpoint(
     try:
         service = SessionService(db)
         return service.check_group_exists(group_name, is_web=x_web)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+
+
+@session_router.get("/users", response_model=list[DataUserResponse])
+def get_all_users_endpoint(db: Session = Depends(get_db)):
+    try:
+        service = SessionService(db)
+        return service.user_service.get_all_users()
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)

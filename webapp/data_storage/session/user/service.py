@@ -7,6 +7,18 @@ class UserService:
     def __init__(self, repository: UserRepository):
         self.repository = repository
 
+    def get_all_users(self):
+        users = self.repository.get_all_with_session_counts()
+        return [
+            {
+                "id": user.id,
+                "name": user.name,
+                "app_sessions_count": user.app_sessions_count,
+                "web_sessions_count": user.web_sessions_count,
+            }
+            for user in users
+        ]
+
     def get_or_create_user(self, user_name: str) -> DataUser:
         """Gets a user by name, creating one if it doesn't exist."""
         user = self.repository.get_by_name(user_name)
