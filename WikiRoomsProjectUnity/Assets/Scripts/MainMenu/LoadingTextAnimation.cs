@@ -10,16 +10,23 @@ public class LoadingTextAnimation : MonoBehaviour
 
     private Coroutine _loop;
 
-    void Start()
+    private void Awake()
     {
         if (targetText == null) targetText = GetComponent<TextMeshProUGUI>();
+    }
+
+    private void OnEnable()
+    {
         if (targetText == null) return;
+        if (_loop != null) StopCoroutine(_loop);
         _loop = StartCoroutine(LoopDots());
     }
 
     private IEnumerator LoopDots()
     {
         int step = 0; // 0:"Loading", 1:"Loading.", 2:"Loading..", 3:"Loading..."
+        float safeInterval = Mathf.Max(0.05f, interval);
+
         while (true)
         {
             switch (step)
@@ -31,12 +38,17 @@ public class LoadingTextAnimation : MonoBehaviour
             }
 
             step = (step + 1) % 4;
-            yield return new WaitForSeconds(interval);
+            // Czas rzeczywisty: animacja działa nawet przy Time.timeScale = 0.
+            yield return new WaitForSecondsRealtime(safeInterval);
         }
     }
 
     private void OnDisable()
     {
-        if (_loop != null) StopCoroutine(_loop);
+        if (_loop != null)
+        {
+            StopCoroutine(_loop);
+            _loop = null;
+        }
     }
 }

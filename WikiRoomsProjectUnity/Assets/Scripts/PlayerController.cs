@@ -19,6 +19,10 @@ public class PlayerController : MonoBehaviour
     public Logger logger;
     // sprint: dodatkowa prędkość gdy trzymamy Shift + ruch
     public float sprintBonus = 2f;
+
+    [Header("Jump")]
+    public float jumpVelocity = 4.5f;
+    public float jumpCooldown = 0.1f;
     
     [Header("Camera Zoom")]
     public float defaultFOV = 60f;
@@ -60,6 +64,8 @@ public class PlayerController : MonoBehaviour
     Rigidbody rb;
     // yaw dla stabilnej rotacji postaci
     float yaw = 0f;
+    bool jumpQueued = false;
+    float lastJumpTime = -999f;
 
     [Header("UI")]
     public GameObject BookUI;
@@ -95,6 +101,7 @@ public class PlayerController : MonoBehaviour
     {
         HandlePause();
         HandleMouseLook();
+        HandleJumpInput();
         HandleInteraction();
         HandleCameraZoom();
         HandleCameraBobAndFootsteps();
@@ -118,6 +125,15 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         HandleMovement();
+        HandleJump();
+    }
+
+    void HandleJumpInput()
+    {
+        if (isPaused || isReading || movementLocked) return;
+
+        if (Input.GetKeyDown(KeyCode.Space))
+            jumpQueued = true;
     }
 
     void HandleMovement()
@@ -140,7 +156,37 @@ public class PlayerController : MonoBehaviour
 
         Vector3 rawMove = transform.right * horizontal + transform.forward * vertical;
         Vector3 move = (isReading || movementLocked) ? Vector3.zero : (rawMove.sqrMagnitude > 1f ? rawMove.normalized : rawMove);
-        transform.position += move * currentSpeed * Time.fixedDeltaTime;
+
+        if (rb != null && !rb.isKinematic)
+        {
+            Vector3 currentVelocity = rb.linearVelocity;
+            Vector3 targetHorizontalVelocity = move * currentSpeed;
+            rb.linearVelocity = new Vector3(targetHorizontalVelocity.x, currentVelocity.y, targetHorizontalVelocity.z);
+        }
+        else
+        {
+            Vector3 delta = move * currentSpeed * Time.fixedDeltaTime;
+            transform.position += delta;
+        }
+    }
+
+    void HandleJump()
+    {
+        if (!jumpQueued) return;
+
+        jumpQueued = false;
+
+        if (rb == null || rb.isKinematic) return;
+        if (isPaused || isReading || movementLocked) return;
+        if (Time.time - lastJumpTime < jumpCooldown) return;
+        if (!IsGrounded()) return;
+
+        Vector3 velocity = rb.linearVelocity;
+        if (velocity.y < 0f)
+            velocity.y = 0f;
+        velocity.y = jumpVelocity;
+        rb.linearVelocity = velocity;
+        lastJumpTime = Time.time;
     }
 
     void HandleMouseLook()
@@ -409,7 +455,7 @@ public class PlayerController : MonoBehaviour
 
         // czy gracz podaje input ruchu?
         bool inputMove = (Input.GetAxisRaw("Horizontal") != 0f || Input.GetAxisRaw("Vertical") != 0f);
-        bool grounded = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
+        bool grounded = IsGrounded();
 
         // wykryj sprint (Shift) i czy jest rzeczywisty input ruchu
         bool sprintKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
@@ -457,6 +503,11 @@ public class PlayerController : MonoBehaviour
                 cameraTransform.localPosition.z
             );
         }
+    }
+
+    bool IsGrounded()
+    {
+        return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
     }
 
     void PlayStep(bool isSprinting)

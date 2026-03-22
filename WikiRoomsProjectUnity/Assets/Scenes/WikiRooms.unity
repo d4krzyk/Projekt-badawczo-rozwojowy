@@ -6417,7 +6417,7 @@ Transform:
   m_GameObject: {fileID: 621679083}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: -34.607, y: 20.364, z: 24.05}
+  m_LocalPosition: {x: -34.607, y: 20.35, z: 24.05}
   m_LocalScale: {x: 1, y: 1.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6447,7 +6447,9 @@ MonoBehaviour:
   rightPage: {fileID: 974258906}
   bookController: {fileID: 1312706476}
   logger: {fileID: 2101044395}
-  sprintBonus: 2
+  sprintBonus: 2.5
+  jumpVelocity: 4
+  jumpCooldown: 0
   defaultFOV: 60
   zoomFOV: 10
   zoomSpeed: 5
@@ -7148,13 +7150,16 @@ MonoBehaviour:
 
     <i>Shift + move</i> - sprint
 
-    <i>Esc</i>
-    - pause menu / exit book
+    <i>Space</i>
+    - jump
 
-    <i>Z (hold)</i> - camera zoom
+    <i>Esc</i> - pause menu / exit book
 
-    <i>L. Ctrl (hold,
-    while aiming at captioned image)</i> - Hover UI interactive mode'
+    <i>Z (hold)</i> - camera
+    zoom
+
+    <i>L. Ctrl (hold, while aiming at captioned image)</i> - Hover UI interactive
+    mode'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
   m_sharedMaterial: {fileID: 3066015743098452413, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
@@ -9113,8 +9118,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 184.11395, y: 106.005005, z: 128.32185}
-  m_Center: {x: -0.6239815, y: -16.297173, z: -6.1666393}
+  m_Size: {x: 184.11394, y: 104.96477, z: 128.32185}
+  m_Center: {x: -0.62398314, y: -16.817253, z: -6.166637}
 --- !u!1 &903240312
 GameObject:
   m_ObjectHideFlags: 0
@@ -11127,7 +11132,10 @@ VisualEffect:
     m_Vector3f:
       m_Array: []
     m_Vector4f:
-      m_Array: []
+      m_Array:
+      - m_Value: {x: 0.7733316, y: 0.46327507, z: 0.3697787, w: 1}
+        m_Name: _PortalAccentColor
+        m_Overridden: 1
     m_Uint:
       m_Array: []
     m_Int:
@@ -14586,8 +14594,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 184.11395, y: 106.005005, z: 128.32185}
-  m_Center: {x: -0.6239815, y: -16.297173, z: -6.1666393}
+  m_Size: {x: 184.11394, y: 106.77579, z: 128.32185}
+  m_Center: {x: -0.62398314, y: -15.911734, z: -6.166637}
 --- !u!1 &1369545534
 GameObject:
   m_ObjectHideFlags: 0
@@ -17664,7 +17672,7 @@ MonoBehaviour:
   portalPrevious: {fileID: 1751320008}
   infoboxGenerator: {fileID: 1169686116}
   secInfoboxGenerator: {fileID: 1011621168}
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 11400000, guid: 96e35c64637476d4bb7b2b81985a7058, type: 2}
   loadingScreen: {fileID: 1235979131}
   portalColorIntensity: 0.8
   portalNextHueJitter: 0.4
@@ -17971,7 +17979,7 @@ MonoBehaviour:
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1011621168}
   secInfoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 11400000, guid: 96e35c64637476d4bb7b2b81985a7058, type: 2}
   loadingScreen: {fileID: 1235979131}
   portalColorIntensity: 0.8
   portalNextHueJitter: 0.4
@@ -21265,6 +21273,34 @@ PrefabInstance:
     - target: {fileID: 5394789905558648702, guid: f317520e52301314fa15a57dcc606a73, type: 3}
       propertyPath: m_TagString
       value: PortalNext
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830608049488820532, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830608049488820532, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Name
+      value: _PortalAccentColor
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830608049488820532, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830608049488820532, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.x
+      value: 0.8645
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830608049488820532, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.y
+      value: 0.60996556
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830608049488820532, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.z
+      value: 0.288743
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830608049488820532, guid: f317520e52301314fa15a57dcc606a73, type: 3}
+      propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Overridden
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
