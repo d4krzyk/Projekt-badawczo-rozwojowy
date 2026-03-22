@@ -23,6 +23,11 @@ public class PlayerController : MonoBehaviour
     [Header("Jump")]
     public float jumpVelocity = 4.5f;
     public float jumpCooldown = 0.1f;
+
+    [Header("Crouch")]
+    [Range(0.3f, 1f)] public float crouchScaleY = 0.6f;
+    [Range(0.2f, 1f)] public float crouchSpeedMultiplier = 0.7f;
+    [Min(0.1f)] public float crouchTransitionSpeed = 10f;
     
     [Header("Camera Zoom")]
     public float defaultFOV = 60f;
@@ -66,6 +71,8 @@ public class PlayerController : MonoBehaviour
     float yaw = 0f;
     bool jumpQueued = false;
     float lastJumpTime = -999f;
+    Vector3 standingScale;
+    bool crouchHeld = false;
 
     [Header("UI")]
     public GameObject BookUI;
@@ -77,6 +84,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        standingScale = transform.localScale;
         yaw = transform.eulerAngles.y;
         LockCursor();
 
@@ -101,6 +109,7 @@ public class PlayerController : MonoBehaviour
     {
         HandlePause();
         HandleMouseLook();
+        HandleCrouch();
         HandleJumpInput();
         HandleInteraction();
         HandleCameraZoom();
@@ -131,9 +140,21 @@ public class PlayerController : MonoBehaviour
     void HandleJumpInput()
     {
         if (isPaused || isReading || movementLocked) return;
+        if (IsCrouching()) return;
 
         if (Input.GetKeyDown(KeyCode.Space))
             jumpQueued = true;
+    }
+
+    void HandleCrouch()
+    {
+        bool canCrouch = !isPaused && !isReading && !movementLocked;
+        crouchHeld = canCrouch && Input.GetKey(KeyCode.C);
+
+        float targetY = crouchHeld ? standingScale.y * crouchScaleY : standingScale.y;
+        Vector3 currentScale = transform.localScale;
+        currentScale.y = Mathf.MoveTowards(currentScale.y, targetY, crouchTransitionSpeed * Time.deltaTime);
+        transform.localScale = currentScale;
     }
 
     void HandleMovement()
@@ -153,6 +174,8 @@ public class PlayerController : MonoBehaviour
         float currentSpeed = moveSpeed;
         if (sprintKey && hasMovementInput && !isReading && !movementLocked)
             currentSpeed += sprintBonus;
+        if (IsCrouching())
+            currentSpeed *= crouchSpeedMultiplier;
 
         Vector3 rawMove = transform.right * horizontal + transform.forward * vertical;
         Vector3 move = (isReading || movementLocked) ? Vector3.zero : (rawMove.sqrMagnitude > 1f ? rawMove.normalized : rawMove);
@@ -178,6 +201,7 @@ public class PlayerController : MonoBehaviour
 
         if (rb == null || rb.isKinematic) return;
         if (isPaused || isReading || movementLocked) return;
+        if (IsCrouching()) return;
         if (Time.time - lastJumpTime < jumpCooldown) return;
         if (!IsGrounded()) return;
 
@@ -187,6 +211,11 @@ public class PlayerController : MonoBehaviour
         velocity.y = jumpVelocity;
         rb.linearVelocity = velocity;
         lastJumpTime = Time.time;
+    }
+
+    bool IsCrouching()
+    {
+        return transform.localScale.y < standingScale.y - 0.01f;
     }
 
     void HandleMouseLook()

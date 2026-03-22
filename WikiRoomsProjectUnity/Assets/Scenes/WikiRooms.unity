@@ -6449,7 +6449,10 @@ MonoBehaviour:
   logger: {fileID: 2101044395}
   sprintBonus: 2.5
   jumpVelocity: 4
-  jumpCooldown: 0
+  jumpCooldown: 0.2
+  crouchScaleY: 0.6
+  crouchSpeedMultiplier: 0.4
+  crouchTransitionSpeed: 3
   defaultFOV: 60
   zoomFOV: 10
   zoomSpeed: 5
@@ -6532,6 +6535,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PS1CameraSnap
   pixelSize: 0.0020833334
+--- !u!1 &662438219 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7114076504001895718, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
+  m_PrefabInstance: {fileID: 139559545}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &664410812
 GameObject:
   m_ObjectHideFlags: 0
@@ -7145,21 +7153,23 @@ MonoBehaviour:
 
     <i>E</i> - interact
 
-    <i>Mouse</i>
-    - rotate camera / click links
+    <i>C</i>
+    - crouch
 
-    <i>Shift + move</i> - sprint
+    <i>Mouse</i> - rotate camera / click links
 
-    <i>Space</i>
-    - jump
+    <i>Shift + move</i>
+    - sprint
+
+    <i>Space</i> - jump
 
     <i>Esc</i> - pause menu / exit book
 
-    <i>Z (hold)</i> - camera
-    zoom
+    <i>Z
+    (hold)</i> - camera zoom
 
-    <i>L. Ctrl (hold, while aiming at captioned image)</i> - Hover UI interactive
-    mode'
+    <i>L. Ctrl (hold, while aiming at captioned image)</i>
+    - Hover UI interactive mode'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
   m_sharedMaterial: {fileID: 3066015743098452413, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
@@ -17684,6 +17694,10 @@ MonoBehaviour:
   portalPreviousMinSaturation: 0.65
   portalPreviousMinValue: 0.82
   portalEmissionStrength: 1.35
+  syncStandBookHue: 0
+  standBookObject: {fileID: 662438219}
+  standBookHueBlend: 0.75
+  standBookSaturationBoost: 0.1
   requestThrottling:
     infoboxMinIntervalSeconds: 0.6
     imagesListMinIntervalSeconds: 0.5
@@ -17694,7 +17708,7 @@ MonoBehaviour:
     maxConcurrentDownloads: 3
     max429Retries: 5
     extraThrottleStepSeconds: 0.35
-    maxExtraThrottleSeconds: 1.5
+    maxExtraThrottleSeconds: 1.25
     successThrottleDecaySeconds: 0.05
   imageProgressToHideLoadingScreen: 0
   smallMaxPixels: 200000
@@ -17972,7 +17986,7 @@ MonoBehaviour:
   defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
   defStandMat: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
-  articleName: Australia
+  articleName: Biology
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
   portalNext: {fileID: 410983050840802480}
@@ -17991,6 +18005,10 @@ MonoBehaviour:
   portalPreviousMinSaturation: 0.65
   portalPreviousMinValue: 0.82
   portalEmissionStrength: 1.35
+  syncStandBookHue: 0
+  standBookObject: {fileID: 1923474268}
+  standBookHueBlend: 0.9
+  standBookSaturationBoost: 0.2
   requestThrottling:
     infoboxMinIntervalSeconds: 0.6
     imagesListMinIntervalSeconds: 0.5
@@ -18001,7 +18019,7 @@ MonoBehaviour:
     maxConcurrentDownloads: 3
     max429Retries: 5
     extraThrottleStepSeconds: 0.35
-    maxExtraThrottleSeconds: 1.5
+    maxExtraThrottleSeconds: 1.25
     successThrottleDecaySeconds: 0.05
   imageProgressToHideLoadingScreen: 0
   smallMaxPixels: 200000
@@ -18186,6 +18204,11 @@ MonoBehaviour:
   waveAmplitude: 15
   waveFrequency: 0.75
   phaseOffset: 0.5
+--- !u!1 &1923474268 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7114076504001895718, guid: c6b0839b47f3fba47bf7aa5c2cb3fc51, type: 3}
+  m_PrefabInstance: {fileID: 894582209}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1926633077
 GameObject:
   m_ObjectHideFlags: 0
@@ -20526,7 +20549,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56923283f1a5a044a800b36d8af358d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Logger
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 11400000, guid: 96e35c64637476d4bb7b2b81985a7058, type: 2}
 --- !u!4 &2101044396
 Transform:
   m_ObjectHideFlags: 0

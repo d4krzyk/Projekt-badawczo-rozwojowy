@@ -85,6 +85,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
     [Range(0f, 1f)] public float portalPreviousMinValue = 0.82f;
     [Min(0f)] public float portalEmissionStrength = 1.35f;
 
+    [Header("Stand-book hue sync")]
+    public bool syncStandBookHue = true;
+    public GameObject standBookObject;
+    [Range(0f, 1f)] public float standBookHueBlend = 0.9f;
+    [Range(0f, 1f)] public float standBookSaturationBoost = 0.1f;
+
     [Header("Request throttling")]
     public RequestThrottlingSettings requestThrottling = new RequestThrottlingSettings();
 
@@ -624,7 +630,46 @@ public class ElongatedRoomGenerator : MonoBehaviour
         SetRendererMaterialTransform(altarRenderer, 0, defaultScale, defaultOffset);
         SetRendererMaterialTransform(altarRenderer, 1, defaultScale, defaultOffset);
 
+        ApplyStandBookHueFromBookshelf(shelfMaterial);
         UpdatePortalColorsFromRoomMaterials(wallMaterial, floorMaterial, shelfMaterial);
+    }
+
+    void ApplyStandBookHueFromBookshelf(Material shelfMaterial)
+    {
+        if (!syncStandBookHue) return;
+        if (standBookObject == null) return;
+
+        Color dominantShelfColor = GetRepresentativeMaterialColor(shelfMaterial, Color.white);
+        Color.RGBToHSV(dominantShelfColor, out float sourceHue, out float sourceSaturation, out _);
+
+        float hueBlend = Mathf.Clamp01(standBookHueBlend);
+        float saturationBoost = Mathf.Clamp01(standBookSaturationBoost);
+
+        ApplyHueToStandBookRenderers(standBookObject, sourceHue, sourceSaturation, hueBlend, saturationBoost);
+    }
+
+    void ApplyHueToStandBookRenderers(GameObject root, float sourceHue, float sourceSaturation, float hueBlend, float saturationBoost)
+    {
+        if (root == null) return;
+
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Material[] mats = renderers[i].sharedMaterials;
+            if (mats == null || mats.Length == 0) continue;
+
+            Material mat = mats[0];
+            Color baseColor = GetMaterialTintColor(mat, Color.white);
+            Color.RGBToHSV(baseColor, out float currentHue, out float currentSaturation, out float currentValue);
+
+            float newHue = Mathf.LerpAngle(currentHue * 360f, sourceHue * 360f, hueBlend) / 360f;
+            float newSaturation = Mathf.Clamp01(Mathf.Lerp(currentSaturation, Mathf.Max(currentSaturation, sourceSaturation), saturationBoost));
+            Color remapped = Color.HSVToRGB(Mathf.Repeat(newHue, 1f), newSaturation, currentValue);
+            remapped.a = baseColor.a;
+
+            ApplyColorToMaterial(mat, remapped);
+            renderers[i].sharedMaterials = mats;
+        }
     }
 
     void SetRendererMaterialTransform(Renderer renderer, int materialIndex, Vector2 scale, Vector2 offset)
