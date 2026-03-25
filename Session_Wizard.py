@@ -23,19 +23,26 @@ def parse_time(s):
         raise
 
 def load_json(path):
+    print(f"[INFO] Loading JSON file: {path}")
 
     with open(path, 'r', encoding='utf-8-sig') as f:
-        
         lines = f.read()
+
+    print("[INFO] Raw file read complete")
 
     lines = lines.splitlines()
 
     if len(lines) >= 2 and lines[0].strip() == "```" and lines[-1].strip() == "```":
+        print("[INFO] Detected markdown-style code block, stripping ``` markers")
         lines = lines[1:-1]
 
-    lines = "\n".join(lines)   
-        
-    return json.loads(lines)
+    lines = "\n".join(lines)
+
+    data = json.loads(lines)
+
+    print("[INFO] JSON parsing successful")
+
+    return data
 
 
 def extract_link_label(url):
@@ -55,6 +62,97 @@ def extract_link_label(url):
 
         return url
 
+def normalize_data(raw):
+    print("[INFO] Normalizing data structure...")
+
+    sessions = []
+    total_groups = len(raw.get("groups", []))
+    print(f"[INFO] Found {total_groups} group(s)")
+
+    for g_idx, group in enumerate(raw.get("groups", [])):
+        print(f"[INFO] Processing group {g_idx}: {group.get('group_name')}")
+
+        for user in group.get("users", []):
+            user_name = user.get("user_name")
+            print(f"[INFO]  User: {user_name}")
+
+            web_sessions = user.get("web_sessions", [])
+            print(f"[INFO]   Found {len(web_sessions)} web session(s)")
+
+            for ws in web_sessions:
+                print(f"[INFO]    Session ID: {ws.get('id')}")
+
+                session = {
+                    "id": ws.get("id"),
+                    "user_name": user_name,
+                    "start_time": ws.get("start_time"),
+                    "end_time": ws.get("end_time"),
+                    "rooms": []
+                }
+
+                rooms = ws.get("rooms", [])
+                print(f"[INFO]     Rooms/pages: {len(rooms)}")
+
+                for r in rooms:
+                    print(f"[INFO]      Page: {r.get('name')}")
+
+                    room = {
+                        "name": r.get("name"),
+                        "enter_time": r.get("enter_time"),
+                        "exit_time": r.get("exit_time"),
+                        "book_session_events": [],
+                        "book_link_events": []
+                    }
+
+                    for b in r.get("books", []):
+                        for ev in b.get("session_events", []):
+                            room["book_session_events"].append({
+                                "open_time": ev.get("open_time"),
+                                "close_time": ev.get("close_time"),
+                                "book": {"name": b.get("name")}
+                            })
+
+                    for bl in r.get("book_links", []):
+                        room["book_link_events"].append({
+                            "click_time": bl.get("click_time"),
+                            "link": bl.get("link")
+                        })
+
+                    print(f"[INFO]       Book events: {len(room['book_session_events'])}, Link clicks: {len(room['book_link_events'])}")
+
+                    session["rooms"].append(room)
+
+                sessions.append(session)
+
+    print(f"[INFO] Normalization complete: {len(sessions)} session(s) ready")
+
+    return {
+        "user_name": sessions[0]["user_name"] if sessions else "Unknown",
+        "sessions": sessions
+    }
+
+def build_user_session_index(raw):
+    index = {}
+
+    for group in raw.get("groups", []):
+        for user in group.get("users", []):
+            uname = user.get("user_name")
+            if not uname:
+                continue
+
+            sessions = []
+
+            for ws in user.get("web_sessions", []):
+                sessions.append(ws)
+
+            for aps in user.get("app_sessions", []):
+                sessions.append(aps)
+
+            if sessions:
+                index[uname] = sessions
+
+    return index
+
 class SessionVisualizer(tk.Tk):
     def __init__(self, data):
 
@@ -63,32 +161,64 @@ class SessionVisualizer(tk.Tk):
         self.title("Session Wizard")
         self.geometry("1600x900")
 
-        self.data = data
+        self.raw_data = data
+        self.user_index = build_user_session_index(data)
+
+        self.current_user = None
+        self.current_session = None
+
         self.selected_room_meta = None
+
         self._prepare_ui()
 
     def _prepare_ui(self):
         paned = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
         paned.pack(fill=tk.BOTH, expand=True)
 
-        left_frame = ttk.Frame(paned) #timeline
-
-        middle_frame = ttk.Frame(paned, width=380) #event graph
-
-        right_frame = ttk.Frame(paned, width=480) #details
+        left_frame = ttk.Frame(paned)   # timeline
+        middle_frame = ttk.Frame(paned, width=380)  # event graph
+        right_frame = ttk.Frame(paned, width=480)   # details
 
         paned.add(left_frame, weight=3)
         paned.add(middle_frame, weight=1)
         paned.add(right_frame, weight=1)
 
+        # TOP CONTROL BAR
+
         ctrl = ttk.Frame(left_frame)
         ctrl.pack(fill=tk.X, pady=4)
 
-        ttk.Label(left_frame, text="Timeline", font=("Segoe UI", 12, "bold")).pack(anchor=tk.W, padx=6, pady=(6,0))
+        # USER SELECTOR
+        ttk.Label(ctrl, text="User:").pack(side=tk.LEFT, padx=(6, 2))
 
-        ttk.Label(ctrl, text=f"User: {self.data.get('user_name','-')}").pack(side=tk.LEFT, padx=8)
+        self.user_var = tk.StringVar()
+        self.user_dropdown = ttk.Combobox(
+            ctrl, textvariable=self.user_var, state="readonly", width=10
+        )
+        self.user_dropdown.pack(side=tk.LEFT, padx=4)
 
-        ttk.Button(ctrl, text="Reload JSON...", command=self._reload_json).pack(side=tk.RIGHT, padx=8)
+        # SESSION SELECTOR
+        ttk.Label(ctrl, text="Session:").pack(side=tk.LEFT, padx=(10, 2))
+
+        self.session_var = tk.StringVar()
+        self.session_dropdown = ttk.Combobox(
+            ctrl, textvariable=self.session_var, state="readonly", width=8
+        )
+        self.session_dropdown.pack(side=tk.LEFT, padx=4)
+
+        # RELOAD BUTTON
+        ttk.Button(ctrl, text="Reload JSON...", command=self._reload_json)\
+            .pack(side=tk.RIGHT, padx=8)
+
+        # TIMELINE LABEL
+
+        ttk.Label(
+            left_frame,
+            text="Timeline",
+            font=("Segoe UI", 12, "bold")
+        ).pack(anchor=tk.W, padx=6, pady=(6, 0))
+
+        # CANVAS AREA
 
         canvas_frame = ttk.Frame(left_frame)
         canvas_frame.pack(fill=tk.BOTH, expand=True)
@@ -97,63 +227,189 @@ class SessionVisualizer(tk.Tk):
 
         self.vbar = ttk.Scrollbar(canvas_frame, orient=tk.VERTICAL, command=self.canvas.yview)
         self.hbar = ttk.Scrollbar(canvas_frame, orient=tk.HORIZONTAL, command=self.canvas.xview)
-        self.canvas.configure(yscrollcommand=self.vbar.set, xscrollcommand=self.hbar.set)
+
+        self.canvas.configure(
+            yscrollcommand=self.vbar.set,
+            xscrollcommand=self.hbar.set
+        )
 
         self.vbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.hbar.pack(side=tk.BOTTOM, fill=tk.X)
         self.canvas.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
 
-        ttk.Label(right_frame, text="Details", font=("Segoe UI", 12, "bold")).pack(anchor=tk.W, padx=6, pady=(6,0))
+        # DETAILS PANEL
+
+        ttk.Label(
+            right_frame,
+            text="Details",
+            font=("Segoe UI", 12, "bold")
+        ).pack(anchor=tk.W, padx=6, pady=(6, 0))
 
         self.details = tk.Text(right_frame, wrap=tk.WORD, width=48)
         self.details.pack(fill=tk.BOTH, expand=True, padx=6, pady=6)
 
+        # EVENT GRAPH
 
-        ttk.Label(middle_frame, text="Event Graph", font=("Segoe UI", 12, "bold")).pack(anchor=tk.W, padx=6, pady=(6,0))
+        ttk.Label(
+            middle_frame,
+            text="Event Graph",
+            font=("Segoe UI", 12, "bold")
+        ).pack(anchor=tk.W, padx=6, pady=(6, 0))
 
         self.fig = Figure(figsize=(4.5, 6), tight_layout=True)
         self.ax = self.fig.add_subplot(111)
+
         self.canvas_fig = FigureCanvasTkAgg(self.fig, master=middle_frame)
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=6, pady=6)
 
+        # EVENT STORAGE
 
         self._plot_points_meta = []
 
-        self._draw_timeline()
+        # BINDINGS
 
         self.canvas.tag_bind("room", "<Button-1>", self._on_room_click)
 
-        self.canvas.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        self.canvas.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
 
         self.fig.canvas.mpl_connect('pick_event', self._on_plot_pick)
 
-        if self.selected_room_meta:
-            self._draw_graph()
+        # INITIALIZE DROPDOWNS
+
+        self._populate_users()
+
+        self.user_dropdown.bind("<<ComboboxSelected>>", self._on_user_change)
+        self.session_dropdown.bind("<<ComboboxSelected>>", self._on_session_change)
+
+    def _populate_users(self):
+        users = sorted(self.user_index.keys())
+        self.user_dropdown['values'] = users
+
+        if users:
+            self.user_var.set(users[0])
+            self._on_user_change()
+
+    def _on_user_change(self, event=None):
+        user = self.user_var.get()
+        self.current_user = user
+
+        sessions = self.user_index.get(user, [])
+        session_ids = [str(s.get("id")) for s in sessions]
+
+        self.session_dropdown['values'] = session_ids
+
+        if session_ids:
+            self.session_var.set(session_ids[0])
+            self._on_session_change()
+
+    def _on_session_change(self, event=None):
+        user = self.current_user
+        session_id = self.session_var.get()
+
+        sessions = self.user_index.get(user, [])
+
+        for s in sessions:
+            if str(s.get("id")) == session_id:
+                self.current_session = s
+                break
+
+        self._load_selected_session()
+
+    def _load_selected_session(self):
+        if not self.current_session:
+            return
+
+        print(f"[INFO] Rendering user={self.current_user}, session={self.current_session.get('id')}")
+
+        # Convert ONE session to expected format
+        normalized = {
+            "user_name": self.current_user,
+            "sessions": [self._normalize_single_session(self.current_session)]
+        }
+
+        self.data = normalized
+
+        self.canvas.delete("all")
+        self.ax.clear()
+        self._plot_points_meta.clear()
+
+        self._draw_timeline()
+        self.canvas_fig.draw()
 
     def _reload_json(self):
-        path = filedialog.askopenfilename(filetypes=[("JSON files","*.json"),("All files","*.*")])
+        path = filedialog.askopenfilename(
+            filetypes=[("JSON files","*.json"),("All files","*.*")]
+        )
 
         if not path:
             return
 
         try:
-            self.data = load_json(path)
+            print(f"[INFO] Reloading JSON: {path}")
 
+            data = load_json(path)
+
+            # rebuild index
+            self.raw_data = data
+            self.user_index = build_user_session_index(data)
+
+            # reset state
+            self.current_user = None
+            self.current_session = None
+            self.selected_room_meta = None
+
+            # clear UI
             self.canvas.delete("all")
-
             self.ax.clear()
-
             self._plot_points_meta.clear()
 
-            self._draw_timeline()
-
-            if self.selected_room_meta:
-                self._draw_graph()
+            # repopulate dropdowns (this triggers redraw)
+            self._populate_users()
 
             self.canvas_fig.draw()
 
+            print("[INFO] Reload complete")
+
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load JSON: {e}")
+
+    def _normalize_single_session(self, ws):
+        session = {
+            "id": ws.get("id"),
+            "start_time": ws.get("start_time"),
+            "end_time": ws.get("end_time"),
+            "rooms": []
+        }
+
+        for r in ws.get("rooms", []):
+            room = {
+                "name": r.get("name"),
+                "enter_time": r.get("enter_time"),
+                "exit_time": r.get("exit_time"),
+                "book_session_events": [],
+                "book_link_events": []
+            }
+
+            for b in r.get("books", []):
+                for ev in b.get("session_events", []):
+                    room["book_session_events"].append({
+                        "open_time": ev.get("open_time"),
+                        "close_time": ev.get("close_time"),
+                        "book": {"name": b.get("name")}
+                    })
+
+            for bl in r.get("book_links", []):
+                room["book_link_events"].append({
+                    "click_time": bl.get("click_time"),
+                    "link": bl.get("link")
+                })
+
+            session["rooms"].append(room)
+
+        return session
 
     def _draw_timeline(self):
         sessions = self.data.get("sessions", [])
@@ -168,8 +424,35 @@ class SessionVisualizer(tk.Tk):
         for s in sessions:
             try:
 
-                st = parse_time(s["start_time"])
+                st_original = parse_time(s["start_time"])
                 et = parse_time(s["end_time"])
+
+                # --- Find first actual activity time ---
+                activity_times = []
+
+                for r in s.get("rooms", []):
+                    try:
+                        activity_times.append(parse_time(r["enter_time"]))
+                    except Exception:
+                        pass
+
+                    for be in r.get("book_session_events", []):
+                        try:
+                            activity_times.append(parse_time(be["open_time"]))
+                        except Exception:
+                            pass
+
+                    for le in r.get("book_link_events", []):
+                        try:
+                            activity_times.append(parse_time(le["click_time"]))
+                        except Exception:
+                            pass
+
+                # Use earliest activity if available
+                if activity_times:
+                    st = min(activity_times)
+                else:
+                    st = st_original
 
             except Exception:
 
@@ -580,24 +863,31 @@ class SessionVisualizer(tk.Tk):
             lines.append("  (none)")
         self.details.insert(tk.END, "\n".join(lines))
 
-
 def main():
+    print("[INFO] Session Visualizer starting...")
+
     if len(sys.argv) > 1:
         path = sys.argv[1]
     else:
         root = tk.Tk()
         root.withdraw()
-        path = filedialog.askopenfilename(title="Select JSON file",
-                                          filetypes=[("JSON files", "*.json"), ("All files", "*.*")])
+        path = filedialog.askopenfilename(
+            title="Select JSON file",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
         root.destroy()
+
         if not path:
-            print("No file chosen. Exiting.")
+            print("[WARN] No file chosen. Exiting.")
             return
+
     try:
         data = load_json(path)
     except Exception as e:
-        print("Failed to read JSON:", e)
+        print("[ERROR] Failed to read JSON:", e)
         return
+
+    print("[INFO] Launching UI...")
     app = SessionVisualizer(data)
     app.mainloop()
 
