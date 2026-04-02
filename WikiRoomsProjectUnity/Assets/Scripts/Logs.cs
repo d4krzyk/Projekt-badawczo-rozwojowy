@@ -16,6 +16,7 @@ public class RoomLog
     public float exitTime;
     public List<BookLog> bookLogs;
     public List<LinkLog> linkLogs;
+    public List<float> cursorLog;
     // public string previousRoomLink;
     // public string roomPath;
 }

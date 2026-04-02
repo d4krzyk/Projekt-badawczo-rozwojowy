@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LogicUI.FancyTextRendering;
 using UnityEngine;
 
@@ -18,6 +19,15 @@ public class PlayerController : MonoBehaviour
     public Logger logger;
     // sprint: dodatkowa prędkość gdy trzymamy Shift + ruch
     public float sprintBonus = 2f;
+
+    [Header("Jump")]
+    public float jumpVelocity = 4.5f;
+    public float jumpCooldown = 0.1f;
+
+    [Header("Crouch")]
+    [Range(0.3f, 1f)] public float crouchScaleY = 0.6f;
+    [Range(0.2f, 1f)] public float crouchSpeedMultiplier = 0.7f;
+    [Min(0.1f)] public float crouchTransitionSpeed = 10f;
     
     [Header("Camera Zoom")]
     public float defaultFOV = 60f;
@@ -59,6 +69,10 @@ public class PlayerController : MonoBehaviour
     Rigidbody rb;
     // yaw dla stabilnej rotacji postaci
     float yaw = 0f;
+    bool jumpQueued = false;
+    float lastJumpTime = -999f;
+    Vector3 standingScale;
+    bool crouchHeld = false;
 
     [Header("UI")]
     public GameObject BookUI;
@@ -70,6 +84,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        standingScale = transform.localScale;
         yaw = transform.eulerAngles.y;
         LockCursor();
 
@@ -94,6 +109,8 @@ public class PlayerController : MonoBehaviour
     {
         HandlePause();
         HandleMouseLook();
+        HandleCrouch();
+        HandleJumpInput();
         HandleInteraction();
         HandleCameraZoom();
         HandleCameraBobAndFootsteps();
@@ -108,13 +125,36 @@ public class PlayerController : MonoBehaviour
                 transform.position.x.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + " " +
                 transform.position.z.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + " " +
                 Time.time.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
-            if (logger != null) logger.UpdateCurrentPath(currentMove);
+
+            List<float> currentMoveFloat = new List<float> { hexPosition.x, hexPosition.y, transform.position.x, transform.position.z, Time.time };
+            if (logger != null) logger.UpdateCurrentPath(currentMoveFloat);
         }
     }
 
     void FixedUpdate()
     {
         HandleMovement();
+        HandleJump();
+    }
+
+    void HandleJumpInput()
+    {
+        if (isPaused || isReading || movementLocked) return;
+        if (IsCrouching()) return;
+
+        if (Input.GetKeyDown(KeyCode.Space))
+            jumpQueued = true;
+    }
+
+    void HandleCrouch()
+    {
+        bool canCrouch = !isPaused && !isReading && !movementLocked;
+        crouchHeld = canCrouch && Input.GetKey(KeyCode.C);
+
+        float targetY = crouchHeld ? standingScale.y * crouchScaleY : standingScale.y;
+        Vector3 currentScale = transform.localScale;
+        currentScale.y = Mathf.MoveTowards(currentScale.y, targetY, crouchTransitionSpeed * Time.deltaTime);
+        transform.localScale = currentScale;
     }
 
     void HandleMovement()
@@ -134,10 +174,48 @@ public class PlayerController : MonoBehaviour
         float currentSpeed = moveSpeed;
         if (sprintKey && hasMovementInput && !isReading && !movementLocked)
             currentSpeed += sprintBonus;
+        if (IsCrouching())
+            currentSpeed *= crouchSpeedMultiplier;
 
         Vector3 rawMove = transform.right * horizontal + transform.forward * vertical;
         Vector3 move = (isReading || movementLocked) ? Vector3.zero : (rawMove.sqrMagnitude > 1f ? rawMove.normalized : rawMove);
-        transform.position += move * currentSpeed * Time.fixedDeltaTime;
+
+        if (rb != null && !rb.isKinematic)
+        {
+            Vector3 currentVelocity = rb.linearVelocity;
+            Vector3 targetHorizontalVelocity = move * currentSpeed;
+            rb.linearVelocity = new Vector3(targetHorizontalVelocity.x, currentVelocity.y, targetHorizontalVelocity.z);
+        }
+        else
+        {
+            Vector3 delta = move * currentSpeed * Time.fixedDeltaTime;
+            transform.position += delta;
+        }
+    }
+
+    void HandleJump()
+    {
+        if (!jumpQueued) return;
+
+        jumpQueued = false;
+
+        if (rb == null || rb.isKinematic) return;
+        if (isPaused || isReading || movementLocked) return;
+        if (IsCrouching()) return;
+        if (Time.time - lastJumpTime < jumpCooldown) return;
+        if (!IsGrounded()) return;
+
+        Vector3 velocity = rb.linearVelocity;
+        if (velocity.y < 0f)
+            velocity.y = 0f;
+        velocity.y = jumpVelocity;
+        rb.linearVelocity = velocity;
+        lastJumpTime = Time.time;
+    }
+
+    bool IsCrouching()
+    {
+        return transform.localScale.y < standingScale.y - 0.01f;
     }
 
     void HandleMouseLook()
@@ -406,7 +484,7 @@ public class PlayerController : MonoBehaviour
 
         // czy gracz podaje input ruchu?
         bool inputMove = (Input.GetAxisRaw("Horizontal") != 0f || Input.GetAxisRaw("Vertical") != 0f);
-        bool grounded = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
+        bool grounded = IsGrounded();
 
         // wykryj sprint (Shift) i czy jest rzeczywisty input ruchu
         bool sprintKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
@@ -454,6 +532,11 @@ public class PlayerController : MonoBehaviour
                 cameraTransform.localPosition.z
             );
         }
+    }
+
+    bool IsGrounded()
+    {
+        return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundCheckDistance);
     }
 
     void PlayStep(bool isSprinting)
