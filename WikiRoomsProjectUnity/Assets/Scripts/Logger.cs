@@ -13,9 +13,6 @@ using System.Threading.Tasks;
 /// </summary>
 public class Logger : MonoBehaviour
 {
-    [Header("Legacy backend config (unused)")]
-    public BackendConfig backendConfig;
-
     [Header("Local log export")]
     public bool saveLogsToDisk = true;
     public string localLogsDirectoryName = "WikiRoomsSessionLogs";

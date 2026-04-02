@@ -5,7 +5,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using System;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -17,11 +16,9 @@ public class CheckSearchButton : MonoBehaviour
     public GameObject targetArticleTextField;
     public Button SearchButton; // jeśli null, zostanie pobrany z tego GameObjectu lub z childów
     public GameController gameController;
-    public BackendConfig backendConfig;
 
     [Header("Local validation")]
     public bool requireTargetArticle = true;
-    public bool useAuthorizationHeader = true;
 
     // cache TMP komponentów
     TextMeshProUGUI tmpUGUI;
@@ -237,15 +234,6 @@ public class CheckSearchButton : MonoBehaviour
         {
             return false;
         }
-    }
-
-    void ApplyAuthHeaderIfConfigured(UnityWebRequest request)
-    {
-        if (!useAuthorizationHeader || backendConfig == null) return;
-        if (string.IsNullOrWhiteSpace(backendConfig.username) || string.IsNullOrWhiteSpace(backendConfig.password)) return;
-
-        string authHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(backendConfig.username + ":" + backendConfig.password));
-        request.SetRequestHeader("Authorization", authHeader);
     }
 
     struct NicknameValidationResult

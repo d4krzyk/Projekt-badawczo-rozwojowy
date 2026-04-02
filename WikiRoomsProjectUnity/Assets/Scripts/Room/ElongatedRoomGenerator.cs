@@ -84,7 +84,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public GameObject portalPrevious;
     public InfoboxGenerator infoboxGenerator;
     public InfoboxGenerator secInfoboxGenerator;
-    public BackendConfig backendConfig;
     public GameObject loadingScreen;
 
     [Header("Portal color tuning")]
@@ -154,7 +153,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
     public TextMeshPro articleTitleText; // przypnij TextMeshProUGUI z Canvasu
 
     List<GameObject> spawnedExtensions = new List<GameObject>();
-    string auth_header;
     public bool HasLoaded = false;
     SemaphoreSlim imageDownloadParallelGate;
     int imageDownloadParallelGateLimit = -1;
@@ -234,7 +232,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
             var loadingMotion = loadingScreen.GetComponentInChildren<LoadingPuzzleMotion>();
             if (loadingMotion != null) loadingMotion.ResetAnimation();
         }
-        auth_header = string.Empty;
         string displayArticleName = Uri.UnescapeDataString(articleName);
         // nie odtwarzaj dźwięku dla portalu
         this.articleName = articleName;
