@@ -210,7 +210,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             var loadingMotion = loadingScreen.GetComponentInChildren<LoadingPuzzleMotion>();
             if (loadingMotion != null) loadingMotion.ResetAnimation();
         }
-        auth_header = "Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(backendConfig.username + ":" + backendConfig.password));
+        auth_header = string.Empty;
         string displayArticleName = Uri.UnescapeDataString(articleName);
         // nie odtwarzaj dźwięku dla portalu
         this.articleName = articleName;
@@ -956,77 +956,20 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     public async Task<string> GetArticleAsync(string article)
     {
-        string encodedArticle = UnityWebRequest.EscapeURL(article);
-        string url = $"{backendConfig.baseURL}/article?article={encodedArticle}&category_strategy=api";
-
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            request.SetRequestHeader("accept", "application/json");
-            request.SetRequestHeader("Authorization", auth_header);
-
-            var operation = request.SendWebRequest();
-
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                return request.downloadHandler.text;
-            }
-            else
-            {
-                Debug.LogError("Request error: " + request.error);
-                return null;
-            }
-        }
+        ArticleStructure articleData = await WikipediaRuntimeClient.GetArticleDataAsync(article);
+        return articleData == null ? null : JsonConvert.SerializeObject(articleData);
     }
 
     public async Task<string> GetTexturesJsonAsync(string article, string category)
     {
-        string encodedArticle = UnityWebRequest.EscapeURL(article);
-        string encodedCategory = UnityWebRequest.EscapeURL(category);
-        string url = $"{backendConfig.baseURL}/cache/get_cached_texture?article={encodedArticle}&category={encodedCategory}";
-
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            request.SetRequestHeader("accept", "application/json");
-            request.SetRequestHeader("Authorization", auth_header);
-
-            var operation = request.SendWebRequest();
-
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                return request.downloadHandler.text;
-            }
-            else
-            {
-                Debug.LogError("Request error (textures): " + request.error);
-                return null;
-            }
-        }
+        TexturesStructure textures = await LocalTextureCacheService.GetTextureSetAsync(article, category);
+        return textures == null ? null : JsonConvert.SerializeObject(textures);
     }
 
     public async Task<string> GetInfoboxAsync(string article)
     {
-        string encodedArticle = UnityWebRequest.EscapeURL(article);
-        string url = $"{backendConfig.baseURL}/scraping/infobox?page_name={encodedArticle}";
-
-        return await SendTextRequestRateLimitedAsync(
-            () =>
-            {
-                UnityWebRequest request = UnityWebRequest.Get(url);
-                request.SetRequestHeader("accept", "application/json");
-                request.SetRequestHeader("Authorization", auth_header);
-                return request;
-            },
-            InfoboxRequestGate,
-            GetLastInfoboxRequestUtc,
-            SetLastInfoboxRequestUtc,
-            requestThrottling.infoboxMinIntervalSeconds,
-            "infobox");
+        WikiPageRaw infobox = await WikipediaRuntimeClient.GetInfoboxAsync(article);
+        return infobox == null ? null : JsonConvert.SerializeObject(infobox);
     }
 
     void ApplyTexturesToMaterials(TexturesStructure texturesData)
@@ -1323,40 +1266,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     private async Task<List<Dictionary<string, string>>> GetImagesListAsync(string pageName)
     {
-        List<Dictionary<string, string>> imagesList = new List<Dictionary<string, string>>();
-        string url = $"{backendConfig.baseURL}/images/generator?page_name={UnityWebRequest.EscapeURL(pageName)}";
-
-        string json = await SendTextRequestRateLimitedAsync(
-            () =>
-            {
-                UnityWebRequest request = UnityWebRequest.Get(url);
-                request.SetRequestHeader("Authorization", auth_header);
-                return request;
-            },
-            ImagesListRequestGate,
-            GetLastImagesListRequestUtc,
-            SetLastImagesListRequestUtc,
-            requestThrottling.imagesListMinIntervalSeconds,
-            "images-list");
-
-        if (string.IsNullOrEmpty(json))
-        {
-            return imagesList;
-        }
-
-        ImagesResponse resp = null;
-        try
-        {
-            resp = JsonConvert.DeserializeObject<ImagesResponse>(json);
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning($"JSON parse error: {e.Message}");
-            return imagesList;
-        }
-
-        imagesList = resp?.GetImagesList() ?? new List<Dictionary<string, string>>();
-        return imagesList;
+        return await WikipediaRuntimeClient.GetImagesAsync(pageName);
     }
 
     private async Task<Texture2D> GetImageAsTexture(string imageUrl)

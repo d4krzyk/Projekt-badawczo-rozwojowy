@@ -19,7 +19,7 @@ public class CheckSearchButton : MonoBehaviour
     public GameController gameController;
     public BackendConfig backendConfig;
 
-    [Header("API validation")]
+    [Header("Local validation")]
     public bool requireTargetArticle = true;
     public bool useAuthorizationHeader = true;
 
@@ -77,12 +77,6 @@ public class CheckSearchButton : MonoBehaviour
             return;
         }
 
-        if (backendConfig == null || string.IsNullOrWhiteSpace(backendConfig.baseURL))
-        {
-            ShowMessage("Backend configuration is missing (BackendConfig).");
-            return;
-        }
-
         isValidating = true;
         SetSearchInteractable(false);
         ShowMessage("Validating data...");
@@ -97,12 +91,14 @@ public class CheckSearchButton : MonoBehaviour
                 return;
             }
 
+            article = articleExists;
+
             if (!string.IsNullOrWhiteSpace(targetArticle))
             {
                 targetName = await ValidateArticleExistsAsync(targetArticle);
                 if (targetName == "")
                 {
-                    ShowMessage($"Target article '{targetName}' does not exist or is unavailable.");
+                    ShowMessage($"Target article '{targetArticle}' does not exist or is unavailable.");
                     return;
                 }
             }
@@ -124,7 +120,7 @@ public class CheckSearchButton : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogWarning($"[CheckSearchButton] Validation error: {ex.Message}");
-            ShowMessage("Validation error. Check your connection and try again.");
+            ShowMessage("Validation error. Check your Wikipedia connection and try again.");
             return;
         }
         finally
@@ -191,74 +187,14 @@ public class CheckSearchButton : MonoBehaviour
 
     async Task<string> ValidateArticleExistsAsync(string article)
     {
-        string encodedArticle = UnityWebRequest.EscapeURL(article);
-        string url = $"{backendConfig.baseURL}/article?article={encodedArticle}&category_strategy=api";
-
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            request.SetRequestHeader("accept", "application/json");
-            ApplyAuthHeaderIfConfigured(request);
-
-            var operation = request.SendWebRequest();
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogWarning($"[CheckSearchButton] Article validation failed ({request.responseCode}): {request.error}");
-                return "";
-            }
-
-            if (string.IsNullOrWhiteSpace(request.downloadHandler.text))
-                return "";
-
-            try
-            {
-                var json = JObject.Parse(request.downloadHandler.text);
-                JToken nameToken = json["name"];
-                JToken contentToken = json["content"];
-                if (nameToken != null && nameToken.Type == JTokenType.String)
-                {
-                    return nameToken.Value<string>();
-                }
-                return "";
-            }
-            catch
-            {
-                return "";
-            }
-        }
+        ArticleStructure articleData = await WikipediaRuntimeClient.GetArticleDataAsync(article);
+        return articleData?.name ?? "";
     }
 
     async Task<NicknameValidationResult> ValidateNicknameAvailabilityAsync(string nickname)
     {
-        string encodedNick = UnityWebRequest.EscapeURL(nickname);
-        string url = $"{backendConfig.baseURL}/session/check-user/{encodedNick}";
-
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            request.SetRequestHeader("accept", "application/json");
-            request.SetRequestHeader("X-Web", "false");
-            ApplyAuthHeaderIfConfigured(request);
-
-            var operation = request.SendWebRequest();
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogWarning($"[CheckSearchButton] Nickname validation failed ({request.responseCode}): {request.error}");
-                return new NicknameValidationResult { success = false, available = false };
-            }
-
-            if (!TryParseUserExists(request.downloadHandler.text, out bool userExists))
-            {
-                Debug.LogWarning("[CheckSearchButton] Could not parse /session/check-user response.");
-                return new NicknameValidationResult { success = false, available = false };
-            }
-
-            return new NicknameValidationResult { success = true, available = !userExists };
-        }
+        await Task.Yield();
+        return new NicknameValidationResult { success = true, available = true };
     }
 
     bool TryParseUserExists(string responseText, out bool userExists)

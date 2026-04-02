@@ -2,21 +2,33 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using UnityEngine.Networking;
+using System.IO;
 using System.Threading.Tasks;
-using System.Text;
 
+/// <summary>
+/// Zachowuje lokalne eventy gameplayowe po usunięciu zależności od backendowego
+/// /session oraz całej warstwy analityczno-badawczej.
+/// 
+/// Zamiast wysyłki do API zapisuje log sesji lokalnie w Application.persistentDataPath.
+/// </summary>
 public class Logger : MonoBehaviour
 {
+    [Header("Legacy backend config (unused)")]
     public BackendConfig backendConfig;
+
+    [Header("Local log export")]
+    public bool saveLogsToDisk = true;
+    public string localLogsDirectoryName = "WikiRoomsSessionLogs";
+
     string sessionId;
     List<RoomLog> roomLogs;
     List<LinkLog> lastLinkLogs;
     List<BookLog> lastBookLogs;
     string currentPath;
     string playerNick;
-    string auth_header;
     float sessionStartTime;
+
+    public string LastSavedLogPath { get; private set; }
 
     void Start()
     {
@@ -25,79 +37,46 @@ public class Logger : MonoBehaviour
         roomLogs = new List<RoomLog>();
         lastLinkLogs = new List<LinkLog>();
         lastBookLogs = new List<BookLog>();
-        currentPath = "";
-        if (FindAnyObjectByType<GameController>() != null) playerNick = FindAnyObjectByType<GameController>().PlayerNick;
-        else playerNick = "test_user";
-        auth_header = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(backendConfig.username + ":" + backendConfig.password));
+        currentPath = string.Empty;
+
+        GameController gameController = FindAnyObjectByType<GameController>();
+        playerNick = gameController != null ? gameController.PlayerNick : "test_user";
     }
 
     public void LogOnRoomExit(string roomName, float enterTime, float exitTime, string previousRoom)
     {
-        RoomLog log = new RoomLog();
-        // log.sessionId = sessionId;
-        log.roomName = roomName;
-        log.enterTime = enterTime;
-        log.exitTime = exitTime;
-        log.bookLogs = lastBookLogs;
-        log.linkLogs = lastLinkLogs;
-        // log.previousRoomLink = previousRoom;
-        // log.roomPath = currentPath.Trim();
+        RoomLog log = new RoomLog
+        {
+            roomName = roomName,
+            enterTime = enterTime,
+            exitTime = exitTime,
+            bookLogs = new List<BookLog>(lastBookLogs),
+            linkLogs = new List<LinkLog>(lastLinkLogs),
+        };
 
         roomLogs.Add(log);
-
         lastLinkLogs = new List<LinkLog>();
         lastBookLogs = new List<BookLog>();
-        currentPath = "";
-    }
-
-    async void SendRoomLogToDB(AppLog logs, bool xWeb = false)
-    {
-        string jsonData = JsonConvert.SerializeObject(logs);
-        Debug.Log($"Sending JSON: {jsonData}");
-        string url = $"{backendConfig.baseURL}/session/"; // <-- trailing slash avoids 307
-
-        using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
-        {
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("x-web", xWeb ? "true" : "false");
-            request.SetRequestHeader("Authorization", auth_header);
-
-            var operation = request.SendWebRequest();
-            while (!operation.isDone) await Task.Yield();
-
-            Debug.Log($"Response code: {request.responseCode}; Body: {request.downloadHandler.text}");
-
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                Debug.Log("RoomLog sent successfully");
-            }
-            else
-            {
-                Debug.LogWarning($"Request error (sending RoomLog): {request.error}");
-            }
-        }
+        currentPath = string.Empty;
     }
 
     public void LogOnBookClose(string bookLink, float openTime, float closeTime)
     {
-        BookLog log = new BookLog();
-        log.bookName = bookLink;
-        log.openTime = openTime;
-        log.closeTime = closeTime;
-
-        lastBookLogs.Add(log);
+        lastBookLogs.Add(new BookLog
+        {
+            bookName = bookLink,
+            openTime = openTime,
+            closeTime = closeTime,
+        });
     }
 
     public void LogOnLinkClick(string linkName, float clickTime)
     {
-        LinkLog log = new LinkLog();
-        log.linkName = linkName;
-        log.clickTime = clickTime;
-
-        lastLinkLogs.Add(log);
+        lastLinkLogs.Add(new LinkLog
+        {
+            linkName = linkName,
+            clickTime = clickTime,
+        });
     }
 
     public void UpdateCurrentPath(string currentMove)
@@ -107,13 +86,15 @@ public class Logger : MonoBehaviour
 
     public void SendLogs(bool surrender)
     {
-        AppLog logs = new AppLog();
-        logs.user_name = playerNick;
-        logs.session_logs = roomLogs;
-        logs.group = "1";
-        logs.surrendered = surrender;
+        AppLog logs = new AppLog
+        {
+            user_name = playerNick,
+            session_logs = roomLogs,
+            group = "local",
+            surrendered = surrender,
+        };
 
-        SendRoomLogToDB(logs, false); // ustaw true/false wg potrzeby
+        _ = SaveLogsLocallyAsync(logs);
     }
 
     public float GetSessionDuration()
@@ -129,10 +110,46 @@ public class Logger : MonoBehaviour
     public int GetTotalBooksOpened()
     {
         int count = 0;
-        foreach (var room in roomLogs)
-        {
+        foreach (RoomLog room in roomLogs)
             count += room.bookLogs.Count;
-        }
+
         return count;
+    }
+
+    async Task SaveLogsLocallyAsync(AppLog logs)
+    {
+        if (!saveLogsToDisk || logs == null)
+            return;
+
+        try
+        {
+            string directoryPath = Path.Combine(Application.persistentDataPath, localLogsDirectoryName);
+            Directory.CreateDirectory(directoryPath);
+
+            string safeUser = string.IsNullOrWhiteSpace(playerNick) ? "player" : SanitizeFileName(playerNick);
+            string fileName = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{safeUser}_{sessionId}.json";
+            string fullPath = Path.Combine(directoryPath, fileName);
+
+            string jsonData = JsonConvert.SerializeObject(logs, Formatting.Indented);
+            await File.WriteAllTextAsync(fullPath, jsonData);
+
+            LastSavedLogPath = fullPath;
+            Debug.Log($"[Logger] Session log saved locally: {fullPath}");
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"[Logger] Failed to save local session log: {exception.Message}");
+        }
+    }
+
+    string SanitizeFileName(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return "player";
+
+        foreach (char invalidChar in Path.GetInvalidFileNameChars())
+            raw = raw.Replace(invalidChar, '_');
+
+        return raw.Trim();
     }
 }

@@ -97,8 +97,7 @@ public class InfoboxGenerator : MonoBehaviour
             case "image":
                 instantiatedObject = Instantiate(imagePrefab);
                 Image image = instantiatedObject.GetComponent<Image>();
-                string url = item.value[0].href;
-                url = $"https:{url}";
+                string url = NormalizeImageUrl(item.value[0].href);
                 Debug.Log($"Downloading image from URL: {url}");
                 Sprite imageSprite = await GetImageFromURL(url);
                 if (!IsPopulationCurrent(populationId))
@@ -171,7 +170,7 @@ public class InfoboxGenerator : MonoBehaviour
                 Debug.LogWarning($"Expected string value for text class, instead got {valueRaw.value.GetType()}");
                 break;
             case "link":
-                if (!string.IsNullOrEmpty(valueRaw.text)) return $"[{valueRaw.text}](https://en.wikipedia.org/wiki/{valueRaw.href.Substring(2)})";
+                if (!string.IsNullOrEmpty(valueRaw.text)) return $"[{valueRaw.text}]({BuildWikipediaUrl(valueRaw.href)})";
                 Debug.LogWarning($"Expected correct text for link class");
                 break;
             case "ulist":
@@ -214,7 +213,7 @@ public class InfoboxGenerator : MonoBehaviour
                 Debug.LogWarning($"Expected string value for text class, instead got {labelRaw.value.GetType()}");
                 break;
             case "link":
-                if (!string.IsNullOrEmpty(labelRaw.value)) return $"[{labelRaw.value}](https://en.wikipedia.org/wiki/{labelRaw.value.Substring(2)})";
+                if (!string.IsNullOrEmpty(labelRaw.value)) return $"[{labelRaw.value}]({BuildWikipediaUrl(labelRaw.value)})";
                 Debug.LogWarning($"Expected correct text for link class");
                 break;
             default:
@@ -222,6 +221,48 @@ public class InfoboxGenerator : MonoBehaviour
                 break;
         }
         return "";
+    }
+
+    string NormalizeImageUrl(string rawUrl)
+    {
+        if (string.IsNullOrWhiteSpace(rawUrl)) return rawUrl;
+        if (rawUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            rawUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return rawUrl;
+        }
+
+        if (rawUrl.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+            return $"https:{rawUrl}";
+
+        if (rawUrl.StartsWith("/"))
+            return $"https://en.wikipedia.org{rawUrl}";
+
+        if (rawUrl.StartsWith("./", StringComparison.OrdinalIgnoreCase))
+            return $"https://en.wikipedia.org/wiki/{rawUrl.Substring(2)}";
+
+        return rawUrl;
+    }
+
+    string BuildWikipediaUrl(string rawHref)
+    {
+        if (string.IsNullOrWhiteSpace(rawHref)) return "https://en.wikipedia.org";
+        if (rawHref.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            rawHref.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return rawHref;
+        }
+
+        if (rawHref.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+            return $"https:{rawHref}";
+
+        if (rawHref.StartsWith("/wiki/", StringComparison.OrdinalIgnoreCase))
+            return $"https://en.wikipedia.org{rawHref}";
+
+        if (rawHref.StartsWith("./", StringComparison.OrdinalIgnoreCase))
+            return $"https://en.wikipedia.org/wiki/{rawHref.Substring(2)}";
+
+        return $"https://en.wikipedia.org/wiki/{rawHref}";
     }
 
     string HandleCaption(object caption)

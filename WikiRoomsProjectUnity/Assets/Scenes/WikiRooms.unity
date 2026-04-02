@@ -17664,7 +17664,7 @@ MonoBehaviour:
   portalPrevious: {fileID: 1751320008}
   infoboxGenerator: {fileID: 1169686116}
   secInfoboxGenerator: {fileID: 1011621168}
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 0}
   loadingScreen: {fileID: 1235979131}
   portalColorIntensity: 0.8
   portalNextHueJitter: 0.4
@@ -17971,7 +17971,7 @@ MonoBehaviour:
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1011621168}
   secInfoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 0}
   loadingScreen: {fileID: 1235979131}
   portalColorIntensity: 0.8
   portalNextHueJitter: 0.4
@@ -20518,7 +20518,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56923283f1a5a044a800b36d8af358d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Logger
-  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
+  backendConfig: {fileID: 0}
+  saveLogsToDisk: 1
+  localLogsDirectoryName: WikiRoomsSessionLogs
 --- !u!4 &2101044396
 Transform:
   m_ObjectHideFlags: 0

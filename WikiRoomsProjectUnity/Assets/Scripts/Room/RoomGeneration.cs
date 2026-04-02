@@ -93,50 +93,14 @@ public class RoomGeneration : MonoBehaviour
     
     public async Task<string> GetArticleAsync(string article)
     {
-        string encodedArticle = UnityWebRequest.EscapeURL(article);
-        string url = $"http://localhost/article?article={encodedArticle}&category_strategy=api";
-
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            request.SetRequestHeader("accept", "application/json");
-
-            var operation = request.SendWebRequest();
-
-            while (!operation.isDone)
-                await Task.Yield(); 
-
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                return request.downloadHandler.text;
-            }
-            else
-            {
-                Debug.LogError("Request error: " + request.error);
-                return null;
-            }
-        }
+        ArticleStructure localArticle = await WikipediaRuntimeClient.GetArticleDataAsync(article);
+        return localArticle == null ? null : JsonConvert.SerializeObject(localArticle);
     }
 
     public async Task<string> GetTexturesJsonAsync(string category)
     {
-        string url = $"http://localhost:8000/gen2DTextures";
-        string requestBody = "{\"category\": \"" + category + "\"}";
-
-        using (UnityWebRequest request = UnityWebRequest.Post(url, requestBody, "application/json"))
-        {
-            var operation = request.SendWebRequest();
-            while (!operation.isDone) await Task.Yield(); 
-
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                return request.downloadHandler.text;
-            }
-            else
-            {
-                Debug.LogWarning($"Request error (textures): {request.error}");
-                return null;
-            }
-        }
+        TexturesStructure localTextures = await LocalTextureCacheService.GetTextureSetAsync(articleName, category);
+        return localTextures == null ? null : JsonConvert.SerializeObject(localTextures);
     }
     
     private Texture2D CreateNormalMapFromGrayscale(Texture2D source, float strength = 1.0f)
