@@ -637,20 +637,31 @@ public class ElongatedRoomGenerator : MonoBehaviour
         else
         {
             string texturesJson = await GetTexturesJsonAsync(articleName, ArticleData.category);
-            Debug.Log(texturesJson);
             if (!IsGenerationCurrent(generationId)) return;
-            var obj = JObject.Parse(texturesJson);
-            string status = obj["status"]?.ToString();
-            if(status?.ToLower() != "ok") return;
-            TexturesStructure texturesData;
-            if (string.IsNullOrEmpty(texturesJson)) Debug.LogWarning("Failed to retrieve textures data.");
-            else
+
+            if (string.IsNullOrWhiteSpace(texturesJson))
             {
-                texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
+                Debug.LogWarning("Failed to retrieve textures data.");
+                return;
+            }
+
+            try
+            {
+                TexturesStructure texturesData = JsonConvert.DeserializeObject<TexturesStructure>(texturesJson);
+                if (texturesData == null || texturesData.images == null)
+                {
+                    Debug.LogWarning("Textures payload is empty or invalid.");
+                    return;
+                }
+
                 if (roomsController != null)
                     roomsController.CacheTextures(articleName, texturesData);
                 if (IsGenerationCurrent(generationId))
                     ApplyTexturesToMaterials(texturesData);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Failed to parse textures data: {ex.Message}");
             }
         }
     }

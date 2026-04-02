@@ -126,8 +126,7 @@ public class PlayerController : MonoBehaviour
                 transform.position.z.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + " " +
                 Time.time.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
 
-            List<float> currentMoveFloat = new List<float> { hexPosition.x, hexPosition.y, transform.position.x, transform.position.z, Time.time };
-            if (logger != null) logger.UpdateCurrentPath(currentMoveFloat);
+            if (logger != null) logger.UpdateCurrentPath(currentMove);
         }
     }
 

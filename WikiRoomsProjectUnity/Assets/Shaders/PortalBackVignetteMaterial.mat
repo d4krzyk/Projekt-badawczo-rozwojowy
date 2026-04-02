@@ -54,7 +54,7 @@ Material:
     - _bitTime: 0.125
     - _bits: 64
     m_Colors:
-    - _Color: {r: 0.7733316, g: 0.40383872, b: 0.40139854, a: 1}
+    - _Color: {r: 0.7733316, g: 0.3515753, b: 0.5477212, a: 1}
     - _NoiseSpeed: {r: 32, g: 32, b: 0, a: 0}
     - _NoiseTiling: {r: 0.25, g: 0.25, b: 0, a: 0}
   m_BuildTextureStacks: []

@@ -6448,6 +6448,11 @@ MonoBehaviour:
   bookController: {fileID: 1312706476}
   logger: {fileID: 2101044395}
   sprintBonus: 2
+  jumpVelocity: 3.75
+  jumpCooldown: 0.1
+  crouchScaleY: 0.44
+  crouchSpeedMultiplier: 0.4
+  crouchTransitionSpeed: 10
   defaultFOV: 60
   zoomFOV: 10
   zoomSpeed: 5
@@ -7143,18 +7148,23 @@ MonoBehaviour:
 
     <i>E</i> - interact
 
-    <i>Mouse</i>
-    - rotate camera / click links
+    <i>C</i>
+    - crouch
 
-    <i>Shift + move</i> - sprint
+    <i>Space</i> - jump
 
-    <i>Esc</i>
-    - pause menu / exit book
+    <i>Mouse</i> - rotate camera / click links
 
-    <i>Z (hold)</i> - camera zoom
+    <i>Shift
+    + move</i> - sprint
 
-    <i>L. Ctrl (hold,
-    while aiming at captioned image)</i> - Hover UI interactive mode'
+    <i>Esc</i> - pause menu / exit book
+
+    <i>Z (hold)</i>
+    - camera zoom
+
+    <i>L. Ctrl (hold, while aiming at captioned image)</i> - Hover
+    UI interactive mode'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
   m_sharedMaterial: {fileID: 3066015743098452413, guid: b900fdfd2d0a05d41b0529092e33e6e1, type: 2}
@@ -7187,7 +7197,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 16
   m_HorizontalAlignment: 32
   m_VerticalAlignment: 4096
   m_textAlignment: 65535
@@ -17676,6 +17686,10 @@ MonoBehaviour:
   portalPreviousMinSaturation: 0.65
   portalPreviousMinValue: 0.82
   portalEmissionStrength: 1.35
+  syncStandBookHue: 1
+  standBookObject: {fileID: 0}
+  standBookHueBlend: 0.9
+  standBookSaturationBoost: 0.1
   requestThrottling:
     imageDownloadMinIntervalSeconds: 0.45
     retryBaseDelaySeconds: 0.9
@@ -17685,6 +17699,7 @@ MonoBehaviour:
     extraThrottleStepSeconds: 0.15
     maxExtraThrottleSeconds: 1.5
     successThrottleDecaySeconds: 0.06
+    log429RetryAttempts: 0
   imageProgressToHideLoadingScreen: 0.1
   maxImagesPerSlot: 4
   smallMaxPixels: 200000
@@ -17704,11 +17719,6 @@ MonoBehaviour:
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
-  ArticleData:
-    name: 
-    url: 
-    category: 
-    content: []
   articleTitleText: {fileID: 1782894320}
   HasLoaded: 0
 --- !u!4 &1836512197
@@ -17962,7 +17972,7 @@ MonoBehaviour:
   defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
   defStandMat: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
-  articleName: Pope
+  articleName: Australia
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
   portalNext: {fileID: 410983050840802480}
@@ -17981,6 +17991,10 @@ MonoBehaviour:
   portalPreviousMinSaturation: 0.65
   portalPreviousMinValue: 0.82
   portalEmissionStrength: 1.35
+  syncStandBookHue: 1
+  standBookObject: {fileID: 0}
+  standBookHueBlend: 0.9
+  standBookSaturationBoost: 0.1
   requestThrottling:
     imageDownloadMinIntervalSeconds: 0.45
     retryBaseDelaySeconds: 0.9
@@ -17990,6 +18004,7 @@ MonoBehaviour:
     extraThrottleStepSeconds: 0.15
     maxExtraThrottleSeconds: 1.5
     successThrottleDecaySeconds: 0.06
+    log429RetryAttempts: 0
   imageProgressToHideLoadingScreen: 0.1
   maxImagesPerSlot: 4
   smallMaxPixels: 200000
@@ -18009,11 +18024,6 @@ MonoBehaviour:
   EnterTime: 0
   ExitTime: 0
   PreviousRoom: 
-  ArticleData:
-    name: 
-    url: 
-    category: 
-    content: []
   articleTitleText: {fileID: 1622850024}
   HasLoaded: 0
 --- !u!1 &1899608622
