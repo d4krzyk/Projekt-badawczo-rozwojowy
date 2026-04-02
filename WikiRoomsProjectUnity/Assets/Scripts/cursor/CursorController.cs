@@ -241,7 +241,7 @@ public class CursorController : MonoBehaviour
                     }
 
                     SetCrosshair(highlightedCrosshair);
-                    if(roomsController.elongatedRoom.infoboxGenerator.HasFailed)
+                    if (roomsController.elongatedRoom.HasInfoboxFailed)
                     {
                         ShowHoverUI("No infobox data.");
                     }

@@ -2,14 +2,18 @@ using UnityEngine;
 using LogicUI.FancyTextRendering;
 using System.Text.RegularExpressions;
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(TextLinkHelper))]
 [DisallowMultipleComponent]
 public class WikiipediaRoomClickBehaviour : MonoBehaviour
 {
     const string WikipediaArticlePattern = @"https:\/\/en\.wikipedia\.org\/wiki\/([^#]+)(?:#(.+))?";
+    const string WikipediaHost = "wikipedia.org";
+    const float MinimumExternalLinkMessageDurationSeconds = 3f;
     const float TooltipMaxWidth = 360f;
     static readonly Vector2 TooltipPadding = new Vector2(20f, 16f);
     static readonly Vector2 TooltipOffset = new Vector2(18f, -18f);
@@ -26,6 +30,7 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
     static Canvas tooltipCanvas;
     static WikiipediaRoomClickBehaviour activeTooltipOwner;
     static Sprite tooltipFallbackSprite;
+    static GameObject cachedFullScreenTextObject;
 
     [Header("SFX kliknięcia linku")]
     public AudioClip clickSound;
@@ -34,6 +39,14 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
 
     [Header("Pozycja użytkownika (opcjonalnie)")]
     public Transform userTransform; // ustaw np. Transform gracza lub kamery
+
+    [Header("External links")]
+    [Tooltip("Optional. If empty, script will auto-find object named 'FullScreenText' in loaded scenes.")]
+    public GameObject fullScreenTextObject;
+    [Min(3f)] public float externalLinkMessageDuration = 3f;
+    [Min(0f)] public float externalLinkOpenDelaySeconds = 0.1f;
+
+    Coroutine externalLinkStatusRoutine;
 
     public RoomsController roomsController
     {
@@ -71,6 +84,19 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         }
 
         logger = FindAnyObjectByType<Logger>();
+
+        EnsureFullScreenTextReference();
+        if (fullScreenTextObject != null)
+            fullScreenTextObject.SetActive(false);
+    }
+
+    private void OnValidate()
+    {
+        if (externalLinkMessageDuration < MinimumExternalLinkMessageDurationSeconds)
+            externalLinkMessageDuration = MinimumExternalLinkMessageDurationSeconds;
+
+        if (externalLinkOpenDelaySeconds < 0f)
+            externalLinkOpenDelaySeconds = 0f;
     }
 
     private void Update()
@@ -87,6 +113,8 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         {
             HideTooltipImmediate();
         }
+
+        HideExternalLinkStatusImmediate();
     }
 
     private void OnDestroy()
@@ -102,6 +130,8 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         {
             HideTooltipImmediate();
         }
+
+        HideExternalLinkStatusImmediate();
     }
 
     private void ClickOnLink(string link)
@@ -111,12 +141,11 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         // Odtwórz dźwięk w lokalizacji użytkownika
         PlayClickSoundAtUser();
 
-        link = CloseParentheses(link);
+        link = NormalizeLink(link);
 
         logger.LogOnLinkClick(link, Time.time);
 
-        Match match = Regex.Match(link, WikipediaArticlePattern);
-        if (match.Success)
+        if (TryGetWikipediaArticleName(link, out string articleName))
         {
             PlayerController playerController = FindAnyObjectByType<PlayerController>();
             if (playerController != null)
@@ -124,11 +153,18 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
                 playerController.CloseReadingView(false);
             }
 
-            roomsController.secondElongatedRoom.articleName = match.Groups[1].Value.Replace('_', ' ');
+            roomsController.secondElongatedRoom.articleName = articleName;
             roomsController.secondElongatedRoom.ResetRoom();
             roomsController.elongatedRoom.SetActivePortalNext(false);
             roomsController.secondElongatedRoom.GenerateRoom(roomsController.secondElongatedRoom.articleName, roomsController, onClick: true);
             roomsController.AddNextRoomToHistory(roomsController.secondElongatedRoom.articleName);
+            return;
+        }
+
+        if (TryGetExternalUrl(link, out string externalUrl))
+        {
+            ShowExternalLinkStatus();
+            StartCoroutine(OpenExternalUrlWithDelay(externalUrl));
         }
     }
 
@@ -298,13 +334,201 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         if (string.IsNullOrWhiteSpace(link))
             return string.Empty;
 
-        string normalizedLink = CloseParentheses(link);
+        string normalizedLink = NormalizeLink(link);
         Match match = Regex.Match(normalizedLink, WikipediaArticlePattern);
         if (!match.Success)
             return normalizedLink;
 
         string rawTitle = match.Groups[1].Value.Replace('_', ' ');
         return Uri.UnescapeDataString(rawTitle);
+    }
+
+    private string NormalizeLink(string link)
+    {
+        if (string.IsNullOrWhiteSpace(link))
+            return string.Empty;
+
+        string normalized = CloseParentheses(link.Trim());
+        if (normalized.StartsWith("//", StringComparison.Ordinal))
+            normalized = "https:" + normalized;
+
+        if (normalized.StartsWith("/wiki/", StringComparison.OrdinalIgnoreCase))
+            normalized = "https://en.wikipedia.org" + normalized;
+
+        return normalized;
+    }
+
+    private bool TryGetWikipediaArticleName(string link, out string articleName)
+    {
+        articleName = string.Empty;
+        if (string.IsNullOrWhiteSpace(link))
+            return false;
+
+        Match directMatch = Regex.Match(link, WikipediaArticlePattern);
+        if (directMatch.Success)
+        {
+            articleName = Uri.UnescapeDataString(directMatch.Groups[1].Value.Replace('_', ' '));
+            return true;
+        }
+
+        if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uri))
+            return false;
+
+        if (!IsWikipediaHost(uri.Host))
+            return false;
+
+        if (!uri.AbsolutePath.StartsWith("/wiki/", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        string rawTitle = uri.AbsolutePath.Substring("/wiki/".Length);
+        if (string.IsNullOrWhiteSpace(rawTitle))
+            return false;
+
+        articleName = Uri.UnescapeDataString(rawTitle.Replace('_', ' '));
+        return true;
+    }
+
+    private bool TryGetExternalUrl(string link, out string externalUrl)
+    {
+        externalUrl = string.Empty;
+        if (string.IsNullOrWhiteSpace(link))
+            return false;
+
+        if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uri))
+            return false;
+
+        bool isHttp = uri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            || uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+        if (!isHttp)
+            return false;
+
+        if (IsWikipediaHost(uri.Host))
+            return false;
+
+        externalUrl = uri.AbsoluteUri;
+        return true;
+    }
+
+    private bool IsWikipediaHost(string host)
+    {
+        if (string.IsNullOrWhiteSpace(host))
+            return false;
+
+        return host.Equals(WikipediaHost, StringComparison.OrdinalIgnoreCase)
+            || host.EndsWith("." + WikipediaHost, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ShowExternalLinkStatus()
+    {
+        EnsureFullScreenTextReference();
+
+        if (fullScreenTextObject == null)
+        {
+            Debug.Log("Opening external link...");
+            return;
+        }
+
+        if (externalLinkStatusRoutine != null)
+            StopCoroutine(externalLinkStatusRoutine);
+
+        externalLinkStatusRoutine = StartCoroutine(ShowExternalLinkStatusRoutine());
+    }
+
+    private IEnumerator ShowExternalLinkStatusRoutine()
+    {
+        fullScreenTextObject.SetActive(true);
+
+        float messageDuration = GetEffectiveExternalLinkMessageDurationSeconds();
+        if (messageDuration > 0f)
+            yield return new WaitForSeconds(messageDuration);
+
+        if (fullScreenTextObject != null)
+            fullScreenTextObject.SetActive(false);
+
+        externalLinkStatusRoutine = null;
+    }
+
+    private IEnumerator OpenExternalUrlWithDelay(string externalUrl)
+    {
+        float messageDuration = GetEffectiveExternalLinkMessageDurationSeconds();
+        if (messageDuration > 0f)
+            yield return new WaitForSeconds(messageDuration);
+
+        if (externalLinkOpenDelaySeconds > 0f)
+            yield return new WaitForSeconds(externalLinkOpenDelaySeconds);
+
+        Application.OpenURL(externalUrl);
+    }
+
+    private float GetEffectiveExternalLinkMessageDurationSeconds()
+    {
+        return Mathf.Max(MinimumExternalLinkMessageDurationSeconds, externalLinkMessageDuration);
+    }
+
+    private void HideExternalLinkStatusImmediate()
+    {
+        if (externalLinkStatusRoutine != null)
+        {
+            StopCoroutine(externalLinkStatusRoutine);
+            externalLinkStatusRoutine = null;
+        }
+
+        if (fullScreenTextObject != null)
+            fullScreenTextObject.SetActive(false);
+    }
+
+    private void EnsureFullScreenTextReference()
+    {
+        if (fullScreenTextObject != null)
+            return;
+
+        if (cachedFullScreenTextObject != null)
+        {
+            fullScreenTextObject = cachedFullScreenTextObject;
+            return;
+        }
+
+        fullScreenTextObject = FindObjectByNameInLoadedScenes("FullScreenText");
+        if (fullScreenTextObject != null)
+            cachedFullScreenTextObject = fullScreenTextObject;
+    }
+
+    private static GameObject FindObjectByNameInLoadedScenes(string objectName)
+    {
+        for (int sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)
+        {
+            Scene scene = SceneManager.GetSceneAt(sceneIndex);
+            if (!scene.isLoaded)
+                continue;
+
+            GameObject[] roots = scene.GetRootGameObjects();
+            for (int i = 0; i < roots.Length; i++)
+            {
+                GameObject found = FindInHierarchyByName(roots[i].transform, objectName);
+                if (found != null)
+                    return found;
+            }
+        }
+
+        return null;
+    }
+
+    private static GameObject FindInHierarchyByName(Transform root, string objectName)
+    {
+        if (root == null)
+            return null;
+
+        if (root.name.Equals(objectName, StringComparison.Ordinal))
+            return root.gameObject;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            GameObject found = FindInHierarchyByName(root.GetChild(i), objectName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private void PlayClickSoundAtUser()

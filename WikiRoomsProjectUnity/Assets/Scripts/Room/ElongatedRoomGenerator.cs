@@ -154,6 +154,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     List<GameObject> spawnedExtensions = new List<GameObject>();
     public bool HasLoaded = false;
+    public bool HasInfoboxFailed { get; private set; }
     SemaphoreSlim imageDownloadParallelGate;
     int imageDownloadParallelGateLimit = -1;
     int generationVersion = 0;
@@ -224,7 +225,14 @@ public class ElongatedRoomGenerator : MonoBehaviour
         int generationId = BeginGeneration();
         HasLoaded = false;
         ArticleData = null;
-        CancelInfoboxPopulation(clearContent: true);
+        HasInfoboxFailed = false;
+
+        // Ustal lokalny roomsController możliwie wcześnie, żeby nie czyścić UI aktywnego pokoju
+        // podczas preloadu kolejnego pokoju po kliknięciu linku.
+        this.roomsController = roomsController ?? this.roomsController ?? FindAnyObjectByType<RoomsController>();
+        bool isActiveRoom = this.roomsController != null && this.roomsController.elongatedRoom == this;
+        CancelInfoboxPopulation(clearContent: isActiveRoom);
+
         if(roomsController != null && roomsController.elongatedRoom == this)
         {
             loadingScreen.SetActive(true);
@@ -237,7 +245,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         this.articleName = articleName;
 
         // zabezpiecz roomsController (jeśli przekazany null, spróbuj znaleźć w scenie)
-        this.roomsController = roomsController ?? FindAnyObjectByType<RoomsController>();
+        this.roomsController = this.roomsController ?? FindAnyObjectByType<RoomsController>();
         if (this.roomsController == null)
         {
             Debug.LogWarning("RoomsController is null; proceeding without cache.");
@@ -550,16 +558,16 @@ public class ElongatedRoomGenerator : MonoBehaviour
     }
 
 
-    private async Task HandleInfobox(string articleName, int generationId, bool firstRoom = false)
+    private async Task HandleInfobox(string articleName, int generationId)
     {
-        List<InfoboxGenerator> targetGenerators = GetInfoboxGenerators(firstRoom);
+        InfoboxGenerator targetGenerator = GetRoomContentInfoboxGenerator();
 
         string infoboxJson = await GetInfoboxAsync(articleName);
         if (!IsGenerationCurrent(generationId)) return;
         if (string.IsNullOrEmpty(infoboxJson))
         {
             Debug.Log("Failed to retrieve infobox data.");
-            SetInfoboxFailureState(targetGenerators, hasFailed: true);
+            SetInfoboxFailureState(hasFailed: true);
         }
         else
         {
@@ -568,48 +576,37 @@ public class ElongatedRoomGenerator : MonoBehaviour
             if (infoboxData.infobox == null)
             {
                 Debug.Log("Infobox parsing returned null.");
-                SetInfoboxFailureState(targetGenerators, hasFailed: true);
-                await PopulateInfoboxGenerators(targetGenerators, infoboxData, generationId);
+                SetInfoboxFailureState(hasFailed: true);
+                await PopulateInfoboxGenerator(targetGenerator, infoboxData, generationId);
                 return;
             }
             if(infoboxData.infobox.Count == 0)
             {
                 Debug.Log("Infobox parsing returned empty data.");
-                SetInfoboxFailureState(targetGenerators, hasFailed: true);
-                await PopulateInfoboxGenerators(targetGenerators, infoboxData, generationId);
+                SetInfoboxFailureState(hasFailed: true);
+                await PopulateInfoboxGenerator(targetGenerator, infoboxData, generationId);
                 return;
             }
 
-            SetInfoboxFailureState(targetGenerators, hasFailed: false);
-            await PopulateInfoboxGenerators(targetGenerators, infoboxData, generationId);
+            SetInfoboxFailureState(hasFailed: false);
+            await PopulateInfoboxGenerator(targetGenerator, infoboxData, generationId);
         }
     }
 
-    private async Task PopulateInfoboxGenerators(List<InfoboxGenerator> generators, WikiPageRaw infoboxData, int generationId)
+    private async Task PopulateInfoboxGenerator(InfoboxGenerator generator, WikiPageRaw infoboxData, int generationId)
     {
-        if (generators == null || generators.Count == 0)
+        if (generator == null)
             return;
 
-        for (int i = 0; i < generators.Count; i++)
-        {
-            if (!IsGenerationCurrent(generationId))
-                return;
+        if (!IsGenerationCurrent(generationId))
+            return;
 
-            if (generators[i] != null)
-                await generators[i].PopulateUI(infoboxData);
-        }
+        await generator.PopulateUI(infoboxData);
     }
 
-    private void SetInfoboxFailureState(List<InfoboxGenerator> generators, bool hasFailed)
+    private void SetInfoboxFailureState(bool hasFailed)
     {
-        if (generators == null || generators.Count == 0)
-            return;
-
-        for (int i = 0; i < generators.Count; i++)
-        {
-            if (generators[i] != null)
-                generators[i].HasFailed = hasFailed;
-        }
+        HasInfoboxFailed = hasFailed;
     }
 
     private async Task HandleTextures(string articleName, RoomsController roomsController, int generationId)
@@ -1357,7 +1354,12 @@ public class ElongatedRoomGenerator : MonoBehaviour
         InvalidateGeneration();
         HasLoaded = false;
         ArticleData = null;
-        CancelInfoboxPopulation(clearContent: true);
+        HasInfoboxFailed = false;
+
+        RoomsController controller = roomsController ?? FindAnyObjectByType<RoomsController>();
+        bool isActiveRoom = controller != null && controller.elongatedRoom == this;
+        CancelInfoboxPopulation(clearContent: isActiveRoom);
+
         spawnedExtensions.Clear();
         foreach (Transform child in transform)
         {
@@ -1391,49 +1393,18 @@ public class ElongatedRoomGenerator : MonoBehaviour
         return generationVersion == generationId;
     }
 
-    void CancelInfoboxPopulation(bool firstRoom = false, bool clearContent = false)
+    void CancelInfoboxPopulation(bool clearContent = false)
     {
-        List<InfoboxGenerator> targetGenerators = GetInfoboxGenerators(firstRoom);
-        for (int i = 0; i < targetGenerators.Count; i++)
-        {
-            if (targetGenerators[i] != null)
-                targetGenerators[i].CancelPopulation(clearContent);
-        }
+        InfoboxGenerator targetGenerator = GetRoomContentInfoboxGenerator();
+        if (targetGenerator != null)
+            targetGenerator.CancelPopulation(clearContent);
     }
 
-    List<InfoboxGenerator> GetInfoboxGenerators(bool firstRoom)
+    InfoboxGenerator GetRoomContentInfoboxGenerator()
     {
-        var result = new List<InfoboxGenerator>(2);
-
-        void AddIfUnique(InfoboxGenerator generator)
-        {
-            if (generator == null) return;
-            if (!result.Contains(generator))
-                result.Add(generator);
-        }
-
-        if (firstRoom)
-        {
-            AddIfUnique(infoboxGenerator);
-            AddIfUnique(secInfoboxGenerator);
-        }
-        else
-        {
-            AddIfUnique(secInfoboxGenerator);
-            AddIfUnique(infoboxGenerator);
-        }
-
-        return result;
-    }
-
-    InfoboxGenerator GetContentInfoboxGenerator(bool firstRoom)
-    {
-        return firstRoom ? infoboxGenerator : secInfoboxGenerator;
-    }
-
-    InfoboxGenerator GetInfoboxStatusGenerator(bool firstRoom)
-    {
-        return firstRoom ? secInfoboxGenerator : infoboxGenerator;
+        // W tej scenie content dla pokoju jest przypięty do secInfoboxGenerator.
+        // Fallback zostawiamy na infoboxGenerator dla bezpieczeństwa.
+        return secInfoboxGenerator != null ? secInfoboxGenerator : infoboxGenerator;
     }
 
     ArticleStructure NormalizeArticleData(ArticleStructure article)

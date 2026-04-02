@@ -262,3 +262,7 @@ MonoBehaviour:
   clickSound: {fileID: 8300000, guid: f296c2ea885ace441acac23d821758f1, type: 3}
   clickVolume: 0.25
   userTransform: {fileID: 0}
+  externalLinkStatusText: {fileID: 2198641297369933110, guid: 03fd40fc6d25e1c48a06fcdf32bc693f, type: 3}
+  openingExternalLinkMessage: Opening external link...
+  externalLinkMessageDuration: 1.5
+  externalLinkOpenDelaySeconds: 0.1

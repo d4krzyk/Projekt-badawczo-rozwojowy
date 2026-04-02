@@ -567,8 +567,7 @@ public class PlayerController : MonoBehaviour
         if (roomsController == null || roomsController.elongatedRoom == null)
             return true;
 
-        InfoboxGenerator infoboxStatus = roomsController.elongatedRoom.infoboxGenerator;
-        return infoboxStatus == null || !infoboxStatus.HasFailed;
+        return !roomsController.elongatedRoom.HasInfoboxFailed;
     }
 
 }
