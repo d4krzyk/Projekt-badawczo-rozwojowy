@@ -759,7 +759,7 @@ MonoBehaviour:
   clickVolume: 0.25
   userTransform: {fileID: 621679087}
   fullScreenTextObject: {fileID: 0}
-  externalLinkMessageDuration: 1.5
+  externalLinkMessageDuration: 3
   externalLinkOpenDelaySeconds: 0.1
 --- !u!1 &17102393
 GameObject:
@@ -1869,7 +1869,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &103813136
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11157,7 +11157,7 @@ MonoBehaviour:
   clickVolume: 0.25
   userTransform: {fileID: 621679087}
   fullScreenTextObject: {fileID: 0}
-  externalLinkMessageDuration: 1.5
+  externalLinkMessageDuration: 3
   externalLinkOpenDelaySeconds: 0.1
 --- !u!114 &974258910
 MonoBehaviour:
@@ -13451,7 +13451,7 @@ MonoBehaviour:
   clickVolume: 0.25
   userTransform: {fileID: 621679087}
   fullScreenTextObject: {fileID: 0}
-  externalLinkMessageDuration: 1.5
+  externalLinkMessageDuration: 3
   externalLinkOpenDelaySeconds: 0.1
 --- !u!114 &1191034723
 MonoBehaviour:
