@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -36,26 +37,26 @@ public static class WikipediaRuntimeUtility
         "Citations",
     };
 
-    public static readonly string[] ExcludedImageSubstrings =
+    public static readonly string[] HardExcludedImageSubstrings =
     {
         "Wikisource-logo.svg",
         "Wiki_letter_w_cropped.svg",
         "Wikimedia-logo.svg",
         "Wikipedia-logo",
-        "Flag_of_",
-        "_flag.svg",
-        "_Flag.svg",
-        "Coat_of_arms_of_",
-        "Coat_of_Arms_of_",
-        "Emblem_of_",
-        "Seal_of_",
-        "icon.svg",
-        "Icon.svg",
-        "pictogram",
-        "symbol.svg",
+    };
+
+    public static readonly string[] ContextualMapSubstrings =
+    {
         "Location_map",
         "BlankMap",
         "Locator_map",
+    };
+
+    public static readonly string[] DecorativeHintSubstrings =
+    {
+        "icon",
+        "pictogram",
+        "symbol",
     };
 
     static readonly Regex AnchorRegex = new Regex(
@@ -350,13 +351,173 @@ public static class WikipediaRuntimeUtility
         return BuildWikipediaLink(src);
     }
 
-    public static bool IsLikelyGameplayImage(string imageUrl)
+    public static string ChooseGameplayImageUrl(string tagHtml, int preferredWidth = 768)
+    {
+        if (string.IsNullOrWhiteSpace(tagHtml))
+            return string.Empty;
+
+        string srcSet = GetAttributeValue(tagHtml, "srcset");
+        if (!string.IsNullOrWhiteSpace(srcSet))
+        {
+            string preferred = ChoosePreferredSrcSetUrl(srcSet, preferredWidth, 1.5f);
+            if (!string.IsNullOrWhiteSpace(preferred))
+                return BuildWikipediaLink(preferred);
+        }
+
+        string src = GetAttributeValue(tagHtml, "src");
+        return BuildWikipediaLink(src);
+    }
+
+    static string ChoosePreferredSrcSetUrl(string srcSet, int preferredWidth, float preferredScale)
+    {
+        if (string.IsNullOrWhiteSpace(srcSet))
+            return string.Empty;
+
+        string firstUrl = string.Empty;
+        string widthOverUrl = string.Empty;
+        int widthOver = int.MaxValue;
+        string widthUnderUrl = string.Empty;
+        int widthUnder = -1;
+        string scaleOverUrl = string.Empty;
+        float scaleOver = float.MaxValue;
+        string scaleUnderUrl = string.Empty;
+        float scaleUnder = -1f;
+
+        string[] entries = srcSet.Split(',');
+        for (int idx = 0; idx < entries.Length; idx++)
+        {
+            string entry = entries[idx]?.Trim();
+            if (string.IsNullOrWhiteSpace(entry))
+                continue;
+
+            string[] tokens = entry.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length == 0)
+                continue;
+
+            string url = tokens[0].Trim();
+            if (string.IsNullOrWhiteSpace(url))
+                continue;
+
+            if (string.IsNullOrWhiteSpace(firstUrl))
+                firstUrl = url;
+
+            int width = 0;
+            float scale = 0f;
+            for (int tokenIndex = 1; tokenIndex < tokens.Length; tokenIndex++)
+            {
+                string descriptor = tokens[tokenIndex].Trim();
+                if (descriptor.EndsWith("w", StringComparison.OrdinalIgnoreCase))
+                {
+                    string number = descriptor.Substring(0, descriptor.Length - 1);
+                    int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out width);
+                }
+                else if (descriptor.EndsWith("x", StringComparison.OrdinalIgnoreCase))
+                {
+                    string number = descriptor.Substring(0, descriptor.Length - 1);
+                    float.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out scale);
+                }
+            }
+
+            if (width > 0)
+            {
+                if (width >= preferredWidth && width < widthOver)
+                {
+                    widthOver = width;
+                    widthOverUrl = url;
+                }
+                else if (width < preferredWidth && width > widthUnder)
+                {
+                    widthUnder = width;
+                    widthUnderUrl = url;
+                }
+
+                continue;
+            }
+
+            if (scale > 0f)
+            {
+                if (scale >= preferredScale && scale < scaleOver)
+                {
+                    scaleOver = scale;
+                    scaleOverUrl = url;
+                }
+                else if (scale < preferredScale && scale > scaleUnder)
+                {
+                    scaleUnder = scale;
+                    scaleUnderUrl = url;
+                }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(widthOverUrl))
+            return widthOverUrl;
+        if (!string.IsNullOrWhiteSpace(widthUnderUrl))
+            return widthUnderUrl;
+        if (!string.IsNullOrWhiteSpace(scaleOverUrl))
+            return scaleOverUrl;
+        if (!string.IsNullOrWhiteSpace(scaleUnderUrl))
+            return scaleUnderUrl;
+
+        return firstUrl;
+    }
+
+    public static bool IsLikelyGameplayImage(string imageUrl, string imageTagHtml = null)
     {
         if (string.IsNullOrWhiteSpace(imageUrl))
             return false;
 
-        return !ExcludedImageSubstrings.Any(bad =>
-            imageUrl.IndexOf(bad, StringComparison.OrdinalIgnoreCase) >= 0);
+        if (HardExcludedImageSubstrings.Any(bad =>
+            imageUrl.IndexOf(bad, StringComparison.OrdinalIgnoreCase) >= 0))
+        {
+            return false;
+        }
+
+        if (ContextualMapSubstrings.Any(bad =>
+            imageUrl.IndexOf(bad, StringComparison.OrdinalIgnoreCase) >= 0))
+        {
+            return false;
+        }
+
+        // Pozostawiamy heraldyczne i państwowe motywy (flag/seal/emblem/coat_of_arms),
+        // bo często są kluczową treścią artykułu, a nie tylko dekoracją interfejsu.
+        if (!string.IsNullOrWhiteSpace(imageTagHtml) && HasDecorativeUrlHint(imageUrl))
+        {
+            string alt = GetAttributeValue(imageTagHtml, "alt");
+            bool hasMeaningfulAlt = !string.IsNullOrWhiteSpace(alt) && alt.Trim().Length >= 6;
+            bool looksTiny = LooksVerySmallByTag(imageTagHtml);
+
+            if (looksTiny && !hasMeaningfulAlt)
+                return false;
+        }
+
+        return true;
+    }
+
+    static bool HasDecorativeUrlHint(string imageUrl)
+    {
+        return DecorativeHintSubstrings.Any(hint =>
+            imageUrl.IndexOf(hint, StringComparison.OrdinalIgnoreCase) >= 0);
+    }
+
+    static bool LooksVerySmallByTag(string imageTagHtml)
+    {
+        if (string.IsNullOrWhiteSpace(imageTagHtml))
+            return false;
+
+        string widthRaw = GetAttributeValue(imageTagHtml, "width");
+        string heightRaw = GetAttributeValue(imageTagHtml, "height");
+
+        int width = 0;
+        int height = 0;
+        int.TryParse(widthRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out width);
+        int.TryParse(heightRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out height);
+
+        if (width > 0 && width <= 128)
+            return true;
+        if (height > 0 && height <= 128)
+            return true;
+
+        return false;
     }
 
     public static async Task<string> LoadStreamingAssetTextAsync(string fileName)

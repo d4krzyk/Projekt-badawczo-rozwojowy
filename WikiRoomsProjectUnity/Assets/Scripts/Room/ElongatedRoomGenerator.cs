@@ -22,32 +22,46 @@ public class ElongatedRoomGenerator : MonoBehaviour
     [Serializable]
     public class RequestThrottlingSettings
     {
-        [Min(0f)] public float infoboxMinIntervalSeconds = 0.6f;
-        [Min(0f)] public float imagesListMinIntervalSeconds = 0.5f;
-        [Min(0f)] public float imageDownloadMinIntervalSeconds = 0.2f;
-        [Min(0)] public int textMax429Retries = 3;
-        [Min(0f)] public float retryBaseDelaySeconds = 0.75f;
+        [Min(0f)] public float imageDownloadMinIntervalSeconds = 0.35f;
+        [Min(0f)] public float retryBaseDelaySeconds = 1.25f;
     }
 
     [Serializable]
     public class ImageDownloadSettings
     {
-        [Min(1)] public int maxConcurrentDownloads = 4;
-        [Min(0)] public int max429Retries = 4;
-        [Min(0f)] public float extraThrottleStepSeconds = 0.15f;
-        [Min(0f)] public float maxExtraThrottleSeconds = 1.5f;
-        [Min(0f)] public float successThrottleDecaySeconds = 0.05f;
+        [Min(1)] public int maxConcurrentDownloads = 3;
+        [Min(0)] public int max429Retries = 6;
+        [Min(0f)] public float extraThrottleStepSeconds = 0.2f;
+        [Min(0f)] public float maxExtraThrottleSeconds = 2.0f;
+        [Min(0f)] public float successThrottleDecaySeconds = 0.03f;
+        public bool log429RetryAttempts = false;
     }
 
-    static readonly SemaphoreSlim InfoboxRequestGate = new SemaphoreSlim(1, 1);
-    static readonly SemaphoreSlim ImagesListRequestGate = new SemaphoreSlim(1, 1);
     static readonly SemaphoreSlim ImageDownloadRequestGate = new SemaphoreSlim(1, 1);
     static readonly object RateLimitLock = new object();
-    static DateTime lastInfoboxRequestUtc = DateTime.MinValue;
-    static DateTime lastImagesListRequestUtc = DateTime.MinValue;
     static DateTime lastImageDownloadRequestUtc = DateTime.MinValue;
     static DateTime imageDownloadCooldownUntilUtc = DateTime.MinValue;
     static float dynamicImageExtraThrottleSeconds = 0f;
+    static readonly object SharedImageCacheLock = new object();
+    static readonly Dictionary<string, Texture2D> SharedImageTextureCache = new Dictionary<string, Texture2D>(StringComparer.OrdinalIgnoreCase);
+    static readonly Dictionary<string, Task<Texture2D>> SharedImageInFlightDownloads = new Dictionary<string, Task<Texture2D>>(StringComparer.OrdinalIgnoreCase);
+    const int SharedImageCacheMaxEntries = 1024;
+
+    public static void ClearSessionCaches()
+    {
+        lock (SharedImageCacheLock)
+        {
+            SharedImageTextureCache.Clear();
+            SharedImageInFlightDownloads.Clear();
+        }
+
+        lock (RateLimitLock)
+        {
+            lastImageDownloadRequestUtc = DateTime.MinValue;
+            imageDownloadCooldownUntilUtc = DateTime.MinValue;
+            dynamicImageExtraThrottleSeconds = 0f;
+        }
+    }
 
     public GameObject spawnRoom, extensionRoom, extensionRoomClosure, bookshelf, imageHolder, stand, Altar;
     public Transform initialRoomPosition;
@@ -94,6 +108,9 @@ public class ElongatedRoomGenerator : MonoBehaviour
     [Header("Loading screen")]
     [Range(0f, 1f)] public float imageProgressToHideLoadingScreen = 0.5f;
 
+    [Header("Image request budget")]
+    [Min(1)] public int maxImagesPerSlot = 2;
+
     [Header("Image size classification")]
     public int smallMaxPixels = 200000;
     public int mediumMaxPixels = 600000;
@@ -122,7 +139,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     [HideInInspector] public float EnterTime;
     [HideInInspector] public float ExitTime;
     [HideInInspector] public string PreviousRoom;
-    [HideInInspector] public ArticleStructure ArticleData;
+    [System.NonSerialized] public ArticleStructure ArticleData;
 
     string articleLink;
     RoomsController roomsController;
@@ -171,6 +188,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
     {
         public Texture2D texture;
         public string caption;
+        public string sourceUrl;
         public ImageSizeClass sizeClass;
     }
 
@@ -308,43 +326,105 @@ public class ElongatedRoomGenerator : MonoBehaviour
             return;
         }
 
-        int usableCount = Mathf.Min(imagesLinks.Count, slots.Count * 4);
+        int safeMaxPerSlot = Mathf.Max(1, maxImagesPerSlot);
+        int targetImageCount = Mathf.Min(imagesLinks.Count, slots.Count * safeMaxPerSlot);
         int loadedImagesCount = 0;
-        int imagesTargetToHide = Mathf.CeilToInt(Mathf.Max(0f, Mathf.Min(1f, imageProgressToHideLoadingScreen)) * usableCount);
-        var downloadedForCache = new List<RoomsController.CachedImageData>(usableCount);
+        int imagesTargetToHide = Mathf.CeilToInt(Mathf.Max(0f, Mathf.Min(1f, imageProgressToHideLoadingScreen)) * targetImageCount);
+        var downloadedForCache = new List<RoomsController.CachedImageData>(targetImageCount);
 
         if (hideWhenProgressReached && imagesTargetToHide <= 0)
             HideLoadingScreenIfNeeded();
 
-        var groupSizes = BuildGroupSizes(usableCount, slots.Count, 4);
+        var groupSizes = BuildGroupSizes(targetImageCount, slots.Count, safeMaxPerSlot);
 
         int imageIndex = 0;
+        var pendingSlots = new List<Task<SlotClusterResult>>();
+        var slotHasWork = new bool[slots.Count];
         for (int slotIndex = 0; slotIndex < slots.Count; slotIndex++)
         {
             int count = groupSizes[slotIndex];
             if (count <= 0) continue;
+            slotHasWork[slotIndex] = true;
 
             var tasksForSlot = new List<Task<ImagePayload?>>(count);
-            for (int k = 0; k < count && imageIndex < usableCount; k++)
+            for (int k = 0; k < count && imageIndex < targetImageCount; k++)
             {
                 tasksForSlot.Add(DownloadImagePayloadAsync(imagesLinks[imageIndex]));
                 imageIndex++;
             }
 
-            SlotClusterResult slotResult = await CollectSlotPayloadsAsync(slotIndex, tasksForSlot);
-            if (!IsGenerationCurrent(generationId)) return;
-            if (slotResult.payloads != null && slotResult.payloads.Count > 0)
-            {
-                SpawnImageCluster(slots[slotResult.slotIndex], slotResult.payloads);
-                loadedImagesCount += slotResult.payloads.Count;
-                AddPayloadsToCacheBuffer(downloadedForCache, slotResult.payloads);
+            pendingSlots.Add(CollectSlotPayloadsAsync(slotIndex, tasksForSlot));
+        }
 
-                if (hideWhenProgressReached && loadingScreen != null && loadingScreen.activeSelf && loadedImagesCount >= imagesTargetToHide)
+        int nextSlotToSpawn = 0;
+        var readyBySlot = new Dictionary<int, SlotClusterResult>();
+
+        async Task TrySpawnReadySlotsInOrderAsync()
+        {
+            while (nextSlotToSpawn < slots.Count)
+            {
+                if (!slotHasWork[nextSlotToSpawn])
                 {
-                    HideLoadingScreenIfNeeded();
+                    nextSlotToSpawn++;
+                    continue;
                 }
+
+                if (!readyBySlot.TryGetValue(nextSlotToSpawn, out SlotClusterResult orderedResult))
+                    break;
+
+                readyBySlot.Remove(nextSlotToSpawn);
+
+                int targetCountForSlot = groupSizes[nextSlotToSpawn];
+                if (orderedResult.payloads == null)
+                    orderedResult.payloads = new List<ImagePayload>();
+
+                // Jeśli część obrazów nie doszła (np. transient 429), próbujemy dopełnić slot kolejnymi obrazami z listy.
+                while (orderedResult.payloads.Count < targetCountForSlot && imageIndex < imagesLinks.Count)
+                {
+                    ImagePayload? topUpPayload = await DownloadImagePayloadAsync(imagesLinks[imageIndex]);
+                    imageIndex++;
+                    if (topUpPayload.HasValue)
+                        orderedResult.payloads.Add(topUpPayload.Value);
+                }
+
+                if (orderedResult.payloads != null && orderedResult.payloads.Count > 0)
+                {
+                    SpawnImageCluster(slots[orderedResult.slotIndex], orderedResult.payloads);
+                    loadedImagesCount += orderedResult.payloads.Count;
+                    AddPayloadsToCacheBuffer(downloadedForCache, orderedResult.payloads);
+
+                    if (hideWhenProgressReached && loadingScreen != null && loadingScreen.activeSelf && loadedImagesCount >= imagesTargetToHide)
+                    {
+                        HideLoadingScreenIfNeeded();
+                    }
+                }
+
+                nextSlotToSpawn++;
             }
         }
+
+        while (pendingSlots.Count > 0)
+        {
+            Task<SlotClusterResult> completedTask = await Task.WhenAny(pendingSlots);
+            pendingSlots.Remove(completedTask);
+
+            SlotClusterResult slotResult;
+            try
+            {
+                slotResult = await completedTask;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Błąd pobierania grupy obrazów: {ex.Message}");
+                continue;
+            }
+
+            if (!IsGenerationCurrent(generationId)) return;
+            readyBySlot[slotResult.slotIndex] = slotResult;
+            await TrySpawnReadySlotsInOrderAsync();
+        }
+
+        await TrySpawnReadySlotsInOrderAsync();
 
         if (roomsController != null && downloadedForCache.Count > 0)
         {
@@ -358,7 +438,8 @@ public class ElongatedRoomGenerator : MonoBehaviour
         if (cachedImages == null || cachedImages.Count == 0 || slots == null || slots.Count == 0)
             return;
 
-        int usableCount = Mathf.Min(cachedImages.Count, slots.Count * 4);
+        int safeMaxPerSlot = Mathf.Max(1, maxImagesPerSlot);
+        int usableCount = Mathf.Min(cachedImages.Count, slots.Count * safeMaxPerSlot);
         var payloads = new List<ImagePayload>(usableCount);
 
         for (int i = 0; i < usableCount; i++)
@@ -376,7 +457,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
         if (payloads.Count == 0) return;
 
-        var groupSizes = BuildGroupSizes(payloads.Count, slots.Count, 4);
+        var groupSizes = BuildGroupSizes(payloads.Count, slots.Count, safeMaxPerSlot);
         int payloadIndex = 0;
         for (int slotIndex = 0; slotIndex < slots.Count; slotIndex++)
         {
@@ -453,13 +534,14 @@ public class ElongatedRoomGenerator : MonoBehaviour
         if (string.IsNullOrEmpty(imgUrl)) return null;
 
         string caption = kvp.Value ?? "[no caption]";
-        Texture2D tex = await GetImageAsTexture(imgUrl);
+        Texture2D tex = await GetImageAsTextureCachedAsync(imgUrl);
         if (tex == null) return null;
 
         return new ImagePayload
         {
             texture = ProcessTransparency(tex),
             caption = caption,
+            sourceUrl = imgUrl,
             sizeClass = ClassifyImage(tex)
         };
     }
@@ -467,16 +549,14 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     private async Task HandleInfobox(string articleName, int generationId, bool firstRoom = false)
     {
-        InfoboxGenerator contentGenerator = GetContentInfoboxGenerator(firstRoom);
-        InfoboxGenerator statusGenerator = GetInfoboxStatusGenerator(firstRoom);
+        List<InfoboxGenerator> targetGenerators = GetInfoboxGenerators(firstRoom);
 
         string infoboxJson = await GetInfoboxAsync(articleName);
         if (!IsGenerationCurrent(generationId)) return;
         if (string.IsNullOrEmpty(infoboxJson))
         {
             Debug.Log("Failed to retrieve infobox data.");
-            if (statusGenerator != null)
-                statusGenerator.HasFailed = true;
+            SetInfoboxFailureState(targetGenerators, hasFailed: true);
         }
         else
         {
@@ -485,26 +565,47 @@ public class ElongatedRoomGenerator : MonoBehaviour
             if (infoboxData.infobox == null)
             {
                 Debug.Log("Infobox parsing returned null.");
-                if (statusGenerator != null)
-                    statusGenerator.HasFailed = true;
-                if (contentGenerator != null)
-                    await contentGenerator.PopulateUI(infoboxData);
+                SetInfoboxFailureState(targetGenerators, hasFailed: true);
+                await PopulateInfoboxGenerators(targetGenerators, infoboxData, generationId);
                 return;
             }
             if(infoboxData.infobox.Count == 0)
             {
                 Debug.Log("Infobox parsing returned empty data.");
-                if (statusGenerator != null)
-                    statusGenerator.HasFailed = true;
-                if (contentGenerator != null)
-                    await contentGenerator.PopulateUI(infoboxData);
+                SetInfoboxFailureState(targetGenerators, hasFailed: true);
+                await PopulateInfoboxGenerators(targetGenerators, infoboxData, generationId);
                 return;
             }
 
-            if (statusGenerator != null)
-                statusGenerator.HasFailed = false;
-            if (contentGenerator != null)
-                await contentGenerator.PopulateUI(infoboxData);
+            SetInfoboxFailureState(targetGenerators, hasFailed: false);
+            await PopulateInfoboxGenerators(targetGenerators, infoboxData, generationId);
+        }
+    }
+
+    private async Task PopulateInfoboxGenerators(List<InfoboxGenerator> generators, WikiPageRaw infoboxData, int generationId)
+    {
+        if (generators == null || generators.Count == 0)
+            return;
+
+        for (int i = 0; i < generators.Count; i++)
+        {
+            if (!IsGenerationCurrent(generationId))
+                return;
+
+            if (generators[i] != null)
+                await generators[i].PopulateUI(infoboxData);
+        }
+    }
+
+    private void SetInfoboxFailureState(List<InfoboxGenerator> generators, bool hasFailed)
+    {
+        if (generators == null || generators.Count == 0)
+            return;
+
+        for (int i = 0; i < generators.Count; i++)
+        {
+            if (generators[i] != null)
+                generators[i].HasFailed = hasFailed;
         }
     }
 
@@ -1235,9 +1336,37 @@ public class ElongatedRoomGenerator : MonoBehaviour
 
     void CancelInfoboxPopulation(bool firstRoom = false, bool clearContent = false)
     {
-        InfoboxGenerator contentGenerator = GetContentInfoboxGenerator(firstRoom);
-        if (contentGenerator != null)
-            contentGenerator.CancelPopulation(clearContent);
+        List<InfoboxGenerator> targetGenerators = GetInfoboxGenerators(firstRoom);
+        for (int i = 0; i < targetGenerators.Count; i++)
+        {
+            if (targetGenerators[i] != null)
+                targetGenerators[i].CancelPopulation(clearContent);
+        }
+    }
+
+    List<InfoboxGenerator> GetInfoboxGenerators(bool firstRoom)
+    {
+        var result = new List<InfoboxGenerator>(2);
+
+        void AddIfUnique(InfoboxGenerator generator)
+        {
+            if (generator == null) return;
+            if (!result.Contains(generator))
+                result.Add(generator);
+        }
+
+        if (firstRoom)
+        {
+            AddIfUnique(infoboxGenerator);
+            AddIfUnique(secInfoboxGenerator);
+        }
+        else
+        {
+            AddIfUnique(secInfoboxGenerator);
+            AddIfUnique(infoboxGenerator);
+        }
+
+        return result;
     }
 
     InfoboxGenerator GetContentInfoboxGenerator(bool firstRoom)
@@ -1286,57 +1415,58 @@ public class ElongatedRoomGenerator : MonoBehaviour
             imageUrl);
     }
 
-    private async Task<string> SendTextRequestRateLimitedAsync(
-        Func<UnityWebRequest> requestFactory,
-        SemaphoreSlim gate,
-        Func<DateTime> getLastRequestUtc,
-        Action<DateTime> setLastRequestUtc,
-        float minIntervalSeconds,
-        string requestName)
+    private async Task<Texture2D> GetImageAsTextureCachedAsync(string imageUrl)
     {
-        int retriesLimit = Mathf.Max(0, requestThrottling.textMax429Retries);
-        for (int attempt = 0; attempt <= retriesLimit; attempt++)
-        {   
-            int retryDelayMs = 0;
-            await gate.WaitAsync();
-            try
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            return null;
+
+        Task<Texture2D> pendingTask = null;
+        bool isOwner = false;
+
+        lock (SharedImageCacheLock)
+        {
+            if (SharedImageTextureCache.TryGetValue(imageUrl, out Texture2D cached) && cached != null)
+                return cached;
+
+            if (!SharedImageInFlightDownloads.TryGetValue(imageUrl, out pendingTask) || pendingTask == null)
             {
-                await WaitForMinIntervalAsync(minIntervalSeconds, getLastRequestUtc);
-                setLastRequestUtc(DateTime.UtcNow);
+                pendingTask = GetImageAsTexture(imageUrl);
+                SharedImageInFlightDownloads[imageUrl] = pendingTask;
+                isOwner = true;
+            }
+        }
 
-                using (UnityWebRequest request = requestFactory())
+        try
+        {
+            Texture2D downloaded = await pendingTask;
+            if (downloaded != null && isOwner)
+            {
+                lock (SharedImageCacheLock)
                 {
-                    var operation = request.SendWebRequest();
-                    while (!operation.isDone)
-                        await Task.Yield();
+                    SharedImageTextureCache[imageUrl] = downloaded;
 
-                    if (request.result == UnityWebRequest.Result.Success)
+                    if (SharedImageTextureCache.Count > SharedImageCacheMaxEntries)
                     {
-                        return request.downloadHandler.text;
-                    }
-
-                    if (request.responseCode == 429 && attempt < retriesLimit)
-                    {
-                        retryDelayMs = GetRetryDelayMilliseconds(request, attempt);
-                        Debug.LogWarning($"Request '{requestName}' got 429. Retry {attempt + 1}/{retriesLimit} in {retryDelayMs / 1000f:0.##}s.");
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Request '{requestName}' failed ({request.responseCode}): {request.error}");
-                        return null;
+                        string oldestKey = SharedImageTextureCache.Keys.FirstOrDefault();
+                        if (!string.IsNullOrWhiteSpace(oldestKey))
+                            SharedImageTextureCache.Remove(oldestKey);
                     }
                 }
             }
-            finally
-            {
-                gate.Release();
-            }
 
-            if (retryDelayMs > 0)
-                await Task.Delay(retryDelayMs);
+            return downloaded;
         }
-
-        return null;
+        finally
+        {
+            if (isOwner)
+            {
+                lock (SharedImageCacheLock)
+                {
+                    if (SharedImageInFlightDownloads.TryGetValue(imageUrl, out Task<Texture2D> current) && current == pendingTask)
+                        SharedImageInFlightDownloads.Remove(imageUrl);
+                }
+            }
+        }
     }
 
     private async Task<Texture2D> SendTextureRequestRateLimitedAsync(
@@ -1394,7 +1524,10 @@ public class ElongatedRoomGenerator : MonoBehaviour
                     {
                         retryDelayMs = GetRetryDelayMilliseconds(texReq, attempt);
                         RegisterImageDownload429(retryDelayMs);
-                        Debug.LogWarning($"Image request got 429 for '{imageUrl}'. Retry {attempt + 1}/{retriesLimit} in {retryDelayMs / 1000f:0.##}s. Extra throttle={GetDynamicImageExtraThrottleSeconds():0.##}s");
+                        if (imageDownloads.log429RetryAttempts)
+                        {
+                            Debug.Log($"Image request got 429 for '{imageUrl}'. Retry {attempt + 1}/{retriesLimit} in {retryDelayMs / 1000f:0.##}s. Extra throttle={GetDynamicImageExtraThrottleSeconds():0.##}s");
+                        }
                     }
                     else
                     {
@@ -1531,26 +1664,6 @@ public class ElongatedRoomGenerator : MonoBehaviour
         }
     }
 
-    private DateTime GetLastInfoboxRequestUtc()
-    {
-        lock (RateLimitLock) return lastInfoboxRequestUtc;
-    }
-
-    private void SetLastInfoboxRequestUtc(DateTime value)
-    {
-        lock (RateLimitLock) lastInfoboxRequestUtc = value;
-    }
-
-    private DateTime GetLastImagesListRequestUtc()
-    {
-        lock (RateLimitLock) return lastImagesListRequestUtc;
-    }
-
-    private void SetLastImagesListRequestUtc(DateTime value)
-    {
-        lock (RateLimitLock) lastImagesListRequestUtc = value;
-    }
-
     private DateTime GetLastImageDownloadRequestUtc()
     {
         lock (RateLimitLock) return lastImageDownloadRequestUtc;
@@ -1582,7 +1695,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         Debug.Log($"[SetImageQuadScale] '{quad.name}' po localScale={quad.transform.localScale}");
     }
 
-    void SpawnImageHolder(Vector3 pos, Vector3 rotation, Texture2D tex, string caption, Transform extension, float baseHeight)
+    void SpawnImageHolder(Vector3 pos, Vector3 rotation, Texture2D tex, string caption, string sourceUrl, Transform extension, float baseHeight)
     {
         GameObject currentImageHolder = Instantiate(imageHolder, extension);
         currentImageHolder.transform.localPosition = pos;
@@ -1600,6 +1713,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
         if (imgComp == null) imgComp = currentImageHolder.AddComponent<ImageInteraction>();
         imgComp.caption = caption ?? string.Empty;
         imgComp.texture = tex;
+        imgComp.imageUrl = sourceUrl;
 
 
 
@@ -1810,7 +1924,7 @@ public class ElongatedRoomGenerator : MonoBehaviour
             }
             float finalHeight = baseHeight * scaleFactor;
 
-            SpawnImageHolder(localPos, Vector3.zero, payload.texture, payload.caption, anchor.transform, finalHeight);
+            SpawnImageHolder(localPos, Vector3.zero, payload.texture, payload.caption, payload.sourceUrl, anchor.transform, finalHeight);
         }
     }
 }

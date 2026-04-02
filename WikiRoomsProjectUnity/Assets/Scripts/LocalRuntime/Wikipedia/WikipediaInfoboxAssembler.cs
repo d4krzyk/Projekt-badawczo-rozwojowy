@@ -24,41 +24,38 @@ public static class WikipediaInfoboxAssembler
             };
         }
 
-        int infoboxStart = WikipediaRuntimeUtility.FindTagStartByClass(pageHtml, "table", "infobox");
-        if (infoboxStart < 0)
-        {
-            return new WikiPageRaw
-            {
-                page_name = articleTitle,
-                infobox = new List<List<InfoboxItemRaw>>(),
-            };
-        }
+        var infoboxGroups = new List<List<InfoboxItemRaw>>();
+        string remainingHtml = pageHtml;
 
-        string infoboxTable = WikipediaRuntimeUtility.ExtractBalancedTagBlock(pageHtml, infoboxStart, "table");
-        if (string.IsNullOrWhiteSpace(infoboxTable))
+        while (true)
         {
-            return new WikiPageRaw
-            {
-                page_name = articleTitle,
-                infobox = new List<List<InfoboxItemRaw>>(),
-            };
-        }
+            int infoboxStart = WikipediaRuntimeUtility.FindTagStartByClass(remainingHtml, "table", "infobox");
+            if (infoboxStart < 0)
+                break;
 
-        var items = new List<InfoboxItemRaw>();
-        foreach (Match rowMatch in RowRegex.Matches(infoboxTable))
-        {
-            string rowHtml = rowMatch.Value;
-            InfoboxItemRaw item = TryBuildItem(rowHtml);
-            if (item != null)
-                items.Add(item);
+            string infoboxTable = WikipediaRuntimeUtility.ExtractBalancedTagBlock(remainingHtml, infoboxStart, "table");
+            if (string.IsNullOrWhiteSpace(infoboxTable))
+                break;
+
+            var items = new List<InfoboxItemRaw>();
+            foreach (Match rowMatch in RowRegex.Matches(infoboxTable))
+            {
+                string rowHtml = rowMatch.Value;
+                InfoboxItemRaw item = TryBuildItem(rowHtml);
+                if (item != null)
+                    items.Add(item);
+            }
+
+            if (items.Count > 0)
+                infoboxGroups.Add(items);
+
+            remainingHtml = remainingHtml.Remove(infoboxStart, infoboxTable.Length);
         }
 
         return new WikiPageRaw
         {
             page_name = articleTitle,
-            infobox = items.Count > 0
-                ? new List<List<InfoboxItemRaw>> { items }
-                : new List<List<InfoboxItemRaw>>(),
+            infobox = infoboxGroups,
         };
     }
 

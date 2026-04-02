@@ -2972,7 +2972,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &195613923
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3607,7 +3607,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 93000140}
   m_HandleRect: {fileID: 93000139}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -4434,7 +4434,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1624315314}
   m_HandleRect: {fileID: 1624315313}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -5208,7 +5208,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &536232334
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5553,7 +5553,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5120871719436284431, guid: 27a17f8405c4e1b45b1b1d3831b55ae0, type: 3}
       propertyPath: m_text
-      value: '**Label**
+      value: '<b>Label</b>
 
 '
       objectReference: {fileID: 0}
@@ -17677,16 +17677,18 @@ MonoBehaviour:
   portalPreviousMinValue: 0.82
   portalEmissionStrength: 1.35
   requestThrottling:
-    imageDownloadMinIntervalSeconds: 0.45
-    retryBaseDelaySeconds: 0.9
+    infoboxMinIntervalSeconds: 0.6
+    imagesListMinIntervalSeconds: 0.5
+    imageDownloadMinIntervalSeconds: 0.2
+    textMax429Retries: 3
+    retryBaseDelaySeconds: 0.75
   imageDownloads:
     maxConcurrentDownloads: 3
-    max429Retries: 4
-    extraThrottleStepSeconds: 0.15
+    max429Retries: 5
+    extraThrottleStepSeconds: 0.35
     maxExtraThrottleSeconds: 1.5
-    successThrottleDecaySeconds: 0.06
-  imageProgressToHideLoadingScreen: 0.1
-  maxImagesPerSlot: 4
+    successThrottleDecaySeconds: 0.05
+  imageProgressToHideLoadingScreen: 0
   smallMaxPixels: 200000
   mediumMaxPixels: 600000
   smallImageHeight: 1.1
@@ -17962,14 +17964,14 @@ MonoBehaviour:
   defFloorMat: {fileID: 2100000, guid: 0768765f869475640a62cdfed82bb1ea, type: 2}
   defWallMat: {fileID: 2100000, guid: 5c7dbb7479f8c024a87f416edafa3d1b, type: 2}
   defStandMat: {fileID: 2100000, guid: dd0091105236c5340a32bba9cd2c66d0, type: 2}
-  articleName: Pope
+  articleName: Australia
   maxBooksPerBookshelf: 8
   logger: {fileID: 2101044395}
   portalNext: {fileID: 410983050840802480}
   portalPrevious: {fileID: 977859397}
   infoboxGenerator: {fileID: 1011621168}
   secInfoboxGenerator: {fileID: 1169686116}
-  backendConfig: {fileID: 0}
+  backendConfig: {fileID: 11400000, guid: d15f96f0f9a93fd43af6b5b9bb2882c6, type: 2}
   loadingScreen: {fileID: 1235979131}
   portalColorIntensity: 0.8
   portalNextHueJitter: 0.4
@@ -17982,16 +17984,18 @@ MonoBehaviour:
   portalPreviousMinValue: 0.82
   portalEmissionStrength: 1.35
   requestThrottling:
-    imageDownloadMinIntervalSeconds: 0.45
-    retryBaseDelaySeconds: 0.9
+    infoboxMinIntervalSeconds: 0.6
+    imagesListMinIntervalSeconds: 0.5
+    imageDownloadMinIntervalSeconds: 0.2
+    textMax429Retries: 3
+    retryBaseDelaySeconds: 0.75
   imageDownloads:
     maxConcurrentDownloads: 3
-    max429Retries: 4
-    extraThrottleStepSeconds: 0.15
+    max429Retries: 5
+    extraThrottleStepSeconds: 0.35
     maxExtraThrottleSeconds: 1.5
-    successThrottleDecaySeconds: 0.06
-  imageProgressToHideLoadingScreen: 0.1
-  maxImagesPerSlot: 4
+    successThrottleDecaySeconds: 0.05
+  imageProgressToHideLoadingScreen: 0
   smallMaxPixels: 200000
   mediumMaxPixels: 600000
   smallImageHeight: 1.1
@@ -21081,11 +21085,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3685967473079871672, guid: e72b36d33c11ac345b8bb86dd1fc2e47, type: 3}
       propertyPath: minScale
-      value: 0.1
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 3685967473079871672, guid: e72b36d33c11ac345b8bb86dd1fc2e47, type: 3}
       propertyPath: zoomSpeed
-      value: 0.1
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 9181112351177533808, guid: e72b36d33c11ac345b8bb86dd1fc2e47, type: 3}
       propertyPath: m_Pivot.x
@@ -21411,7 +21415,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5120871719436284431, guid: 27a17f8405c4e1b45b1b1d3831b55ae0, type: 3}
       propertyPath: m_text
-      value: '**Label**
+      value: '<b>Label</b>
 
 '
       objectReference: {fileID: 0}

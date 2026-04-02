@@ -25,6 +25,7 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
     static TextMeshProUGUI tooltipLabel;
     static Canvas tooltipCanvas;
     static WikiipediaRoomClickBehaviour activeTooltipOwner;
+    static Sprite tooltipFallbackSprite;
 
     [Header("SFX kliknięcia linku")]
     public AudioClip clickSound;
@@ -194,8 +195,8 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         tooltipRoot.pivot = new Vector2(0f, 1f);
 
         tooltipBackground = tooltipObject.GetComponent<Image>();
-        tooltipBackground.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
-        tooltipBackground.type = Image.Type.Sliced;
+        tooltipBackground.sprite = GetTooltipBackgroundSprite();
+        tooltipBackground.type = Image.Type.Simple;
         tooltipBackground.color = new Color(0.09f, 0.11f, 0.15f, 0.94f);
         tooltipBackground.raycastTarget = false;
 
@@ -209,7 +210,7 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
         labelRect.offsetMax = new Vector2(-TooltipPadding.x * 0.5f, -TooltipPadding.y * 0.5f);
 
         tooltipLabel = labelObject.GetComponent<TextMeshProUGUI>();
-        tooltipLabel.enableWordWrapping = true;
+        tooltipLabel.textWrappingMode = TextWrappingModes.Normal;
         tooltipLabel.overflowMode = TextOverflowModes.Overflow;
         tooltipLabel.alignment = TextAlignmentOptions.Left;
         tooltipLabel.raycastTarget = false;
@@ -217,6 +218,20 @@ public class WikiipediaRoomClickBehaviour : MonoBehaviour
 
         UpdateTooltipStyle();
         tooltipRoot.gameObject.SetActive(false);
+    }
+
+    private static Sprite GetTooltipBackgroundSprite()
+    {
+        if (tooltipFallbackSprite != null)
+            return tooltipFallbackSprite;
+
+        Texture2D texture = Texture2D.whiteTexture;
+        tooltipFallbackSprite = Sprite.Create(
+            texture,
+            new Rect(0f, 0f, texture.width, texture.height),
+            new Vector2(0.5f, 0.5f));
+
+        return tooltipFallbackSprite;
     }
 
     private Canvas GetTooltipCanvas()

@@ -22,6 +22,15 @@ public static class WikipediaRuntimeClient
     static readonly Dictionary<string, WikiPageRaw> InfoboxCache = new Dictionary<string, WikiPageRaw>(StringComparer.OrdinalIgnoreCase);
     static readonly Dictionary<string, List<Dictionary<string, string>>> ImagesCache = new Dictionary<string, List<Dictionary<string, string>>>(StringComparer.OrdinalIgnoreCase);
 
+    public static void ClearSessionCaches()
+    {
+        CanonicalTitleCache.Clear();
+        PageHtmlCache.Clear();
+        ArticleCache.Clear();
+        InfoboxCache.Clear();
+        ImagesCache.Clear();
+    }
+
     public static async Task<ArticleStructure> GetArticleDataAsync(string articleInput)
     {
         string canonicalTitle = await ResolveCanonicalTitleAsync(articleInput);

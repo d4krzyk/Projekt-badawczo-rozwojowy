@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using LogicUI.FancyTextRendering;
 using UnityEngine;
@@ -8,6 +10,19 @@ using UnityEngine.UI;
 
 public class InfoboxGenerator : MonoBehaviour
 {
+    static readonly object ImageCacheLock = new object();
+    static readonly Dictionary<string, Sprite> ImageSpriteCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
+    static readonly Dictionary<string, Task<Sprite>> ImageSpriteInFlight = new Dictionary<string, Task<Sprite>>(StringComparer.OrdinalIgnoreCase);
+    static readonly SemaphoreSlim ImageRequestGate = new SemaphoreSlim(1, 1);
+    static readonly object ImageThrottleLock = new object();
+    static DateTime lastImageRequestUtc = DateTime.MinValue;
+    static DateTime globalImageCooldownUntilUtc = DateTime.MinValue;
+
+    const int MaxImage429Retries = 4;
+    const float ImageRetryBaseDelaySeconds = 1.5f;
+    const float ImageRetryMaxDelaySeconds = 30f;
+    const float ImageMinIntervalSeconds = 0.35f;
+
     public GameObject abovePrefab;
     public GameObject textPrefab;
     public GameObject headerPrefab;
@@ -35,7 +50,15 @@ public class InfoboxGenerator : MonoBehaviour
 
             foreach (var item in infobox)
             {
-                await HandleInfoboxItemRaw(item, populationId);
+                try
+                {
+                    await HandleInfoboxItemRaw(item, populationId);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[InfoboxGenerator] Pominieto element infoboxu z powodu bledu: {exception.Message}");
+                }
+
                 if (!IsPopulationCurrent(populationId))
                     return;
             }
@@ -61,6 +84,10 @@ public class InfoboxGenerator : MonoBehaviour
     {
         if (!IsPopulationCurrent(populationId))
             return;
+        if (item == null)
+            return;
+
+        List<ValueRaw> values = item.value ?? new List<ValueRaw>();
 
         bool hasLabel = item.label != null;
         GameObject instantiatedObject = null;
@@ -73,13 +100,13 @@ public class InfoboxGenerator : MonoBehaviour
             LabelController labelController = labelObject.GetComponent<LabelController>();
             labelController.SetLabelText(labelStr);
             string labelValueContent = "";
-            foreach (var value in item.value)
+            foreach (var value in values)
             {
                 labelValueContent += HandleValueRaw(value);
             }
             labelController.AddLabelValue(labelValueContent);
         }
-        foreach (var value in item.value)
+        foreach (var value in values)
         {
             stringContent += $"{HandleValueRaw(value)}\n";
         }
@@ -97,9 +124,14 @@ public class InfoboxGenerator : MonoBehaviour
             case "image":
                 instantiatedObject = Instantiate(imagePrefab);
                 Image image = instantiatedObject.GetComponent<Image>();
-                string url = NormalizeImageUrl(item.value[0].href);
-                Debug.Log($"Downloading image from URL: {url}");
-                Sprite imageSprite = await GetImageFromURL(url);
+                ValueRaw firstValue = values.Count > 0 ? values[0] : null;
+                string url = NormalizeImageUrl(firstValue?.href);
+                Sprite imageSprite = null;
+                if (!string.IsNullOrWhiteSpace(url))
+                {
+                    Debug.Log($"Downloading image from URL: {url}");
+                    imageSprite = await GetImageFromURL(url);
+                }
                 if (!IsPopulationCurrent(populationId))
                 {
                     if (instantiatedObject != null)
@@ -112,7 +144,7 @@ public class InfoboxGenerator : MonoBehaviour
                 }
                 instantiatedObject.transform.SetParent(this.transform, false);
                 instantiatedObject = Instantiate(captionPrefab);
-                stringContent = HandleCaption(item.value[0].caption);
+                stringContent = HandleCaption(firstValue?.caption);
                 break;
             case "data":
             case "full-data":
@@ -268,6 +300,9 @@ public class InfoboxGenerator : MonoBehaviour
     string HandleCaption(object caption)
     {
         string result = "";
+        if (caption == null)
+            return result;
+
         if (caption is List<object> captionList)
         {    
             if (captionList == null || captionList.Count == 0) return "";
@@ -305,30 +340,180 @@ public class InfoboxGenerator : MonoBehaviour
     async Task<Sprite> GetImageFromURL(string url)
     {
         if (string.IsNullOrEmpty(url)) return null;
-        using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(url))
+
+        Task<Sprite> pending = null;
+        bool isOwner = false;
+
+        lock (ImageCacheLock)
         {
-            var texOp = texReq.SendWebRequest();
-            while (!texOp.isDone)
-                await Task.Yield();
-            
-            if (texReq.result == UnityWebRequest.Result.Success)
+            if (ImageSpriteCache.TryGetValue(url, out Sprite cachedSprite) && cachedSprite != null)
+                return cachedSprite;
+
+            if (!ImageSpriteInFlight.TryGetValue(url, out pending) || pending == null)
             {
-                try
-                {
-                    Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
-                    Debug.Log($"{tex.width}, {tex.height}");
-                    return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning($"Błąd tworzenia Texture2D z {url}: {e.Message}");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"Failed to download texture {url}: {texReq.error}");
+                pending = DownloadImageSpriteWithRetryAsync(url);
+                ImageSpriteInFlight[url] = pending;
+                isOwner = true;
             }
         }
+
+        try
+        {
+            Sprite downloaded = await pending;
+            if (downloaded != null)
+            {
+                lock (ImageCacheLock)
+                {
+                    ImageSpriteCache[url] = downloaded;
+                }
+            }
+
+            return downloaded;
+        }
+        finally
+        {
+            if (isOwner)
+            {
+                lock (ImageCacheLock)
+                {
+                    if (ImageSpriteInFlight.TryGetValue(url, out Task<Sprite> current) && current == pending)
+                        ImageSpriteInFlight.Remove(url);
+                }
+            }
+        }
+    }
+
+    async Task<Sprite> DownloadImageSpriteWithRetryAsync(string url)
+    {
+        for (int attempt = 0; attempt <= MaxImage429Retries; attempt++)
+        {
+            await ImageRequestGate.WaitAsync();
+            try
+            {
+                await WaitForImageMinIntervalAsync();
+                await WaitForGlobalImageCooldownAsync();
+                SetLastImageRequestUtc(DateTime.UtcNow);
+            }
+            finally
+            {
+                ImageRequestGate.Release();
+            }
+
+            using (UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(url))
+            {
+                texReq.SetRequestHeader("User-Agent", "WikiRoomsProjectUnity/1.0 (Unity client)");
+
+                var texOp = texReq.SendWebRequest();
+                while (!texOp.isDone)
+                    await Task.Yield();
+
+                if (texReq.result == UnityWebRequest.Result.Success)
+                {
+                    try
+                    {
+                        Texture2D tex = DownloadHandlerTexture.GetContent(texReq);
+                        return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning($"Błąd tworzenia Texture2D z {url}: {e.Message}");
+                        return null;
+                    }
+                }
+
+                bool is429 = texReq.responseCode == 429;
+                if (is429 && attempt < MaxImage429Retries)
+                {
+                    int retryDelayMs = GetRetryDelayMilliseconds(texReq, attempt);
+                    RegisterGlobalImageCooldown(retryDelayMs);
+                    if (retryDelayMs > 0)
+                        await Task.Delay(retryDelayMs);
+                    continue;
+                }
+
+                Debug.LogWarning($"Nie udało się pobrać obrazu infoboxu {url} ({texReq.responseCode}): {texReq.error}");
+                return null;
+            }
+        }
+
+        Debug.LogWarning($"Nie udało się pobrać obrazu infoboxu {url} po {MaxImage429Retries + 1} próbach.");
         return null;
+    }
+
+    async Task WaitForImageMinIntervalAsync()
+    {
+        DateTime lastRequestUtc = GetLastImageRequestUtc();
+        if (lastRequestUtc == DateTime.MinValue)
+            return;
+
+        double elapsedSeconds = (DateTime.UtcNow - lastRequestUtc).TotalSeconds;
+        if (elapsedSeconds >= ImageMinIntervalSeconds)
+            return;
+
+        int waitMs = Mathf.CeilToInt((ImageMinIntervalSeconds - (float)elapsedSeconds) * 1000f);
+        if (waitMs > 0)
+            await Task.Delay(waitMs);
+    }
+
+    async Task WaitForGlobalImageCooldownAsync()
+    {
+        DateTime cooldownUntilUtc = GetGlobalImageCooldownUntilUtc();
+        if (cooldownUntilUtc == DateTime.MinValue)
+            return;
+
+        int waitMs = Mathf.CeilToInt((float)(cooldownUntilUtc - DateTime.UtcNow).TotalMilliseconds);
+        if (waitMs > 0)
+            await Task.Delay(waitMs);
+    }
+
+    int GetRetryDelayMilliseconds(UnityWebRequest request, int attempt)
+    {
+        string retryAfterHeader = request.GetResponseHeader("Retry-After");
+        int maxDelayMs = Mathf.CeilToInt(ImageRetryMaxDelaySeconds * 1000f);
+
+        if (!string.IsNullOrEmpty(retryAfterHeader))
+        {
+            if (int.TryParse(retryAfterHeader, out int retryAfterSeconds))
+                return Mathf.Clamp(Mathf.Max(0, retryAfterSeconds) * 1000, 0, maxDelayMs);
+
+            if (DateTimeOffset.TryParse(retryAfterHeader, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset retryAfterDate))
+            {
+                double delayMs = (retryAfterDate.UtcDateTime - DateTime.UtcNow).TotalMilliseconds;
+                if (delayMs > 0)
+                    return Mathf.Clamp(Mathf.CeilToInt((float)delayMs), 0, maxDelayMs);
+            }
+        }
+
+        float expDelaySeconds = ImageRetryBaseDelaySeconds * Mathf.Pow(2f, attempt);
+        int expDelayMs = Mathf.CeilToInt(Mathf.Max(0f, expDelaySeconds) * 1000f);
+        return Mathf.Clamp(expDelayMs, 0, maxDelayMs);
+    }
+
+    void RegisterGlobalImageCooldown(int retryDelayMs)
+    {
+        DateTime untilUtc = DateTime.UtcNow.AddMilliseconds(Mathf.Max(0, retryDelayMs));
+        lock (ImageThrottleLock)
+        {
+            if (untilUtc > globalImageCooldownUntilUtc)
+                globalImageCooldownUntilUtc = untilUtc;
+        }
+    }
+
+    DateTime GetLastImageRequestUtc()
+    {
+        lock (ImageThrottleLock)
+            return lastImageRequestUtc;
+    }
+
+    void SetLastImageRequestUtc(DateTime value)
+    {
+        lock (ImageThrottleLock)
+            lastImageRequestUtc = value;
+    }
+
+    DateTime GetGlobalImageCooldownUntilUtc()
+    {
+        lock (ImageThrottleLock)
+            return globalImageCooldownUntilUtc;
     }
 }

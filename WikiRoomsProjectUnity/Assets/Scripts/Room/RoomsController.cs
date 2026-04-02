@@ -35,6 +35,11 @@ public class RoomsController : MonoBehaviour
     {
         AudioListener.pause = false;
 
+        // Wymuś świeży stan sesji także w Editorze przy wyłączonym Domain Reload.
+        WikipediaRuntimeClient.ClearSessionCaches();
+        ElongatedRoomGenerator.ClearSessionCaches();
+        ImageInteraction.ClearSessionCaches();
+
         textureCache = new Dictionary<string, TexturesStructure>();
         articleCache = new Dictionary<string, ArticleStructure>();
         imageCache = new Dictionary<string, List<CachedImageData>>();
