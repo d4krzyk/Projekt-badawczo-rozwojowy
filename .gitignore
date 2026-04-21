@@ -12,3 +12,22 @@ __pycache__
 postgres_data
 venv
 .idea
+
+# Unity
+/WikiRoomsProjectUnity/[Ll]ibrary/
+/WikiRoomsProjectUnity/[Tt]emp/
+/WikiRoomsProjectUnity/[Oo]bj/
+/WikiRoomsProjectUnity/[Bb]uild/
+/WikiRoomsProjectUnity/[Bb]uilds/
+/WikiRoomsProjectUnity/[Ll]ogs/
+/WikiRoomsProjectUnity/[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+*.vscode
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+stable-diffusion-webui
+*.safetensors
+WikiRoomsProjectUnity/Assets/BackendConfig.asset
+WikiRoomsProjectUnity/Assets/BackendConfig.asset.meta
